@@ -324,6 +324,19 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
+.plus-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+@media (max-width: 768px) {
+    .plus-icon {
+        width: 20px;
+        height: 20px;
+    }
+}
+
 /* Responsive design */
 @media (max-width: 480px) {
     .greeting {
