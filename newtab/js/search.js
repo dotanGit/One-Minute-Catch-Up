@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const title = document.createElement('span');
         title.className = 'quick-link-title';
-        title.textContent = 'Add shortcut';
+        title.textContent = 'Add Shortcut';
         
         addButton.appendChild(icon);
         addButton.appendChild(title);
@@ -265,6 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         chrome.storage.local.get(['shortcuts'], function(result) {
             const shortcuts = result.shortcuts || [];
+            
+            // Check if we've reached the maximum of 7 shortcuts
+            if (shortcuts.length >= 7) {
+                alert('Maximum number of shortcuts (7) reached. Please remove some shortcuts first.');
+                return;
+            }
+            
             shortcuts.push({ name, url });
             chrome.storage.local.set({ shortcuts }, function() {
                 loadShortcuts();

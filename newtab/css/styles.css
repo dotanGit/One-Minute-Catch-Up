@@ -97,9 +97,9 @@ body {
 
 .quick-links-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    grid-template-columns: repeat(8, 1fr);
     gap: 20px;
-    max-width: 250px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -112,6 +112,7 @@ body {
     transition: all 0.3s ease;
     padding: 10px;
     position: relative;
+    width: 101px;
 }
 
 .quick-link-icon {
@@ -335,9 +336,17 @@ body {
         width: 20px;
         height: 20px;
     }
+    
+    .quick-links-grid {
+        gap: 15px;
+        max-width: 600px;
+    }
+    
+    .quick-link {
+        width: 60px;
+    }
 }
 
-/* Responsive design */
 @media (max-width: 480px) {
     .greeting {
         font-size: 36px;
@@ -349,8 +358,13 @@ body {
     }
     
     .quick-links-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
+        gap: 12px;
+        max-width: 100%;
+        padding: 0 10px;
+    }
+    
+    .quick-link {
+        width: 50px;
     }
     
     .quick-link-icon {
