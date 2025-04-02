@@ -55,6 +55,10 @@ body {
     color: #ffffff;
     transition: all 0.3s ease;
     outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
 }
 
 .search-input::placeholder {
@@ -62,8 +66,20 @@ body {
 }
 
 .search-input:focus {
-    border-bottom-color: #00ff87;
-    box-shadow: 0 0 20px rgba(0, 255, 135, 0.1);
+    border-bottom: 2px solid #00ff87;
+    box-shadow: 0 4px 6px -6px #00ff87;
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+    border-radius: 0;
+}
+
+/* Remove default focus styles */
+.search-input:focus::-webkit-search-decoration,
+.search-input:focus::-webkit-search-cancel-button,
+.search-input:focus::-webkit-search-results-button,
+.search-input:focus::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .search-button {
