@@ -14,6 +14,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'login':
       handleGoogleLogin().then(sendResponse);
       return true;
+    case 'getUserInfo':
+      getUserInfo().then(sendResponse);
+      return true;
     case 'getDriveActivity':
       getDriveActivity(new Date(request.date)).then(sendResponse);
       return true;
@@ -49,6 +52,60 @@ async function handleGoogleLogin() {
     return { success: false, error: 'Failed to get auth token' };
   } catch (error) {
     console.error('Login error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Get user info
+async function getUserInfo() {
+  try {
+    const token = await new Promise((resolve, reject) => {
+      chrome.identity.getAuthToken({ interactive: false }, (token) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(token);
+        }
+      });
+    });
+
+    if (!token) throw new Error('Not authenticated');
+
+    // Get profile info from Profile API
+    const profileResponse = await fetch(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!profileResponse.ok) {
+      if (profileResponse.status === 401) {
+        await chrome.identity.removeCachedAuthToken({ token });
+        throw new Error('Authentication expired. Please try again.');
+      }
+      throw new Error(`Profile API error: ${profileResponse.status}`);
+    }
+
+    const profileData = await profileResponse.json();
+    console.log('Profile data:', profileData);
+
+    // Format user info using Profile API data
+    const userInfo = {
+      ...profileData,
+      firstName: profileData.given_name,
+      lastName: profileData.family_name,
+      fullName: profileData.name,
+      email: profileData.email
+    };
+
+    console.log('User info:', userInfo);
+    return { success: true, userInfo };
+  } catch (error) {
+    console.error('Get user info error:', error);
     return { success: false, error: error.message };
   }
 }
