@@ -247,7 +247,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 quickLinksGrid.appendChild(createQuickLinkElement(shortcut, index));
             });
             
-            quickLinksGrid.appendChild(addShortcutButton());
+            // Only add the "Add Shortcut" button if we have less than 7 shortcuts
+            if (shortcuts.length < 7) {
+                quickLinksGrid.appendChild(addShortcutButton());
+            }
         });
     }
 
