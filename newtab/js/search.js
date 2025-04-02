@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Function to create a quick link element
-    function createQuickLinkElement(shortcut) {
+    function createQuickLinkElement(shortcut, index) {
         const link = document.createElement('a');
         link.href = shortcut.url;
         link.className = 'quick-link';
@@ -109,10 +109,105 @@ document.addEventListener('DOMContentLoaded', function() {
         const title = document.createElement('span');
         title.className = 'quick-link-title';
         title.textContent = shortcut.name;
+
+        // Add menu button
+        const menuButton = document.createElement('button');
+        menuButton.className = 'menu-button';
+        menuButton.innerHTML = `
+            <div class="menu-dots">
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+                <div class="menu-dot"></div>
+            </div>
+        `;
+
+        // Add dropdown menu
+        const dropdown = document.createElement('div');
+        dropdown.className = 'menu-dropdown';
+        dropdown.innerHTML = `
+            <a class="menu-item edit-shortcut">Edit</a>
+            <a class="menu-item remove-shortcut">Remove</a>
+        `;
+
+        // Prevent link click when clicking menu
+        menuButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        // Handle edit click
+        dropdown.querySelector('.edit-shortcut').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            editShortcut(shortcut, index);
+            dropdown.classList.remove('show');
+        });
+
+        // Handle remove click
+        dropdown.querySelector('.remove-shortcut').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            removeShortcut(index);
+            dropdown.classList.remove('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuButton.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
         
         link.appendChild(icon);
         link.appendChild(title);
+        link.appendChild(menuButton);
+        link.appendChild(dropdown);
         return link;
+    }
+
+    // Function to edit shortcut
+    function editShortcut(shortcut, index) {
+        shortcutNameInput.value = shortcut.name;
+        shortcutUrlInput.value = shortcut.url;
+        addShortcutModal.classList.add('show');
+
+        // Update save button to handle edit
+        const handleEdit = () => {
+            const name = shortcutNameInput.value.trim();
+            let url = shortcutUrlInput.value.trim();
+            
+            if (!name || !url) return;
+            
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+            
+            chrome.storage.local.get(['shortcuts'], function(result) {
+                const shortcuts = result.shortcuts || [];
+                shortcuts[index] = { name, url };
+                chrome.storage.local.set({ shortcuts }, function() {
+                    loadShortcuts();
+                    addShortcutModal.classList.remove('show');
+                    shortcutNameInput.value = '';
+                    shortcutUrlInput.value = '';
+                    saveShortcutButton.removeEventListener('click', handleEdit);
+                });
+            });
+        };
+
+        saveShortcutButton.addEventListener('click', handleEdit);
+    }
+
+    // Function to remove shortcut
+    function removeShortcut(index) {
+        chrome.storage.local.get(['shortcuts'], function(result) {
+            const shortcuts = result.shortcuts || [];
+            shortcuts.splice(index, 1);
+            chrome.storage.local.set({ shortcuts }, function() {
+                loadShortcuts();
+            });
+        });
     }
 
     // Function to add "Add shortcut" button
@@ -146,8 +241,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const shortcuts = result.shortcuts || [];
             quickLinksGrid.innerHTML = '';
             
-            shortcuts.forEach(shortcut => {
-                quickLinksGrid.appendChild(createQuickLinkElement(shortcut));
+            shortcuts.forEach((shortcut, index) => {
+                quickLinksGrid.appendChild(createQuickLinkElement(shortcut, index));
             });
             
             quickLinksGrid.appendChild(addShortcutButton());
