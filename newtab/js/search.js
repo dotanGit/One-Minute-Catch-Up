@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('.search-input');
     const searchButton = document.querySelector('.search-button');
     const greetingElement = document.querySelector('.greeting');
+    const quickLinksGrid = document.getElementById('quickLinksGrid');
+    const addShortcutModal = document.getElementById('addShortcutModal');
+    const shortcutNameInput = document.getElementById('shortcutName');
+    const shortcutUrlInput = document.getElementById('shortcutUrl');
+    const saveShortcutButton = document.getElementById('saveShortcut');
+    const cancelShortcutButton = document.getElementById('cancelShortcut');
 
     // Function to capitalize first letter of a string
     function capitalizeFirstLetter(string) {
@@ -90,8 +96,102 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initial call to get user info
-    getUserInfo();
+    // Function to create a quick link element
+    function createQuickLinkElement(shortcut) {
+        const link = document.createElement('a');
+        link.href = shortcut.url;
+        link.className = 'quick-link';
+        
+        const icon = document.createElement('div');
+        icon.className = 'quick-link-icon';
+        icon.textContent = shortcut.name.charAt(0).toUpperCase();
+        
+        const title = document.createElement('span');
+        title.className = 'quick-link-title';
+        title.textContent = shortcut.name;
+        
+        link.appendChild(icon);
+        link.appendChild(title);
+        return link;
+    }
+
+    // Function to add "Add shortcut" button
+    function addShortcutButton() {
+        const addButton = document.createElement('a');
+        addButton.className = 'quick-link';
+        addButton.href = '#';
+        
+        const icon = document.createElement('div');
+        icon.className = 'quick-link-icon';
+        icon.innerHTML = '+';
+        
+        const title = document.createElement('span');
+        title.className = 'quick-link-title';
+        title.textContent = 'Add shortcut';
+        
+        addButton.appendChild(icon);
+        addButton.appendChild(title);
+        
+        addButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            addShortcutModal.classList.add('show');
+        });
+        
+        return addButton;
+    }
+
+    // Function to load and display shortcuts
+    function loadShortcuts() {
+        chrome.storage.local.get(['shortcuts'], function(result) {
+            const shortcuts = result.shortcuts || [];
+            quickLinksGrid.innerHTML = '';
+            
+            shortcuts.forEach(shortcut => {
+                quickLinksGrid.appendChild(createQuickLinkElement(shortcut));
+            });
+            
+            quickLinksGrid.appendChild(addShortcutButton());
+        });
+    }
+
+    // Event listeners for modal
+    saveShortcutButton.addEventListener('click', () => {
+        const name = shortcutNameInput.value.trim();
+        let url = shortcutUrlInput.value.trim();
+        
+        if (!name || !url) return;
+        
+        // Add https:// if no protocol specified
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
+        
+        chrome.storage.local.get(['shortcuts'], function(result) {
+            const shortcuts = result.shortcuts || [];
+            shortcuts.push({ name, url });
+            chrome.storage.local.set({ shortcuts }, function() {
+                loadShortcuts();
+                addShortcutModal.classList.remove('show');
+                shortcutNameInput.value = '';
+                shortcutUrlInput.value = '';
+            });
+        });
+    });
+
+    cancelShortcutButton.addEventListener('click', () => {
+        addShortcutModal.classList.remove('show');
+        shortcutNameInput.value = '';
+        shortcutUrlInput.value = '';
+    });
+
+    // Close modal when clicking outside
+    addShortcutModal.addEventListener('click', (e) => {
+        if (e.target === addShortcutModal) {
+            addShortcutModal.classList.remove('show');
+            shortcutNameInput.value = '';
+            shortcutUrlInput.value = '';
+        }
+    });
 
     // Function to handle search
     function handleSearch(query) {
@@ -128,6 +228,10 @@ document.addEventListener('DOMContentLoaded', function() {
     searchButton.addEventListener('click', function() {
         handleSearch(searchInput.value);
     });
+
+    // Initial calls
+    getUserInfo();
+    loadShortcuts();
 
     // Focus search input on page load
     searchInput.focus();

@@ -11,14 +11,35 @@
         <div class="search-container">
             <input type="text" class="search-input" placeholder="Search Google or type a URL">
             <button class="search-button">
-                <span class="material-icons">search</span>
+                <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                </svg>
             </button>
         </div>
-        <div class="quick-links">
-            <a href="https://gmail.com" class="quick-link">Gmail</a>
-            <a href="https://calendar.google.com" class="quick-link">Calendar</a>
-            <a href="https://drive.google.com" class="quick-link">Drive</a>
-            <a href="https://youtube.com" class="quick-link">YouTube</a>
+        <div class="quick-links-container">
+            <div class="quick-links-grid" id="quickLinksGrid">
+                <!-- Quick links will be inserted here dynamically -->
+            </div>
+        </div>
+        <!-- Modal for adding new shortcut -->
+        <div id="addShortcutModal" class="modal">
+            <div class="modal-content">
+                <h3>Add shortcut</h3>
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label for="shortcutName">Name</label>
+                        <input type="text" id="shortcutName" placeholder="Enter a name">
+                    </div>
+                    <div class="form-group">
+                        <label for="shortcutUrl">URL</label>
+                        <input type="text" id="shortcutUrl" placeholder="Enter a URL">
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="cancelShortcut" class="btn-secondary">Cancel</button>
+                        <button id="saveShortcut" class="btn-primary">Done</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="js/search.js"></script>
