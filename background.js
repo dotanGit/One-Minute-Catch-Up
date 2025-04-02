@@ -46,7 +46,31 @@ async function handleGoogleLogin() {
     });
 
     if (token) {
-      await chrome.storage.local.set({ isLoggedIn: true });
+      // Get user info immediately after login
+      const profileResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        }
+      );
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        // Save user info to storage
+        await chrome.storage.local.set({ 
+          isLoggedIn: true,
+          userInfo: {
+            firstName: profileData.given_name,
+            lastName: profileData.family_name,
+            fullName: profileData.name,
+            email: profileData.email
+          }
+        });
+      }
+
       return { success: true, token };
     }
     return { success: false, error: 'Failed to get auth token' };
