@@ -472,9 +472,31 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add query text
             const queryText = document.createElement('span');
             queryText.textContent = query;
+            queryText.className = 'suggestion-text';
+            
+            // Add remove button
+            const removeButton = document.createElement('button');
+            removeButton.className = 'remove-button';
+            removeButton.innerHTML = '<img src="close.svg" alt="Remove" class="remove-icon">';
+            removeButton.title = 'Remove from history';
+            
+            // Add click event to remove the item from history
+            removeButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering the suggestion item click
+                removeFromHistory(query);
+                
+                // Remove this item from the UI
+                suggestionItem.remove();
+                
+                // If no suggestions left, hide the container
+                if (suggestionsContainer.children.length === 0) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
             
             suggestionItem.appendChild(historyIcon);
             suggestionItem.appendChild(queryText);
+            suggestionItem.appendChild(removeButton);
             
             suggestionItem.addEventListener('click', () => {
                 searchInput.value = query;
@@ -486,6 +508,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         suggestionsContainer.style.display = 'block';
+    }
+    
+    // Function to remove an item from search history
+    function removeFromHistory(query) {
+        chrome.storage.local.get(['searchHistory'], function(result) {
+            let searchHistory = result.searchHistory || [];
+            
+            // Filter out the query to remove
+            searchHistory = searchHistory.filter(item => 
+                item.query.toLowerCase() !== query.toLowerCase()
+            );
+            
+            // Save updated history
+            chrome.storage.local.set({ searchHistory });
+        });
     }
     
     // Create suggestions container
