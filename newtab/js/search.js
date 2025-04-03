@@ -302,9 +302,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to handle search
     function handleSearch(query) {
-        if (!query) return;
+        if (!query || query.trim() === '') return;
         
-        // Check if the input is a URL
+        // Save the search to history
+        saveSearchToHistory(query);
+        
+        // Hide suggestions
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
+        
+        // Check if it's a URL
         if (isValidUrl(query)) {
             window.location.href = query;
             return;
@@ -342,4 +351,172 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Focus search input on page load
     searchInput.focus();
+
+    // Function to perform search (for suggestions)
+    function performSearch(query) {
+        handleSearch(query);
+    }
+    
+    // Function to save search to history
+    function saveSearchToHistory(query) {
+        if (!query || query.trim() === '') return;
+        
+        chrome.storage.local.get(['searchHistory'], function(result) {
+            let searchHistory = result.searchHistory || [];
+            
+            // Check if query already exists
+            const existingIndex = searchHistory.findIndex(item => 
+                item.query.toLowerCase() === query.toLowerCase()
+            );
+            
+            if (existingIndex !== -1) {
+                // Update existing entry
+                searchHistory[existingIndex].count++;
+                searchHistory[existingIndex].timestamp = Date.now();
+            } else {
+                // Add new entry
+                searchHistory.push({
+                    query: query,
+                    timestamp: Date.now(),
+                    count: 1
+                });
+            }
+            
+            // Sort by recency and limit to 100 entries
+            searchHistory.sort((a, b) => b.timestamp - a.timestamp);
+            if (searchHistory.length > 100) {
+                searchHistory = searchHistory.slice(0, 100);
+            }
+            
+            // Save updated history
+            chrome.storage.local.set({ searchHistory });
+        });
+    }
+    
+    // Function to get search suggestions
+    function getSearchSuggestions() {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['searchHistory'], function(result) {
+                const searchHistory = result.searchHistory || [];
+                
+                // Sort by recency only (most recent first)
+                const recentSearches = searchHistory
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .slice(0, 8)
+                    .map(item => item.query);
+                
+                resolve(recentSearches);
+            });
+        });
+    }
+
+    // Function to get autocomplete suggestions based on current input
+    function getAutocompleteSuggestions(currentInput) {
+        return new Promise((resolve) => {
+            if (!currentInput || currentInput.trim() === '') {
+                resolve([]);
+                return;
+            }
+            
+            chrome.storage.local.get(['searchHistory'], function(result) {
+                const searchHistory = result.searchHistory || [];
+                
+                // Filter searches that match the current input
+                const matchingSearches = searchHistory
+                    .filter(item => item.query.toLowerCase().includes(currentInput.toLowerCase()))
+                    .sort((a, b) => b.timestamp - a.timestamp) // Sort by recency
+                    .map(item => item.query);
+                
+                resolve(matchingSearches);
+            });
+        });
+    }
+
+    // Function to display search suggestions
+    function displaySearchSuggestions(suggestions) {
+        const suggestionsContainer = document.getElementById('search-suggestions');
+        suggestionsContainer.innerHTML = '';
+        
+        if (suggestions.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        suggestions.forEach(query => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            
+            // Add history icon
+            const historyIcon = document.createElement('img');
+            historyIcon.src = 'history.svg';
+            historyIcon.className = 'history-icon';
+            historyIcon.alt = 'History';
+            
+            // Add query text
+            const queryText = document.createElement('span');
+            queryText.textContent = query;
+            
+            suggestionItem.appendChild(historyIcon);
+            suggestionItem.appendChild(queryText);
+            
+            suggestionItem.addEventListener('click', () => {
+                searchInput.value = query;
+                suggestionsContainer.style.display = 'none';
+                performSearch(query);
+            });
+            
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+        
+        suggestionsContainer.style.display = 'block';
+    }
+    
+    // Create suggestions container
+    const searchContainer = document.querySelector('.search-container');
+    const suggestionsContainer = document.createElement('div');
+    suggestionsContainer.id = 'search-suggestions';
+    suggestionsContainer.className = 'search-suggestions';
+    searchContainer.appendChild(suggestionsContainer);
+    
+    // Show suggestions when clicking the search input
+    searchInput.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent click from bubbling to document
+        const query = this.value.trim();
+        if (query === '') {
+            // Show all recent suggestions when input is empty
+            getSearchSuggestions().then(suggestions => {
+                displaySearchSuggestions(suggestions);
+            });
+        } else {
+            // Show autocomplete suggestions based on current input
+            getAutocompleteSuggestions(query).then(suggestions => {
+                displaySearchSuggestions(suggestions);
+            });
+        }
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+    
+    // Handle search input
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (query === '') {
+            // Show all recent suggestions when input is empty
+            getSearchSuggestions().then(suggestions => {
+                displaySearchSuggestions(suggestions);
+            });
+            return;
+        }
+        
+        // Show autocomplete suggestions as user types
+        getAutocompleteSuggestions(query).then(suggestions => {
+            displaySearchSuggestions(suggestions);
+        });
+    });
 }); 
