@@ -21,6 +21,46 @@
                 <!-- Quick links will be inserted here dynamically -->
             </div>
         </div>
+
+        <!-- Activities Container - Matching popup.js structure exactly -->
+        <div class="activities-container">
+            <!-- Login Section -->
+            <div id="login-section" class="activity-section">
+                <button id="login-button" class="login-button">Sign in with Google</button>
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loading" class="loading" style="display: none;">
+                Loading your daily summary...
+            </div>
+
+            <!-- Activities side by side -->
+            <div class="activities-wrapper">
+                <!-- Yesterday's Activities -->
+                <div class="activities-group">
+                    <h2 class="group-title">Yesterday's Overview</h2>
+                    <div id="summary-section" class="activity-section" style="display: none;">
+                        <div class="section-title">Yesterday's Activity</div>
+                        <div id="yesterday-content" class="content"></div>
+                    </div>
+                </div>
+
+                <!-- Today's Activities -->
+                <div class="activities-group">
+                    <h2 class="group-title">Today's Overview</h2>
+                    <div id="today-calendar-section" class="activity-section" style="display: none;">
+                        <div class="section-title">Today's Schedule</div>
+                        <div id="today-calendar-content" class="content"></div>
+                    </div>
+
+                    <div id="tomorrow-calendar-section" class="activity-section" style="display: none;">
+                        <div class="section-title">Tomorrow's Schedule</div>
+                        <div id="tomorrow-calendar-content" class="content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal for adding new shortcut -->
         <div id="addShortcutModal" class="modal">
             <div class="modal-content">
@@ -43,5 +83,6 @@
         </div>
     </div>
     <script src="js/search.js"></script>
+    <script src="../popup.js"></script>
 </body>
 </html> 
