@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
+    
     // Function to get autocomplete suggestions based on current input
     function getAutocompleteSuggestions(currentInput) {
         return new Promise((resolve) => {
@@ -421,17 +421,34 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.storage.local.get(['searchHistory'], function(result) {
                 const searchHistory = result.searchHistory || [];
                 
-                // Filter searches that match the current input
-                const matchingSearches = searchHistory
-                    .filter(item => item.query.toLowerCase().includes(currentInput.toLowerCase()))
+                // Get exact matches from history (starting with the input)
+                const exactMatches = searchHistory
+                    .filter(item => item.query.toLowerCase().startsWith(currentInput.toLowerCase()))
                     .sort((a, b) => b.timestamp - a.timestamp) // Sort by recency
+                    .slice(0, 3) // Get top 3 most recent
                     .map(item => item.query);
                 
-                resolve(matchingSearches);
+                // Get related suggestions from history (contains the input)
+                const relatedMatches = searchHistory
+                    .filter(item => 
+                        item.query.toLowerCase().includes(currentInput.toLowerCase()) && 
+                        !item.query.toLowerCase().startsWith(currentInput.toLowerCase())
+                    )
+                    .sort((a, b) => b.timestamp - a.timestamp) // Sort by recency
+                    .slice(0, 5) // Get top 5 most recent
+                    .map(item => item.query);
+                
+                // Combine exact matches and related matches
+                const combinedSuggestions = [...exactMatches, ...relatedMatches];
+                
+                // Limit to 8 suggestions total
+                const finalSuggestions = combinedSuggestions.slice(0, 8);
+                
+                resolve(finalSuggestions);
             });
         });
     }
-
+    
     // Function to display search suggestions
     function displaySearchSuggestions(suggestions) {
         const suggestionsContainer = document.getElementById('search-suggestions');
