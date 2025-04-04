@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const shortcutUrlInput = document.getElementById('shortcutUrl');
     const saveShortcutButton = document.getElementById('saveShortcut');
     const cancelShortcutButton = document.getElementById('cancelShortcut');
+    
+    // Add new shortcuts dropdown elements
+    const shortcutsButton = document.getElementById('shortcuts-button');
+    const shortcutsDropdown = document.getElementById('shortcuts-dropdown');
 
     // Function to capitalize first letter of a string
     function capitalizeFirstLetter(string) {
@@ -210,46 +214,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Function to add "Add shortcut" button
-    function addShortcutButton() {
-        const addButton = document.createElement('a');
-        addButton.className = 'quick-link';
-        addButton.href = '#';
-        
-        const icon = document.createElement('div');
-        icon.className = 'quick-link-icon add-icon';
-        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="plus-icon">
-            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-        </svg>`;
-        
-        const title = document.createElement('span');
-        title.className = 'quick-link-title';
-        title.textContent = 'Add Shortcut';
-        
-        addButton.appendChild(icon);
-        addButton.appendChild(title);
-        
-        addButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            addShortcutModal.classList.add('show');
-        });
-        
-        return addButton;
-    }
-
     // Function to load and display shortcuts
     function loadShortcuts() {
         chrome.storage.local.get(['shortcuts'], function(result) {
             const shortcuts = result.shortcuts || [];
             quickLinksGrid.innerHTML = '';
             
+            // Add existing shortcuts
             shortcuts.forEach((shortcut, index) => {
                 quickLinksGrid.appendChild(createQuickLinkElement(shortcut, index));
             });
             
-            // Only add the "Add Shortcut" button if we have less than 7 shortcuts
-            if (shortcuts.length < 7) {
-                quickLinksGrid.appendChild(addShortcutButton());
+            // Add the "Add" button if less than 9 shortcuts
+            if (shortcuts.length < 9) {
+                const addButton = document.createElement('a');
+                addButton.href = '#';
+                addButton.className = 'quick-link';
+                
+                const icon = document.createElement('div');
+                icon.className = 'quick-link-icon add-icon';
+                icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+                </svg>`;
+                
+                const title = document.createElement('span');
+                title.className = 'quick-link-title';
+                title.textContent = 'Add Shortcut';
+                
+                addButton.appendChild(icon);
+                addButton.appendChild(title);
+                
+                addButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    addShortcutModal.classList.add('show');
+                });
+                
+                quickLinksGrid.appendChild(addButton);
             }
         });
     }
@@ -269,9 +269,9 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.storage.local.get(['shortcuts'], function(result) {
             const shortcuts = result.shortcuts || [];
             
-            // Check if we've reached the maximum of 7 shortcuts
-            if (shortcuts.length >= 7) {
-                alert('Maximum number of shortcuts (7) reached. Please remove some shortcuts first.');
+            // Check if we've reached the maximum of 9 shortcuts
+            if (shortcuts.length >= 9) {
+                alert('Maximum number of shortcuts (9) reached. Please remove some shortcuts first.');
                 return;
             }
             
@@ -573,4 +573,26 @@ document.addEventListener('DOMContentLoaded', function() {
             displaySearchSuggestions(suggestions);
         });
     });
+
+    // Add shortcuts dropdown functionality
+    if (shortcutsButton && shortcutsDropdown) {
+        // Toggle shortcuts dropdown
+        shortcutsButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            shortcutsDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!shortcutsDropdown.contains(e.target) && !shortcutsButton.contains(e.target)) {
+                shortcutsDropdown.classList.remove('show');
+            }
+        });
+
+        // Use the existing add shortcut functionality
+        document.getElementById('add-shortcut-button')?.addEventListener('click', function() {
+            addShortcutModal.classList.add('show');
+            shortcutsDropdown.classList.remove('show');
+        });
+    }
 }); 

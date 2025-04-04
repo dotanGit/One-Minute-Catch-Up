@@ -35,11 +35,19 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
-.search-container {
+.search-bar-container {
     position: relative;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-container {
+    flex: 1;
+    position: relative;
 }
 
 .search-input {
@@ -182,65 +190,151 @@ body {
     background: rgba(255, 255, 255, 0.3);
 }
 
-.quick-links-container {
-    margin-top: 40px;
-    width: 100%;
+.shortcuts-container {
+    position: relative;
 }
 
-.quick-links-grid {
+.shortcuts-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #fff;
+    cursor: pointer;
     display: flex;
-    justify-content: center;
-    gap: -10px;
-    flex-wrap: nowrap;
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.shortcuts-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.shortcuts-button svg {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+}
+
+.shortcuts-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    background: rgba(45, 45, 45, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1000;
+}
+
+.shortcuts-dropdown.show {
+    display: block;
+}
+
+.add-shortcut-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #00ff87;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.add-shortcut-button:hover {
+    background: rgba(0, 255, 135, 0.1);
+    border-color: #00ff87;
+}
+
+.add-shortcut-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Update quick links grid for 3x3 layout */
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.quick-links-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.quick-links-grid::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.quick-links-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
 }
 
 .quick-link {
+    position: relative;
     text-decoration: none;
-    color: #ffffff;
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: all 0.3s ease;
-    padding: 10px;
-    position: relative;
-    width: 100px;
-    flex-shrink: 0;
+    gap: 8px;
+    transition: transform 0.2s ease;
+    width: 100%;
+    padding: 8px;
+    background: none;
+    border: none;
+}
+
+.quick-link:hover {
+    transform: translateY(-2px);
+    background: none;
 }
 
 .quick-link-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     color: #00ff87;
-    border: 1px solid rgba(0, 255, 135, 0.2);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
 }
 
 .quick-link:hover .quick-link-icon {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(0, 255, 135, 0.3);
-    box-shadow: 0 5px 15px rgba(0, 255, 135, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.quick-link-icon.add-icon {
+    background: rgba(0, 255, 135, 0.1);
+    color: #00ff87;
+    cursor: pointer;
 }
 
 .quick-link-title {
-    font-size: 13px;
-    font-weight: 500;
-    margin-top: 8px;
+    font-size: 12px;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
-    opacity: 0.9;
+    width: 100%;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .menu-button {
@@ -249,38 +343,26 @@ body {
     right: 0;
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
-    width: 20px;
-    height: 20px;
+    padding: 4px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     opacity: 0;
     transition: opacity 0.2s ease;
-    z-index: 2;
-    padding: 4px;
 }
 
 .quick-link:hover .menu-button {
     opacity: 1;
 }
 
-.menu-button:hover {
-    color: #00ff87;
-}
-
 .menu-dots {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    align-items: center;
 }
 
 .menu-dot {
-    width: 2.4px;
-    height: 2.4px;
-    background-color: currentColor;
+    width: 3px;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 50%;
 }
 
@@ -290,13 +372,13 @@ body {
     right: 0;
     background: rgba(45, 45, 45, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 0;
-    min-width: 120px;
+    border-radius: 6px;
+    padding: 4px 0;
+    min-width: 100px;
     display: none;
     backdrop-filter: blur(10px);
     z-index: 3;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .menu-dropdown.show {
@@ -304,11 +386,11 @@ body {
 }
 
 .menu-item {
-    padding: 8px 16px;
+    padding: 6px 12px;
     color: #ffffff;
     text-decoration: none;
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     text-align: left;
     cursor: pointer;
     transition: all 0.2s ease;
