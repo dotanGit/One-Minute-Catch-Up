@@ -133,10 +133,61 @@ document.addEventListener('DOMContentLoaded', function() {
             <a class="menu-item remove-shortcut">Remove</a>
         `;
 
+        // Function to close all dropdowns
+        function closeAllDropdowns() {
+            document.querySelectorAll('.menu-dropdown.show').forEach(menu => {
+                if (menu !== dropdown) {
+                    menu.classList.remove('show');
+                }
+            });
+        }
+
+        // Function to determine menu alignment based on grid position
+        function updateMenuAlignment() {
+            // Get all quick links
+            const allQuickLinks = Array.from(document.querySelectorAll('.quick-link'));
+            // Find the index of current quick link
+            const position = allQuickLinks.indexOf(link);
+            
+            // Calculate row and column in 3x3 grid
+            const row = Math.floor(position / 3);    // 0, 1, or 2
+            const column = position % 3;             // 0, 1, or 2
+            const totalRows = Math.ceil(allQuickLinks.length / 3);
+            
+            // Remove existing alignment classes
+            dropdown.classList.remove('left-align', 'right-align', 'top-align', 'bottom-align');
+            
+            // Add horizontal alignment class
+            if (column === 2) {
+                // Last column - open to the left
+                dropdown.classList.add('left-align');
+            } else {
+                // First and middle columns - open to the right
+                dropdown.classList.add('right-align');
+            }
+            
+            // Add vertical alignment class
+            if (row === totalRows - 1) {
+                // Last row - open upward
+                dropdown.classList.add('top-align');
+            } else {
+                // Other rows - open downward
+                dropdown.classList.add('bottom-align');
+            }
+        }
+
         // Prevent link click when clicking menu
         menuButton.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            
+            // Close other dropdowns before toggling this one
+            closeAllDropdowns();
+            
+            // Update menu alignment before showing
+            updateMenuAlignment();
+            
+            // Toggle this dropdown
             dropdown.classList.toggle('show');
         });
 
@@ -156,13 +207,19 @@ document.addEventListener('DOMContentLoaded', function() {
             dropdown.classList.remove('show');
         });
 
-        // Close dropdown when clicking outside
+        // Close dropdown when clicking anywhere else
         document.addEventListener('click', (e) => {
-            if (!menuButton.contains(e.target)) {
+            if (!menuButton.contains(e.target) && !dropdown.contains(e.target)) {
                 dropdown.classList.remove('show');
             }
         });
-        
+
+        // Prevent the link from being followed when clicking the menu items
+        dropdown.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
         link.appendChild(icon);
         link.appendChild(title);
         link.appendChild(menuButton);

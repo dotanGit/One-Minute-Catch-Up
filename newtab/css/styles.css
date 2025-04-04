@@ -368,8 +368,6 @@ body {
 
 .menu-dropdown {
     position: absolute;
-    top: 20px;
-    right: 0;
     background: rgba(45, 45, 45, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
@@ -383,6 +381,24 @@ body {
 
 .menu-dropdown.show {
     display: block;
+}
+
+/* Horizontal alignment classes */
+.menu-dropdown.left-align {
+    right: 0; /* Menu opens to the left */
+}
+
+.menu-dropdown.right-align {
+    left: 0; /* Menu opens to the right */
+}
+
+/* Vertical alignment classes */
+.menu-dropdown.top-align {
+    bottom: 20px; /* Menu opens upward */
+}
+
+.menu-dropdown.bottom-align {
+    top: 20px; /* Menu opens downward */
 }
 
 .menu-item {
