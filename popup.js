@@ -50,108 +50,231 @@ function buildTimeline(history, drive, emails, calendar) {
     }
   }
 
-  // 1. Browser history
+  function getEventCategory(event) {
+    if (event.type === 'email') return 'gmail';
+    if (event.type === 'calendar') return 'calendar';
+    if (event.type === 'drive') return 'drive';
+    return 'browser';
+  }
+
+  function formatDuration(minutes) {
+    if (minutes < 60) return `${minutes} minutes`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  }
+
+  function getEventDetails(event) {
+    switch (event.type) {
+      case 'drive':
+        return {
+          title: 'Drive File Activity',
+          details: [
+            { label: 'File Name', value: event.description },
+            { label: 'Last Edit', value: new Date(event.timestamp).toLocaleTimeString() },
+            { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' },
+            { label: 'Changes', value: event.changes || 'Content modified' }
+          ],
+          actions: [
+            { label: 'Open File', url: event.fileUrl || '#' },
+            { label: 'View History', url: event.historyUrl || '#' }
+          ]
+        };
+      case 'email':
+        return {
+          title: event.title,
+          details: [
+            { label: 'From', value: event.from || 'N/A' },
+            { label: 'To', value: event.to || 'N/A' },
+            { label: 'Subject', value: event.subject || 'No subject' }
+          ],
+          actions: [
+            { label: 'Open Email', url: event.emailUrl || '#' }
+          ]
+        };
+      case 'calendar':
+        return {
+          title: 'Calendar Event',
+          details: [
+            { label: 'Event', value: event.description },
+            { label: 'Time', value: event.duration || 'All day' },
+            { label: 'Location', value: event.location || 'No location' },
+            { label: 'Calendar', value: event.calendarName || 'Default' }
+          ],
+          actions: [
+            { label: 'View Event', url: event.eventUrl || '#' }
+          ]
+        };
+      default:
+        return {
+          title: 'Browser Activity',
+          details: [
+            { label: 'Website', value: event.description },
+            { label: 'Title', value: event.title },
+            { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
+          ],
+          actions: [
+            { label: 'Visit Site', url: event.url || '#' }
+          ]
+        };
+    }
+  }
+
+  // Process events and add type information
+  const processedEvents = [];
+  
+  // Process browser history
   if (history && history.length > 0) {
     const sortedHistory = history.sort((a, b) => a.lastVisitTime - b.lastVisitTime);
-  
     const sessions = {};
-    const SESSION_TIMEOUT = 60 * 60 * 1000; // 60 minutes
-  
+    const SESSION_TIMEOUT = 60 * 60 * 1000;
+
     sortedHistory.forEach(item => {
       if (!item.lastVisitTime || !item.url) return;
-  
       const pattern = extractPattern(item.url);
       const currentTime = item.lastVisitTime;
-  
+
       if (!sessions[pattern]) {
-        // Start new session
         sessions[pattern] = { start: currentTime, end: currentTime };
-        events.push({
+        processedEvents.push({
+          type: 'browser',
           timestamp: currentTime,
-          title: item.title || 'Website',
+          title: item.title || 'Website Visit',
           description: simplifyUrl(item.url),
+          url: item.url,
+          duration: 0
         });
         return;
       }
-  
+
       const session = sessions[pattern];
       const timeSinceLast = currentTime - session.end;
-  
+
       if (timeSinceLast < SESSION_TIMEOUT) {
-        // Extend session
         sessions[pattern].end = currentTime;
-        return;
+        const duration = Math.floor((currentTime - session.start) / 60000); // Convert to minutes
+        const lastEvent = processedEvents.find(e => e.type === 'browser' && e.url === item.url);
+        if (lastEvent) {
+          lastEvent.duration = duration;
+        }
+      } else {
+        sessions[pattern] = { start: currentTime, end: currentTime };
+        processedEvents.push({
+          type: 'browser',
+          timestamp: currentTime,
+          title: item.title || 'Website Visit',
+          description: simplifyUrl(item.url),
+          url: item.url,
+          duration: 0
+        });
       }
-  
-      // Start new session
-      sessions[pattern] = { start: currentTime, end: currentTime };
-      events.push({
-        timestamp: currentTime,
-        title: item.title || 'Website',
-        description: simplifyUrl(item.url),
-      });
     });
   }
-  
-  // 2. Drive files
+
+  // Process Drive files
   if (drive && drive.files && drive.files.length > 0) {
     drive.files.forEach(file => {
       if (file.modifiedTime) {
-        events.push({
+        processedEvents.push({
+          type: 'drive',
           timestamp: new Date(file.modifiedTime).getTime(),
-          title: 'Drive file edited',
+          title: 'Drive File Edit',
           description: file.name,
+          fileUrl: file.webViewLink,
+          historyUrl: file.historyLink,
+          changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
         });
       }
     });
   }
 
-  // 3. Emails
+  // Process emails
   if (emails && emails.all && emails.all.length > 0) {
     emails.all.forEach(email => {
       if (email.timestamp) {
-        events.push({
+        processedEvents.push({
+          type: 'email',
           timestamp: email.timestamp,
-          title: email.subject || 'Email',
-          description: email.from || email.to || '',
+          title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
+          subject: email.subject || 'No subject',
+          from: email.from,
+          to: email.to,
+          emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
         });
       }
     });
   }
 
-  // 4. Calendar events
+  // Process calendar events
   if (calendar && calendar.today && calendar.today.length > 0) {
     calendar.today.forEach(event => {
       const eventTime = event.start?.dateTime || event.start?.date;
       if (eventTime) {
-        events.push({
+        processedEvents.push({
+          type: 'calendar',
           timestamp: new Date(eventTime).getTime(),
-          title: event.summary || 'Calendar event',
-          description: event.calendarName || '',
+          title: 'Calendar Event',
+          description: event.summary || 'Untitled event',
+          calendarName: event.calendarName,
+          location: event.location,
+          duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString()} - ${new Date(event.end.dateTime).toLocaleTimeString()}` : 'All day',
+          eventUrl: event.htmlLink
         });
       }
     });
   }
+
+  // Sort all events by timestamp
+  processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
   // Clear existing events
   timelineEvents.innerHTML = '';
 
   // Build timeline events
-  events.forEach((event, index) => {
+  processedEvents.forEach((event, index) => {
     const eventDiv = document.createElement('div');
     eventDiv.className = `timeline-event ${index % 2 === 0 ? 'above' : 'below'}`;
+    eventDiv.setAttribute('data-category', getEventCategory(event));
     eventDiv.style.left = `${timestampToPercentage(event.timestamp)}%`;
 
     const timeText = new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const eventDetails = getEventDetails(event);
 
-    eventDiv.innerHTML = `
+    const popupContent = `
       <div class="timeline-dot"></div>
       <div class="event-popup">
-        <strong>${event.title}</strong><br>
-        ${timeText}<br>
-        ${event.description}
+        <div class="event-title">${eventDetails.title}</div>
+        <div class="event-time">${timeText}</div>
+        <div class="event-description">${event.description}</div>
+        <div class="event-details">
+          ${eventDetails.details.map(detail => `
+            <div class="detail-item">
+              <span class="detail-label">${detail.label}:</span>
+              <span class="detail-value">${detail.value}</span>
+            </div>
+          `).join('')}
+          <div class="event-actions">
+            ${eventDetails.actions.map(action => `
+              <a href="${action.url}" class="action-button" target="_blank">${action.label}</a>
+            `).join('')}
+          </div>
+        </div>
       </div>
     `;
+
+    eventDiv.innerHTML = popupContent;
+
+    // Add click handler for expanding details
+    const popup = eventDiv.querySelector('.event-popup');
+    eventDiv.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popup.classList.toggle('expanded');
+    });
+
+    // Close expanded popup when clicking outside
+    document.addEventListener('click', () => {
+      popup.classList.remove('expanded');
+    });
 
     timelineEvents.appendChild(eventDiv);
   });
