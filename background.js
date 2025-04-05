@@ -209,21 +209,25 @@ async function getGmailActivity(date) {
     startTime.setHours(0, 0, 0, 0);
     const endTime = new Date(date);
     endTime.setHours(23, 59, 59, 999);
-
-    // Format dates for Gmail query (YYYY/MM/DD)
-    const startDate = startTime.toISOString().split('T')[0].replace(/-/g, '/');
-    const endDate = endTime.toISOString().split('T')[0].replace(/-/g, '/');
     
-    console.log('Querying emails for date range:', {
-      startDate,
-      endDate,
+    // detect user's timezone offset in minutes
+    const timezoneOffsetMinutes = startTime.getTimezoneOffset(); // e.g., -180 for UTC+3
+    
+    // apply offset to get correct UTC timestamps
+    const startTimestamp = Math.floor((startTime.getTime() - timezoneOffsetMinutes * 60 * 1000) / 1000);
+    const endTimestamp = Math.floor((endTime.getTime() - timezoneOffsetMinutes * 60 * 1000) / 1000);
+    
+    console.log('Querying emails for timestamp range (adjusted to local timezone):', {
+      startTimestamp,
+      endTimestamp,
       startTime: startTime.toISOString(),
-      endTime: endTime.toISOString()
+      endTime: endTime.toISOString(),
+      timezoneOffsetMinutes
     });
 
     // Get sent emails
     const sentResponse = await fetch(
-      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:sent after:${startDate} before:${endDate}`,
+      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:sent after:${startTimestamp} before:${endTimestamp}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -234,7 +238,7 @@ async function getGmailActivity(date) {
 
     // Get received emails
     const receivedResponse = await fetch(
-      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:inbox after:${startDate} before:${endDate}`,
+      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:inbox after:${startTimestamp} before:${endTimestamp}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -280,9 +284,9 @@ async function getGmailActivity(date) {
           type: 'sent',
           subject,
           to,
-          timestamp,
+          timestamp: Number(emailData.internalDate),
           threadId: message.threadId
-        });
+        });        
       }
     }
 
@@ -315,7 +319,7 @@ async function getGmailActivity(date) {
           type: 'received',
           subject,
           from,
-          timestamp,
+          timestamp: Number(emailData.internalDate),
           threadId: message.threadId
         });
       }
