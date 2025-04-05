@@ -5,8 +5,10 @@ export function initLogin() {
 
   // Check if user is already logged in
   chrome.storage.local.get(['isLoggedIn'], function(result) {
-    if (!result.isLoggedIn) {
-      showLogin();
+    if (result.isLoggedIn) {
+      showTimeline(); // If already logged in, show the timeline
+    } else {
+      showLogin(); // Otherwise, show the login screen
     }
   });
 
@@ -19,10 +21,13 @@ export function initLogin() {
     loginButton.addEventListener('click', function() {
       if (loadingSection) loadingSection.style.display = 'block';
       loginButton.disabled = true;
-      
+
       chrome.runtime.sendMessage({ action: 'login' }, function(response) {
         if (response && response.success) {
-          showTimeline();
+          // Save login status
+          chrome.storage.local.set({ isLoggedIn: true }, function() {
+            showTimeline(); // Show the timeline once logged in
+          });
         } else {
           if (loadingSection) loadingSection.style.display = 'none';
           loginButton.disabled = false;
