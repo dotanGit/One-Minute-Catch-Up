@@ -457,6 +457,15 @@ function buildTimeline(history, drive, emails, calendar) {
       // Don't toggle if clicking an action button
       if (!e.target.closest('.action-button')) {
         console.log('Toggling popup expanded state');
+        
+        // Close all other expanded popups
+        document.querySelectorAll('.event-popup.expanded').forEach(otherPopup => {
+          if (otherPopup !== popup) {
+            otherPopup.classList.remove('expanded');
+          }
+        });
+        
+        // Toggle current popup
         popup.classList.toggle('expanded');
       }
     });
