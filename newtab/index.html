@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/search.css">
     <link rel="stylesheet" href="css/timeline.css">
+    <link rel="stylesheet" href="css/login.css">
     <!-- <link rel="stylesheet" href="css/activities.css"> -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
@@ -35,50 +36,30 @@
             </div>
         </div>
 
-        <!-- Activities Container - Matching popup.js structure exactly -->
-        <div class="activities-container">
-            <!-- Login Section -->
-            <div id="login-section" class="activity-section">
-                <button id="login-button" class="login-button">Sign in with Google</button>
+        <!-- Login Section -->
+        <div id="login-section" class="login-section">
+            <button id="login-button" class="login-button">Sign in with Google</button>
+        </div>
+
+        <!-- Loading Section -->
+        <div id="loading" class="loading" style="display: none;">
+            Loading your daily summary...
+        </div>
+
+        <!-- Timeline Container -->
+        <div class="timeline-wrapper" style="display: none;">
+            <div class="timeline-navigation">
+                <button id="prev-day" class="nav-button">
+                    <span class="material-icons">arrow_back_ios</span>
+                </button>
+                <div class="timeline-date">Today</div>
+                <button id="next-day" class="nav-button">
+                    <span class="material-icons">arrow_forward_ios</span>
+                </button>
             </div>
-
-            <!-- Loading Section -->
-            <div id="loading" class="loading" style="display: none;">
-                Loading your daily summary...
-            </div>
-
-
             <div class="timeline-container">
                 <div class="timeline-line"></div>
                 <div class="timeline-events" id="timeline-events"></div>
-            </div>
-              
-
-            
-            <!-- Activities side by side -->
-            <div class="activities-wrapper">
-                <!-- Yesterday's Activities -->
-                <div class="activities-group">
-                    <h2 class="group-title">Yesterday's Overview</h2>
-                    <div id="summary-section" class="activity-section" style="display: none;">
-                        <div class="section-title">Yesterday's Activity</div>
-                        <div id="yesterday-content" class="content"></div>
-                    </div>
-                </div>
-
-                <!-- Today's Activities -->
-                <div class="activities-group">
-                    <h2 class="group-title">Today's Overview</h2>
-                    <div id="today-calendar-section" class="activity-section" style="display: none;">
-                        <div class="section-title">Today's Schedule</div>
-                        <div id="today-calendar-content" class="content"></div>
-                    </div>
-
-                    <div id="tomorrow-calendar-section" class="activity-section" style="display: none;">
-                        <div class="section-title">Tomorrow's Schedule</div>
-                        <div id="tomorrow-calendar-content" class="content"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
