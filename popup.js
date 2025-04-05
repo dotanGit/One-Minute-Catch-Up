@@ -104,24 +104,173 @@ function buildTimeline(history, drive, emails, calendar) {
             { 
               label: 'Find File', 
               onClick: async (e) => {
+                console.log('Find File button clicked');
                 e.preventDefault();
+                e.stopPropagation();
                 const filePath = decodeURIComponent(event.url.replace('file:///', ''));
-                // First try to find in downloads
+                const fileName = filePath.split('/').pop();
+                console.log('File path:', filePath);
+                console.log('File name:', fileName);
+                
+                // Create or update status div
+                const popup = e.target.closest('.event-popup');
+                const actionsDiv = popup.querySelector('.event-actions');
+                console.log('Found popup:', !!popup);
+                console.log('Found actions div:', !!actionsDiv);
+                
+                let statusDiv = actionsDiv.querySelector('.file-status');
+                if (!statusDiv) {
+                  console.log('Creating new status div');
+                  statusDiv = document.createElement('div');
+                  statusDiv.className = 'file-status';
+                  actionsDiv.insertBefore(statusDiv, e.target);
+                }
+
                 try {
-                  const downloadItem = await chrome.downloads.search({ 
-                    filename: filePath.split('/').pop(),
+                  // Show searching message
+                  statusDiv.className = 'file-status';
+                  statusDiv.textContent = `Searching for "${fileName}"...`;
+                  statusDiv.style.display = 'block';
+                  statusDiv.style.opacity = '1';
+                  console.log('Showing searching message');
+
+                  // First try exact filename match
+                  console.log('Searching for exact filename match...');
+                  let downloadItems = await chrome.downloads.search({ 
+                    query: [fileName],
                     exists: true
                   });
                   
-                  if (downloadItem && downloadItem.length > 0) {
-                    chrome.downloads.open(downloadItem[0].id);
+                  // If no exact match, try partial filename match
+                  if (!downloadItems || downloadItems.length === 0) {
+                    console.log('No exact match found, trying partial match...');
+                    downloadItems = await chrome.downloads.search({ 
+                      exists: true
+                    });
+                    downloadItems = downloadItems.filter(item => 
+                      item.filename.toLowerCase().includes(fileName.toLowerCase())
+                    );
+                  }
+                  
+                  console.log('Download search results:', downloadItems);
+                  
+                  if (downloadItems && downloadItems.length > 0) {
+                    // Sort by most recent first
+                    downloadItems.sort((a, b) => b.startTime - a.startTime);
+                    console.log('File found in downloads:', downloadItems[0]);
+                    
+                    // Found the file in downloads
+                    statusDiv.className = 'file-status success';
+                    statusDiv.textContent = 'Opening file...';
+                    console.log('Attempting to open file...');
+                    
+                    try {
+                      // Try to open the file using the download ID
+                      await chrome.downloads.open(downloadItems[0].id);
+                      console.log('File opened successfully using download ID');
+                      statusDiv.textContent = 'File opened successfully!';
+                    } catch (error) {
+                      console.log('Failed to open using download ID, trying alternative method:', error);
+                      
+                      // If we can't open by ID, show the file path and provide a copy button
+                      try {
+                        console.log('Attempting to open file at path:', filePath);
+                        
+                        // Create status message
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'file-status';
+                        statusDiv.textContent = 'File found! You can:';
+                        actionsDiv.appendChild(statusDiv);
+                        
+                        // Create a container for the buttons
+                        const buttonContainer = document.createElement('div');
+                        buttonContainer.className = 'button-container';
+                        buttonContainer.style.marginTop = '8px';
+                        buttonContainer.style.display = 'flex';
+                        buttonContainer.style.gap = '8px';
+                        
+                        // Add "Open in Downloads" button
+                        const openButton = document.createElement('button');
+                        openButton.className = 'action-button';
+                        openButton.textContent = 'Open in Downloads';
+                        openButton.onclick = () => {
+                          chrome.downloads.showDefaultFolder();
+                        };
+                        buttonContainer.appendChild(openButton);
+                        
+                        // Add copy path button
+                        const copyButton = document.createElement('button');
+                        copyButton.className = 'action-button';
+                        copyButton.textContent = 'Copy Path';
+                        copyButton.onclick = () => {
+                          navigator.clipboard.writeText(filePath).then(() => {
+                            copyButton.textContent = 'Copied!';
+                            copyButton.classList.add('success');
+                            setTimeout(() => {
+                              copyButton.textContent = 'Copy Path';
+                              copyButton.classList.remove('success');
+                            }, 2000);
+                          });
+                        };
+                        buttonContainer.appendChild(copyButton);
+                        
+                        actionsDiv.appendChild(buttonContainer);
+                        
+                      } catch (error) {
+                        console.error('Error handling file path:', error);
+                        const statusDiv = document.createElement('div');
+                        statusDiv.className = 'file-status error';
+                        statusDiv.textContent = 'Error handling file path. Please try opening it manually from your downloads folder.';
+                        actionsDiv.appendChild(statusDiv);
+                      }
+                    }
+                    
+                    setTimeout(() => {
+                      statusDiv.style.opacity = '0';
+                      setTimeout(() => statusDiv.style.display = 'none', 300);
+                    }, 2000);
                   } else {
-                    // If not in downloads, show the file location
-                    alert(`File might have been moved. Original location was:\n${filePath}`);
+                    console.log('File not found in downloads');
+                    // File not found in downloads
+                    statusDiv.className = 'file-status warning';
+                    statusDiv.innerHTML = `File not found in Downloads.<br>Original location: ${filePath}`;
+                    statusDiv.style.display = 'block';
+                    statusDiv.style.opacity = '1';
+                    
+                    // Add a copy path button if it doesn't exist
+                    if (!actionsDiv.querySelector('.copy-button')) {
+                      console.log('Adding copy path button');
+                      const copyButton = document.createElement('button');
+                      copyButton.className = 'copy-button';
+                      copyButton.textContent = 'Copy File Path';
+                      copyButton.onclick = async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Copy button clicked');
+                        try {
+                          await navigator.clipboard.writeText(filePath);
+                          console.log('Path copied to clipboard');
+                          copyButton.className = 'copy-button success';
+                          copyButton.textContent = 'Path Copied!';
+                          setTimeout(() => {
+                            copyButton.className = 'copy-button';
+                            copyButton.textContent = 'Copy File Path';
+                          }, 2000);
+                        } catch (err) {
+                          console.error('Failed to copy:', err);
+                          copyButton.textContent = 'Copy Failed';
+                          copyButton.style.color = '#FF4444';
+                        }
+                      };
+                      actionsDiv.appendChild(copyButton);
+                    }
                   }
                 } catch (error) {
-                  console.error('Error finding file:', error);
-                  alert('Could not locate the file. It might have been moved or deleted.');
+                  console.error('Error in Find File handler:', error);
+                  statusDiv.className = 'file-status error';
+                  statusDiv.textContent = 'Error: Could not search for the file';
+                  statusDiv.style.display = 'block';
+                  statusDiv.style.opacity = '1';
                 }
               }
             }
@@ -309,8 +458,8 @@ function buildTimeline(history, drive, emails, calendar) {
             </div>
           `).join('')}
           <div class="event-actions">
-            ${eventDetails.actions.map(action => `
-              <a href="#" class="action-button" data-action='${JSON.stringify(action)}'>${action.label}</a>
+            ${eventDetails.actions.map((action, index) => `
+              <button class="action-button" data-action-index="${index}">${action.label}</button>
             `).join('')}
           </div>
         </div>
@@ -322,31 +471,47 @@ function buildTimeline(history, drive, emails, calendar) {
     // Add click handler for expanding details
     const popup = eventDiv.querySelector('.event-popup');
     eventDiv.addEventListener('click', (e) => {
+      console.log('Timeline event clicked');
       e.stopPropagation();
       // Don't toggle if clicking an action button
       if (!e.target.closest('.action-button')) {
+        console.log('Toggling popup expanded state');
         popup.classList.toggle('expanded');
       }
     });
 
     // Add click handlers for actions
-    eventDiv.querySelectorAll('.action-button').forEach(button => {
-      const action = JSON.parse(button.dataset.action);
+    eventDiv.querySelectorAll('.action-button').forEach((button, index) => {
+      const action = eventDetails.actions[index];
       button.addEventListener('click', (e) => {
+        console.log('Action button clicked:', action);
         e.preventDefault();
         e.stopPropagation();
         if (action.onClick) {
-          action.onClick(e);
+          console.log('Action has onClick handler:', action.onClick);
+          try {
+            console.log('Executing onClick handler...');
+            action.onClick(e);
+            console.log('onClick handler completed successfully');
+          } catch (error) {
+            console.error('Error in onClick handler:', error);
+          }
         } else if (action.url && action.url !== '#') {
+          console.log('Opening URL:', action.url);
           window.open(action.url, '_blank', 'noopener,noreferrer');
+        } else {
+          console.log('No valid action found for button:', action);
         }
       });
     });
 
     // Close expanded popup when clicking outside
-    document.addEventListener('click', () => {
-      const popup = eventDiv.querySelector('.event-popup');
-      popup.classList.remove('expanded');
+    document.addEventListener('click', (e) => {
+      if (!eventDiv.contains(e.target)) {
+        console.log('Clicking outside timeline event, closing popup');
+        const popup = eventDiv.querySelector('.event-popup');
+        popup.classList.remove('expanded');
+      }
     });
 
     timelineEvents.appendChild(eventDiv);

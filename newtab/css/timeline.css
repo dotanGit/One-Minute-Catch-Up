@@ -275,4 +275,52 @@
 .event-actions .action-button:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* File status message styles */
+.file-status {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.file-status.error {
+    color: #FF4444;
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.file-status.warning {
+    color: #FFA500;
+    background: rgba(255, 165, 0, 0.1);
+}
+
+.file-status.success {
+    color: #00FF87;
+    background: rgba(0, 255, 135, 0.1);
+}
+
+/* Copy button styles */
+.copy-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.copy-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.copy-button.success {
+    background: rgba(0, 255, 135, 0.2);
+    color: #00FF87;
+}
   

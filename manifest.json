@@ -8,7 +8,9 @@
     "identity.email",
     "history",
     "storage",
-    "downloads"
+    "downloads",
+    "downloads.open",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://www.googleapis.com/*"
