@@ -348,9 +348,9 @@ function buildTimeline(history, drive, emails, calendar) {
           title: event.title,
           details: [
             { label: 'Time', value: emailTime },
-            { label: 'Subject', value: event.subject || 'No subject' },
             { label: 'From', value: event.from || 'N/A' },
-            { label: 'To', value: event.to || 'N/A' }
+            { label: 'To', value: event.to || 'N/A' },
+            { label: 'Subject', value: event.subject || 'No subject' }
           ],
           actions: [
             { label: 'Open Email', url: event.emailUrl || '#' }
@@ -464,11 +464,14 @@ function buildTimeline(history, drive, emails, calendar) {
       if (email.timestamp) {
         // Convert the Unix timestamp (milliseconds) to a Date object
         const emailDate = new Date(Number(email.timestamp));
+        console.log('Processing email with timestamp:', {
+          rawTimestamp: email.timestamp,
+          parsedDate: emailDate.toISOString(),
+          subject: email.subject
+        });
         
-        // Create a descriptive text for the email
-        const description = email.type === 'sent' 
-          ? `To: ${email.to || 'N/A'}`
-          : `From: ${email.from || 'N/A'}`;
+        // Create a description that includes the subject
+        const description = email.subject || 'No subject';
         
         processedEvents.push({
           type: 'email',
@@ -521,7 +524,7 @@ function buildTimeline(history, drive, emails, calendar) {
     eventDiv.setAttribute('data-category', getEventCategory(event));
     eventDiv.style.left = `${timestampToPercentage(event.timestamp)}%`;
 
-    const timeText = new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const eventDetails = getEventDetails(event);
 
     const popupContent = `
@@ -529,7 +532,7 @@ function buildTimeline(history, drive, emails, calendar) {
       <div class="event-popup">
         <div class="event-title">${eventDetails.title}</div>
         <div class="event-time">${timeText}</div>
-        <div class="event-description">${event.description}</div>
+        <div class="event-description">${event.description || event.subject || 'No description'}</div>
         <div class="event-details">
           ${eventDetails.details.map(detail => `
             <div class="detail-item">
@@ -632,20 +635,20 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   if (loginButton) {
-    loginButton.addEventListener('click', function() {
+  loginButton.addEventListener('click', function() {
       if (loadingSection) loadingSection.style.display = 'block';
-      loginButton.disabled = true;
-      
-      chrome.runtime.sendMessage({ action: 'login' }, function(response) {
-        if (response && response.success) {
+    loginButton.disabled = true;
+    
+    chrome.runtime.sendMessage({ action: 'login' }, function(response) {
+      if (response && response.success) {
           showTimeline();
-        } else {
+      } else {
           if (loadingSection) loadingSection.style.display = 'none';
-          loginButton.disabled = false;
-          alert('Login failed: ' + (response?.error || 'Unknown error'));
-        }
-      });
+        loginButton.disabled = false;
+        alert('Login failed: ' + (response?.error || 'Unknown error'));
+      }
     });
+  });
   }
 
   function showLogin() {
@@ -700,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function formatDate(date) {
             const today = new Date();
             const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setDate(yesterday.getDate() - 1);
 
             if (date.toDateString() === today.toDateString()) {
                 return 'Today';
@@ -730,11 +733,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     timelineEvents.innerHTML = '<div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); color: #ffffff;">Loading...</div>';
                 }
 
-                Promise.all([
+    Promise.all([
                     getBrowserHistory(date),
                     getGoogleDriveActivity(date),
                     getGmailActivity(date),
-                    getCalendarEvents()
+      getCalendarEvents()
                 ]).then(([history, drive, emails, calendar]) => {
                     timelineCache.set(dateKey, { history, drive, emails, calendar });
                     buildTimeline(history, drive, emails, calendar);
