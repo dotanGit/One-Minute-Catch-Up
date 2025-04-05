@@ -76,8 +76,64 @@ function buildTimeline(history, drive, emails, calendar) {
             { label: 'Changes', value: event.changes || 'Content modified' }
           ],
           actions: [
-            { label: 'Open File', url: event.fileUrl || '#' },
-            { label: 'View History', url: event.historyUrl || '#' }
+            { 
+              label: 'Open in Drive', 
+              url: event.webViewLink || '#',
+              onClick: (e) => {
+                e.preventDefault();
+                if (event.webViewLink) {
+                  window.open(event.webViewLink, '_blank');
+                } else {
+                  console.error('No webViewLink available for file:', event);
+                  alert('Unable to open file. Drive link not available.');
+                }
+              }
+            }
+          ]
+        };
+      case 'browser':
+        const isLocalFile = event.url.startsWith('file://');
+        return {
+          title: 'Browser Activity',
+          details: [
+            { label: 'Website', value: event.description },
+            { label: 'Title', value: event.title },
+            { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
+          ],
+          actions: isLocalFile ? [
+            { 
+              label: 'Find File', 
+              onClick: async (e) => {
+                e.preventDefault();
+                const filePath = decodeURIComponent(event.url.replace('file:///', ''));
+                // First try to find in downloads
+                try {
+                  const downloadItem = await chrome.downloads.search({ 
+                    filename: filePath.split('/').pop(),
+                    exists: true
+                  });
+                  
+                  if (downloadItem && downloadItem.length > 0) {
+                    chrome.downloads.open(downloadItem[0].id);
+                  } else {
+                    // If not in downloads, show the file location
+                    alert(`File might have been moved. Original location was:\n${filePath}`);
+                  }
+                } catch (error) {
+                  console.error('Error finding file:', error);
+                  alert('Could not locate the file. It might have been moved or deleted.');
+                }
+              }
+            }
+          ] : [
+            { 
+              label: 'Visit Site', 
+              url: event.url,
+              onClick: (e) => {
+                e.preventDefault();
+                window.open(event.url, '_blank');
+              }
+            }
           ]
         };
       case 'email':
@@ -180,8 +236,7 @@ function buildTimeline(history, drive, emails, calendar) {
           timestamp: new Date(file.modifiedTime).getTime(),
           title: 'Drive File Edit',
           description: file.name,
-          fileUrl: file.webViewLink,
-          historyUrl: file.historyLink,
+          webViewLink: file.webViewLink,
           changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
         });
       }
@@ -255,7 +310,7 @@ function buildTimeline(history, drive, emails, calendar) {
           `).join('')}
           <div class="event-actions">
             ${eventDetails.actions.map(action => `
-              <a href="${action.url}" class="action-button" target="_blank">${action.label}</a>
+              <a href="${action.url || '#'}" class="action-button" data-action='${JSON.stringify(action)}'>${action.label}</a>
             `).join('')}
           </div>
         </div>
@@ -268,11 +323,26 @@ function buildTimeline(history, drive, emails, calendar) {
     const popup = eventDiv.querySelector('.event-popup');
     eventDiv.addEventListener('click', (e) => {
       e.stopPropagation();
-      popup.classList.toggle('expanded');
+      // Don't toggle if clicking an action button
+      if (!e.target.closest('.action-button')) {
+        popup.classList.toggle('expanded');
+      }
+    });
+
+    // Add click handlers for actions
+    eventDiv.querySelectorAll('.action-button').forEach(button => {
+      const action = JSON.parse(button.dataset.action);
+      if (action.onClick) {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent the popup from toggling
+          action.onClick(e);
+        });
+      }
     });
 
     // Close expanded popup when clicking outside
     document.addEventListener('click', () => {
+      const popup = eventDiv.querySelector('.event-popup');
       popup.classList.remove('expanded');
     });
 

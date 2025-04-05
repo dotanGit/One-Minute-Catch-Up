@@ -155,7 +155,7 @@ async function getDriveActivity(date) {
     endTime.setHours(23, 59, 59, 999);
 
     const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?fields=files(name,modifiedTime)&orderBy=modifiedTime desc&q=modifiedTime >= '${startTime.toISOString()}' and modifiedTime <= '${endTime.toISOString()}'`,
+      `https://www.googleapis.com/drive/v3/files?fields=files(id,name,modifiedTime,webViewLink)&orderBy=modifiedTime desc&q=modifiedTime >= '${startTime.toISOString()}' and modifiedTime <= '${endTime.toISOString()}'`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -166,7 +166,6 @@ async function getDriveActivity(date) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Token might be expired, remove it and try again
         await chrome.identity.removeCachedAuthToken({ token });
         throw new Error('Authentication expired. Please try again.');
       }
