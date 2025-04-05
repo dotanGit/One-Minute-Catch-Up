@@ -1,3 +1,75 @@
+// Helper function to normalize date to start of day in local timezone
+function normalizeDateToStartOfDay(date) {
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  const localDate = new Date(date);
+  localDate.setHours(0, 0, 0, 0);
+  return localDate;
+}
+
+// Helper function to compare dates in local timezone
+function areDatesEqual(date1, date2) {
+  const localDate1 = normalizeDateToStartOfDay(date1);
+  const localDate2 = normalizeDateToStartOfDay(date2);
+  return localDate1.getTime() === localDate2.getTime();
+}
+
+// Helper function to safely parse date
+function safeParseDate(date) {
+  try {
+    if (typeof date === 'string') {
+      return new Date(date);
+    } else if (typeof date === 'number') {
+      return new Date(date);
+    } else if (date instanceof Date) {
+      return new Date(date);
+    }
+    return new Date();
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return new Date();
+  }
+}
+
+// Helper function to safely convert date to ISO string
+function safeToISOString(date) {
+  try {
+    if (!date) return '';
+    if (typeof date === 'string') {
+      date = new Date(date);
+    } else if (typeof date === 'number') {
+      date = new Date(date);
+    }
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toISOString();
+  } catch (error) {
+    console.error('Error converting date to ISO string:', error);
+    return '';
+  }
+}
+
+// Helper function to safely get timestamp
+function safeGetTimestamp(date) {
+  try {
+    if (!date) return 0;
+    if (typeof date === 'string') {
+      date = new Date(date);
+    } else if (typeof date === 'number') {
+      date = new Date(date);
+    }
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      return 0;
+    }
+    return date.getTime();
+  } catch (error) {
+    console.error('Error getting timestamp:', error);
+    return 0;
+  }
+}
+
 // Define buildTimeline function at the top level
 function buildTimeline(history, drive, emails, calendar) {
   const timelineEvents = document.getElementById('timeline-events');
@@ -267,12 +339,18 @@ function buildTimeline(history, drive, emails, calendar) {
           ]
         };
       case 'email':
+        const emailTime = new Date(Number(event.timestamp)).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: true 
+        });
         return {
           title: event.title,
           details: [
+            { label: 'Time', value: emailTime },
+            { label: 'Subject', value: event.subject || 'No subject' },
             { label: 'From', value: event.from || 'N/A' },
-            { label: 'To', value: event.to || 'N/A' },
-            { label: 'Subject', value: event.subject || 'No subject' }
+            { label: 'To', value: event.to || 'N/A' }
           ],
           actions: [
             { label: 'Open Email', url: event.emailUrl || '#' }
@@ -361,26 +439,42 @@ function buildTimeline(history, drive, emails, calendar) {
   if (drive && drive.files && drive.files.length > 0) {
     drive.files.forEach(file => {
       if (file.modifiedTime) {
-        processedEvents.push({
-          type: 'drive',
-          timestamp: new Date(file.modifiedTime).getTime(),
-          title: 'Drive File Edit',
-          description: file.name,
-          webViewLink: file.webViewLink,
-          changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
-        });
+        const timestamp = safeGetTimestamp(file.modifiedTime);
+        if (timestamp > 0) {
+          processedEvents.push({
+            type: 'drive',
+            timestamp: timestamp,
+            title: 'Drive File Edit',
+            description: file.name,
+            webViewLink: file.webViewLink,
+            changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
+          });
+        }
       }
     });
   }
 
   // Process emails
-  if (emails && emails.all && emails.all.length > 0) {
-    emails.all.forEach(email => {
+  if (emails && (emails.all || emails.sent || emails.received)) {
+    console.log('Processing emails:', emails);
+    
+    const emailList = emails.all || [...(emails.sent || []), ...(emails.received || [])];
+    
+    emailList.forEach(email => {
       if (email.timestamp) {
+        // Convert the Unix timestamp (milliseconds) to a Date object
+        const emailDate = new Date(Number(email.timestamp));
+        
+        // Create a descriptive text for the email
+        const description = email.type === 'sent' 
+          ? `To: ${email.to || 'N/A'}`
+          : `From: ${email.from || 'N/A'}`;
+        
         processedEvents.push({
           type: 'email',
-          timestamp: email.timestamp,
+          timestamp: Number(email.timestamp),
           title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
+          description: description,
           subject: email.subject || 'No subject',
           from: email.from,
           to: email.to,
@@ -388,6 +482,8 @@ function buildTimeline(history, drive, emails, calendar) {
         });
       }
     });
+  } else {
+    console.log('No email data available:', emails);
   }
 
   // Process calendar events
@@ -395,16 +491,19 @@ function buildTimeline(history, drive, emails, calendar) {
     calendar.today.forEach(event => {
       const eventTime = event.start?.dateTime || event.start?.date;
       if (eventTime) {
-        processedEvents.push({
-          type: 'calendar',
-          timestamp: new Date(eventTime).getTime(),
-          title: 'Calendar Event',
-          description: event.summary || 'Untitled event',
-          calendarName: event.calendarName,
-          location: event.location,
-          duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString()} - ${new Date(event.end.dateTime).toLocaleTimeString()}` : 'All day',
-          eventUrl: event.htmlLink
-        });
+        const timestamp = safeGetTimestamp(eventTime);
+        if (timestamp > 0) {
+          processedEvents.push({
+            type: 'calendar',
+            timestamp: timestamp,
+            title: 'Calendar Event',
+            description: event.summary || 'Untitled event',
+            calendarName: event.calendarName,
+            location: event.location,
+            duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString()} - ${new Date(event.end.dateTime).toLocaleTimeString()}` : 'All day',
+            eventUrl: event.htmlLink
+          });
+        }
       }
     });
   }
@@ -508,6 +607,9 @@ function buildTimeline(history, drive, emails, calendar) {
   });
 }
 
+// Initialize currentDate at the top level
+let currentDate = normalizeDateToStartOfDay(new Date());
+
 document.addEventListener('DOMContentLoaded', function() {
   const loginButton = document.getElementById('login-button');
   const loginSection = document.getElementById('login-section');
@@ -518,7 +620,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const prevDayButton = document.getElementById('prev-day');
   const nextDayButton = document.getElementById('next-day');
 
-  let currentDate = new Date();
   let currentTimelineData = null;
 
   // Check if user is already logged in
@@ -868,14 +969,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to load timeline data for a specific date
     async function loadTimelineData(date) {
-      if (loadingSection) loadingSection.style.display = 'block';
-      if (timelineEvents) timelineEvents.innerHTML = '';
-
       try {
+        if (loadingSection) loadingSection.style.display = 'block';
+        if (timelineEvents) timelineEvents.innerHTML = '';
+
+        // Ensure date is properly parsed
+        const normalizedDate = safeParseDate(date);
+        
         const [history, drive, emails, calendar] = await Promise.all([
-          getBrowserHistory(date),
-          getGoogleDriveActivity(date),
-          getGmailActivity(date),
+          getBrowserHistory(normalizedDate),
+          getGoogleDriveActivity(normalizedDate),
+          getGmailActivity(normalizedDate),
           getCalendarEvents()
         ]);
 
@@ -894,7 +998,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listeners for navigation buttons
     if (prevDayButton) {
       prevDayButton.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() - 1);
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() - 1);
+        currentDate = normalizeDateToStartOfDay(newDate);
         updateTimelineDate();
         loadTimelineData(currentDate);
       });
@@ -902,7 +1008,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (nextDayButton) {
       nextDayButton.addEventListener('click', () => {
-        currentDate.setDate(currentDate.getDate() + 1);
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + 1);
+        currentDate = normalizeDateToStartOfDay(newDate);
         updateTimelineDate();
         loadTimelineData(currentDate);
       });
