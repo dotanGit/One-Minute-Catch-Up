@@ -1,74 +1,12 @@
-// Helper function to normalize date to start of day in local timezone
-function normalizeDateToStartOfDay(date) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  const localDate = new Date(date);
-  localDate.setHours(0, 0, 0, 0);
-  return localDate;
-}
+import { 
+  normalizeDateToStartOfDay,
+  safeParseDate,
+  safeGetTimestamp,
+  safeToISOString,
+  areDatesEqual,
+  delay
+} from './js/utils/dateUtils.js';
 
-// Helper function to compare dates in local timezone
-function areDatesEqual(date1, date2) {
-  const localDate1 = normalizeDateToStartOfDay(date1);
-  const localDate2 = normalizeDateToStartOfDay(date2);
-  return localDate1.getTime() === localDate2.getTime();
-}
-
-// Helper function to safely parse date
-function safeParseDate(date) {
-  try {
-    if (typeof date === 'string') {
-      return new Date(date);
-    } else if (typeof date === 'number') {
-      return new Date(date);
-    } else if (date instanceof Date) {
-      return new Date(date);
-    }
-    return new Date();
-  } catch (error) {
-    console.error('Error parsing date:', error);
-    return new Date();
-  }
-}
-
-// Helper function to safely convert date to ISO string
-function safeToISOString(date) {
-  try {
-    if (!date) return '';
-    if (typeof date === 'string') {
-      date = new Date(date);
-    } else if (typeof date === 'number') {
-      date = new Date(date);
-    }
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-      return '';
-    }
-    return date.toISOString();
-  } catch (error) {
-    console.error('Error converting date to ISO string:', error);
-    return '';
-  }
-}
-
-// Helper function to safely get timestamp
-function safeGetTimestamp(date) {
-  try {
-    if (!date) return 0;
-    if (typeof date === 'string') {
-      date = new Date(date);
-    } else if (typeof date === 'number') {
-      date = new Date(date);
-    }
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-      return 0;
-    }
-    return date.getTime();
-  } catch (error) {
-    console.error('Error getting timestamp:', error);
-    return 0;
-  }
-}
 
 // Define buildTimeline function at the top level
 function buildTimeline(history, drive, emails, calendar) {
@@ -610,14 +548,10 @@ function buildTimeline(history, drive, emails, calendar) {
   });
 }
 
-// Initialize currentDate at the top level
-let currentDate = normalizeDateToStartOfDay(new Date());
+
 
 document.addEventListener('DOMContentLoaded', function() {
-  const loginButton = document.getElementById('login-button');
-  const loginSection = document.getElementById('login-section');
-  const loadingSection = document.getElementById('loading');
-  const timelineWrapper = document.querySelector('.timeline-wrapper');
+  
   const timelineEvents = document.getElementById('timeline-events');
   const timelineDate = document.querySelector('.timeline-date');
   const prevDayButton = document.getElementById('prev-day');
@@ -634,23 +568,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  if (loginButton) {
-  loginButton.addEventListener('click', function() {
-      if (loadingSection) loadingSection.style.display = 'block';
-    loginButton.disabled = true;
-    
-    chrome.runtime.sendMessage({ action: 'login' }, function(response) {
-      if (response && response.success) {
-          showTimeline();
-      } else {
-          if (loadingSection) loadingSection.style.display = 'none';
-        loginButton.disabled = false;
-        alert('Login failed: ' + (response?.error || 'Unknown error'));
-      }
-    });
-  });
-  }
-
   function showLogin() {
     if (loginSection) loginSection.style.display = 'block';
     if (loadingSection) loadingSection.style.display = 'none';
@@ -665,10 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const timelineCache = new Map();
     let currentDate = new Date();
 
-    // Function to get date key for cache
-    function getDateKey(date) {
-        return date.toISOString().split('T')[0];
-    }
+
 
     // Initial data load for 3 days (yesterday, today, tomorrow)
     const initialDates = [
@@ -703,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function() {
         function formatDate(date) {
             const today = new Date();
             const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setDate(yesterday.getDate() - 1);
 
             if (date.toDateString() === today.toDateString()) {
                 return 'Today';
@@ -948,20 +862,6 @@ document.addEventListener('DOMContentLoaded', function() {
       tomorrowCalendarContent.innerHTML = '<div class="notice">No events scheduled for tomorrow</div>';
     }
 
-    // Function to format date for display
-    function formatDate(date) {
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-
-      if (date.toDateString() === today.toDateString()) {
-        return 'Today';
-      } else if (date.toDateString() === yesterday.toDateString()) {
-        return 'Yesterday';
-      } else {
-        return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-      }
-    }
 
     // Function to update timeline date display
     function updateTimelineDate() {
