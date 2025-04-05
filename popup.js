@@ -217,13 +217,17 @@ function buildTimeline(history, drive, emails, calendar) {
                     console.log('File not found in downloads');
                     // File not found in downloads
                     statusDiv.className = 'file-status warning';
-                    statusDiv.innerHTML = `File not found in Downloads folder.<br><br>
-                      <strong>Why this happened:</strong><br>
-                      - The file might have been moved or deleted<br>
-                      - The file might be in a different location<br>
-                      - We can only find files that are in your Downloads folder<br><br>
-                      <strong>What you can do:</strong><br>
-                      - Check your Downloads folder manually`;
+                    statusDiv.innerHTML = `
+                      <div class="error-message">
+                        <div class="error-title">File Not Found</div>
+                        <div class="error-details">
+                          The file is not in your Downloads folder. You can:
+                          <ul>
+                            <li>Check your Downloads folder manually</li>
+                            <li>Look for the file in its original location</li>
+                          </ul>
+                        </div>
+                      </div>`;
                     statusDiv.style.display = 'block';
                     statusDiv.style.opacity = '1';
                     
