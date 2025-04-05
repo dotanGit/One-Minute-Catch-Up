@@ -1,0 +1,225 @@
+.activities-container {
+    margin-top: 60px;
+    width: 100%;
+    max-width: 1800px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 0 40px;
+}
+
+/* New styles for the activities layout */
+.activities-wrapper {
+    display: flex;
+    gap: 40px;
+    width: 100%;
+}
+
+.activities-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.group-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, #00ff87, #60efff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: left;
+}
+
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.activity-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.activity-section:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 255, 135, 0.2);
+    transform: translateY(-2px);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #00ff87;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.content {
+    color: rgba(255, 255, 255, 0.9);
+    flex: 1;
+}
+
+.content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.content li {
+    padding: 12px 15px;
+    margin: 8px 0;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    border-left: 3px solid #00ff87;
+    transition: all 0.2s ease;
+}
+
+.content li:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(2px);
+}
+
+.login-button {
+    background: linear-gradient(45deg, #00ff87, #60efff);
+    color: #1a1a1a;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    display: block;
+}
+
+.login-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 135, 0.2);
+}
+
+.loading {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 20px;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.error {
+    background: rgba(255, 59, 48, 0.1);
+    color: #ff3b30;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+    border-left: 3px solid #ff3b30;
+}
+
+.notice {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-size: 14px;
+    text-align: center;
+    border-left: 3px solid #00ff87;
+}
+
+/* Email specific styles */
+.email-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.email-from, .email-to {
+    color: #00ff87;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.email-subject {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+}
+
+.email-time {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+}
+
+/* Calendar specific styles */
+.calendar-event {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.event-time {
+    color: #00ff87;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.event-title {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+}
+
+.calendar-name {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+}
+
+/* Update media queries for responsive design */
+@media (max-width: 1600px) {
+    .activities-container {
+        max-width: 1400px;
+        padding: 0 30px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .activities-container {
+        max-width: 1000px;
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .activities-wrapper {
+        flex-direction: column;
+    }
+    
+    .activities-group {
+        width: 100%;
+    }
+    
+    .activity-section {
+        padding: 20px;
+    }
+
+    .group-title {
+        text-align: center;
+        font-size: 24px;
+    }
+} 
