@@ -241,6 +241,186 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
       tomorrowCalendarContent.innerHTML = '<div class="notice">No events scheduled for tomorrow</div>';
     }
+
+
+    function buildTimeline() {
+
+      function simplifyUrl(url) {
+        try {
+          const parsedUrl = new URL(url);
+          let cleanUrl = parsedUrl.hostname + parsedUrl.pathname;
+          
+          if (cleanUrl.length > 30) {
+            return cleanUrl.substring(0, 30) + '...';
+          }
+
+          return cleanUrl;
+        } catch {
+          return url;
+        }
+      }
+
+      const timelineContainer = document.getElementById('timeline-events');
+      if (!timelineContainer) return;
+      timelineContainer.innerHTML = '';
+    
+      const events = [];
+    
+      // Timeline from 6 AM to 10 PM
+      const timelineStartHour = 6;
+      const timelineEndHour = 22;
+    
+      function timestampToPercentage(timestamp) {
+        const date = new Date(Number(timestamp));
+        const totalMinutes = date.getHours() * 60 + date.getMinutes();
+        const startMinutes = timelineStartHour * 60;
+        const endMinutes = timelineEndHour * 60;
+        const percentage = ((totalMinutes - startMinutes) / (endMinutes - startMinutes)) * 100;
+        return Math.min(Math.max(percentage, 0), 100);
+      }
+
+      function extractPattern(url) {
+        try {
+          const parsedUrl = new URL(url);
+          const domain = parsedUrl.hostname;
+          const parts = domain.split('.');
+          // Remove TLDs and subdomains, get middle word if exists
+          if (parts.length >= 3) {
+            return parts[parts.length - 3]; // e.g., colman.ac.il → "colman"
+          } else if (parts.length >= 2) {
+            return parts[0]; // e.g., zoom.us → "zoom"
+          }
+          return domain;
+        } catch {
+          return '';
+        }
+      }
+    
+      // ✅ 1. Browser history
+      if (history && history.length > 0) {
+        const sortedHistory = history.sort((a, b) => a.lastVisitTime - b.lastVisitTime);
+      
+        const sessions = {};
+        const SESSION_TIMEOUT = 60 * 60 * 1000; // 60 minutes
+      
+        sortedHistory.forEach(item => {
+          if (!item.lastVisitTime || !item.url) return;
+      
+          const pattern = extractPattern(item.url);
+          const currentTime = item.lastVisitTime;
+      
+          console.log(`[DEBUG] Pattern: ${pattern} | Time: ${new Date(currentTime).toLocaleTimeString()} | URL: ${item.url}`);
+      
+          if (!sessions[pattern]) {
+            // Start new session
+            sessions[pattern] = { start: currentTime, end: currentTime };
+            events.push({
+              timestamp: currentTime,
+              title: item.title || 'Website',
+              description: simplifyUrl(item.url),
+            });
+            return; // ✅ Exit early
+          }
+      
+          const session = sessions[pattern];
+          const timeSinceLast = currentTime - session.end;
+      
+          if (timeSinceLast < SESSION_TIMEOUT) {
+            // Extend session
+            sessions[pattern].end = currentTime;
+            return; // ✅ Exit early, no new dot!
+          }
+      
+          // Start new session
+          sessions[pattern] = { start: currentTime, end: currentTime };
+          events.push({
+            timestamp: currentTime,
+            title: item.title || 'Website',
+            description: simplifyUrl(item.url),
+          });
+        });
+      }
+      
+      
+    
+      // ✅ 2. Drive files
+      if (drive && drive.files && drive.files.length > 0) {
+        drive.files.forEach(file => {
+          if (file.modifiedTime) {
+            events.push({
+              timestamp: new Date(file.modifiedTime).getTime(),
+              title: 'Drive file edited',
+              description: file.name,
+            });
+          }
+        });
+      }
+    
+      // ✅ 3. Yesterday emails
+      if (yesterdayEmails && yesterdayEmails.all && yesterdayEmails.all.length > 0) {
+        yesterdayEmails.all.forEach(email => {
+          if (email.timestamp) {
+            events.push({
+              timestamp: email.timestamp,
+              title: email.subject || 'Email',
+              description: email.from || email.to || '',
+            });
+          }
+        });
+      }
+    
+      // ✅ 4. Today emails
+      if (todayEmails && todayEmails.all && todayEmails.all.length > 0) {
+        todayEmails.all.forEach(email => {
+          if (email.timestamp) {
+            events.push({
+              timestamp: email.timestamp,
+              title: email.subject || 'Email',
+              description: email.from || email.to || '',
+            });
+          }
+        });
+      }
+    
+      // ✅ 5. Calendar today
+      if (calendar && calendar.today && calendar.today.length > 0) {
+        calendar.today.forEach(event => {
+          const eventTime = event.start?.dateTime || event.start?.date;
+          if (eventTime) {
+            events.push({
+              timestamp: new Date(eventTime).getTime(),
+              title: event.summary || 'Calendar event',
+              description: event.calendarName || '',
+            });
+          }
+        });
+      }
+    
+      // Build timeline events
+      events.forEach((event, index) => {
+        const eventDiv = document.createElement('div');
+        eventDiv.className = `timeline-event ${index % 2 === 0 ? 'above' : 'below'}`;
+        eventDiv.style.left = `${timestampToPercentage(event.timestamp)}%`;
+    
+        const timeText = new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+        eventDiv.innerHTML = `
+          <div class="timeline-dot"></div>
+          <div class="event-popup">
+            <strong>${event.title}</strong><br>
+            ${timeText}<br>
+            ${event.description}
+          </div>
+        `;
+    
+        timelineContainer.appendChild(eventDiv);
+      });
+    }
+    
+    // ✅ Call the function
+    buildTimeline();
+    
+
   }
 
   function getBrowserHistory(date) {
