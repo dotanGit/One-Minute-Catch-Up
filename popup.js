@@ -198,22 +198,6 @@ function buildTimeline(history, drive, emails, calendar) {
                         };
                         buttonContainer.appendChild(openButton);
                         
-                        // Add copy path button
-                        const copyButton = document.createElement('button');
-                        copyButton.className = 'action-button';
-                        copyButton.textContent = 'Copy Path';
-                        copyButton.onclick = () => {
-                          navigator.clipboard.writeText(filePath).then(() => {
-                            copyButton.textContent = 'Copied!';
-                            copyButton.classList.add('success');
-                            setTimeout(() => {
-                              copyButton.textContent = 'Copy Path';
-                              copyButton.classList.remove('success');
-                            }, 2000);
-                          });
-                        };
-                        buttonContainer.appendChild(copyButton);
-                        
                         actionsDiv.appendChild(buttonContainer);
                         
                       } catch (error) {
@@ -233,37 +217,30 @@ function buildTimeline(history, drive, emails, calendar) {
                     console.log('File not found in downloads');
                     // File not found in downloads
                     statusDiv.className = 'file-status warning';
-                    statusDiv.innerHTML = `File not found in Downloads.<br>Original location: ${filePath}`;
+                    statusDiv.innerHTML = `File not found in Downloads folder.<br><br>
+                      <strong>Why this happened:</strong><br>
+                      - The file might have been moved or deleted<br>
+                      - The file might be in a different location<br>
+                      - We can only find files that are in your Downloads folder<br><br>
+                      <strong>What you can do:</strong><br>
+                      - Check your Downloads folder manually`;
                     statusDiv.style.display = 'block';
                     statusDiv.style.opacity = '1';
                     
-                    // Add a copy path button if it doesn't exist
-                    if (!actionsDiv.querySelector('.copy-button')) {
-                      console.log('Adding copy path button');
-                      const copyButton = document.createElement('button');
-                      copyButton.className = 'copy-button';
-                      copyButton.textContent = 'Copy File Path';
-                      copyButton.onclick = async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('Copy button clicked');
-                        try {
-                          await navigator.clipboard.writeText(filePath);
-                          console.log('Path copied to clipboard');
-                          copyButton.className = 'copy-button success';
-                          copyButton.textContent = 'Path Copied!';
-                          setTimeout(() => {
-                            copyButton.className = 'copy-button';
-                            copyButton.textContent = 'Copy File Path';
-                          }, 2000);
-                        } catch (err) {
-                          console.error('Failed to copy:', err);
-                          copyButton.textContent = 'Copy Failed';
-                          copyButton.style.color = '#FF4444';
-                        }
-                      };
-                      actionsDiv.appendChild(copyButton);
+                    // Remove the Find File button
+                    const findFileButton = actionsDiv.querySelector('.action-button');
+                    if (findFileButton) {
+                      findFileButton.remove();
                     }
+                    
+                    // Add "Open in Downloads" button
+                    const openButton = document.createElement('button');
+                    openButton.className = 'action-button';
+                    openButton.textContent = 'Open in Downloads';
+                    openButton.onclick = () => {
+                      chrome.downloads.showDefaultFolder();
+                    };
+                    actionsDiv.appendChild(openButton);
                   }
                 } catch (error) {
                   console.error('Error in Find File handler:', error);
