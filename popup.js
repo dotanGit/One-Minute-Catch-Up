@@ -310,7 +310,7 @@ function buildTimeline(history, drive, emails, calendar) {
           `).join('')}
           <div class="event-actions">
             ${eventDetails.actions.map(action => `
-              <a href="${action.url || '#'}" class="action-button" data-action='${JSON.stringify(action)}'>${action.label}</a>
+              <a href="#" class="action-button" data-action='${JSON.stringify(action)}'>${action.label}</a>
             `).join('')}
           </div>
         </div>
@@ -332,12 +332,15 @@ function buildTimeline(history, drive, emails, calendar) {
     // Add click handlers for actions
     eventDiv.querySelectorAll('.action-button').forEach(button => {
       const action = JSON.parse(button.dataset.action);
-      if (action.onClick) {
-        button.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevent the popup from toggling
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (action.onClick) {
           action.onClick(e);
-        });
-      }
+        } else if (action.url && action.url !== '#') {
+          window.open(action.url, '_blank', 'noopener,noreferrer');
+        }
+      });
     });
 
     // Close expanded popup when clicking outside
