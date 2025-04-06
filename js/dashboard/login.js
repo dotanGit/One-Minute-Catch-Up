@@ -3,6 +3,11 @@ import { showTimeline } from './timeline.js';
 export function initLogin() {
   console.log('Login initialized');
 
+  const loginButton = document.getElementById('login-button');
+  const loginSection = document.getElementById('login-section');
+  const loadingSection = document.getElementById('loading');
+  const timelineWrapper = document.querySelector('.timeline-wrapper');
+
   // Check if user is already logged in
   chrome.storage.local.get(['isLoggedIn'], function(result) {
     if (result.isLoggedIn) {
@@ -12,10 +17,6 @@ export function initLogin() {
     }
   });
 
-  const loginButton = document.getElementById('login-button');
-  const loginSection = document.getElementById('login-section');
-  const loadingSection = document.getElementById('loading');
-  const timelineWrapper = document.querySelector('.timeline-wrapper');
 
   if (loginButton) {
     loginButton.addEventListener('click', function() {
