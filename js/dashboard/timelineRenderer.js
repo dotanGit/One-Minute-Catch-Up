@@ -272,9 +272,6 @@ export function buildTimeline(history, drive, emails, calendar) {
           return {
             title: event.title,
             details: [
-              { label: 'Time', value: emailTime },
-              { label: 'From', value: event.from || 'N/A' },
-              { label: 'To', value: event.to || 'N/A' },
               { label: 'Subject', value: event.subject || 'No subject' }
             ],
             actions: [
@@ -388,7 +385,7 @@ export function buildTimeline(history, drive, emails, calendar) {
           const emailDate = new Date(Number(email.timestamp));
 
           // Create a description that includes the subject
-          const description = email.subject || 'No subject';
+          const description = email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`;
           
           processedEvents.push({
             type: 'email',
