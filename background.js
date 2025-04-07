@@ -3,7 +3,7 @@ import { getAuthToken } from './js/utils/auth.js';
 import { getDriveActivity } from './js/services/driveService.js';
 import { getCalendarEvents } from './js/services/calendarService.js';
 import { generateAISummary } from './js/services/aiService.js';
-
+import { getBrowserHistoryService } from './js/services/browserHistoryService.js';
 
 
 // Google API configuration
@@ -15,7 +15,6 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/drive.readonly'
 ];
-
 
 
 
@@ -39,6 +38,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true;
     case 'generateAISummary':
       generateAISummary(request.data).then(sendResponse);
+      return true;
+    case 'getBrowserHistory':
+      getBrowserHistoryService(new Date(request.date)).then(sendResponse);
       return true;
   }
 });
