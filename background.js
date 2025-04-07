@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       getGmailActivity(new Date(request.date)).then(sendResponse);
       return true;
     case 'getCalendarEvents':
-      getCalendarEvents().then(sendResponse);
+      getCalendarEvents(new Date(request.date)).then(sendResponse);
       return true;
     case 'generateAISummary':
       generateAISummary(request.data).then(sendResponse);

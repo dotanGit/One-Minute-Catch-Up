@@ -76,9 +76,12 @@ function getGmailActivity(date) {
 }
 
 
-function getCalendarEvents() {
+function getCalendarEvents(date) {
   return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ action: 'getCalendarEvents' }, function(response) {
+    chrome.runtime.sendMessage({ 
+      action: 'getCalendarEvents',
+      date: date.toISOString()
+    }, function(response) {
       resolve(response || { today: [], tomorrow: [] });
     });
   });
@@ -111,7 +114,7 @@ async function loadTimelineData(date) {
       getBrowserHistory(normalizedDate),
       getGoogleDriveActivity(normalizedDate),
       getGmailActivity(normalizedDate),
-      getCalendarEvents()
+      getCalendarEvents(normalizedDate)
     ]);
 
     // Cache the new data
@@ -227,7 +230,7 @@ async function silentLoadTimelineData(date) {
       getBrowserHistory(normalizedDate),
       getGoogleDriveActivity(normalizedDate),
       getGmailActivity(normalizedDate),
-      getCalendarEvents()
+      getCalendarEvents(normalizedDate)
     ]);
 
     // Cache the new data

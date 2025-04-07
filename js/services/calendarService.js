@@ -1,6 +1,6 @@
 import { getAuthToken } from '../utils/auth.js';
 
-export async function getCalendarEvents() {
+export async function getCalendarEvents(date) {
   try {
     const token = await getAuthToken();
     if (!token) throw new Error('Not authenticated');
@@ -26,13 +26,10 @@ export async function getCalendarEvents() {
     const calendarList = await calListResponse.json();
     const calendars = calendarList.items || [];
 
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const startTime = new Date(today);
+    const targetDate = new Date(date);
+    const startTime = new Date(targetDate);
     startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(tomorrow);
+    const endTime = new Date(targetDate);
     endTime.setHours(23, 59, 59, 999);
 
     const allEvents = await Promise.all(
@@ -67,19 +64,9 @@ export async function getCalendarEvents() {
       return aTime - bTime;
     });
 
-    const todayEvents = events.filter(event => {
-      const eventDate = new Date(event.start.dateTime || event.start.date);
-      return eventDate.toDateString() === today.toDateString();
-    });
-
-    const tomorrowEvents = events.filter(event => {
-      const eventDate = new Date(event.start.dateTime || event.start.date);
-      return eventDate.toDateString() === tomorrow.toDateString();
-    });
-
     return {
-      today: todayEvents,
-      tomorrow: tomorrowEvents
+      today: events,
+      tomorrow: []
     };
   } catch (error) {
     console.error('Calendar events error:', error);
