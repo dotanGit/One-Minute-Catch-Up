@@ -25,6 +25,14 @@ export async function getCalendarEvents(date) {
 
     const calendarList = await calListResponse.json();
     const calendars = calendarList.items || [];
+    console.log('All calendars:', calendars.map(cal => ({
+      id: cal.id,
+      summary: cal.summary,
+      summaryOverride: cal.summaryOverride,
+      primary: cal.primary,
+      selected: cal.selected,
+      accessRole: cal.accessRole
+    })));
 
     const targetDate = new Date(date);
     const startTime = new Date(targetDate);
@@ -50,11 +58,23 @@ export async function getCalendarEvents(date) {
         }
 
         const data = await response.json();
-        return (data.items || []).map(event => ({
-          ...event,
-          calendarName: calendar.summary,
-          calendarColor: calendar.backgroundColor
-        }));
+        console.log('Calendar events for', calendar.summary, ':', data.items);
+        return (data.items || []).map(event => {
+          console.log('Processing event:', {
+            eventSummary: event.summary,
+            calendarSummary: calendar.summary,
+            calendarSummaryOverride: calendar.summaryOverride,
+            organizer: event.organizer,
+            calendar: event.calendar,
+            source: event.source
+          });
+          return {
+            ...event,
+            calendarName: calendar.summaryOverride || calendar.summary,
+            originalCalendarName: calendar.summary,
+            calendarColor: calendar.backgroundColor
+          };
+        });
       })
     );
 

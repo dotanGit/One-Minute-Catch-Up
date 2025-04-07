@@ -3,7 +3,6 @@ import { getAuthToken } from '../utils/auth.js';
 // Get Gmail activity
 export async function getGmailActivity(date) {
     try {
-      console.log('Starting getGmailActivity for date:', date);
       const token = await getAuthToken();
       if (!token) {
         console.log('No auth token available');
@@ -23,14 +22,6 @@ export async function getGmailActivity(date) {
       const startTimestamp = Math.floor((startTime.getTime() - timezoneOffsetMinutes * 60 * 1000) / 1000);
       const endTimestamp = Math.floor((endTime.getTime() - timezoneOffsetMinutes * 60 * 1000) / 1000);
       
-      console.log('Querying emails for timestamp range (adjusted to local timezone):', {
-        startTimestamp,
-        endTimestamp,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        timezoneOffsetMinutes
-      });
-  
       // Get sent emails
       const sentResponse = await fetch(
         `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:sent after:${startTimestamp} before:${endTimestamp}`,
@@ -56,10 +47,6 @@ export async function getGmailActivity(date) {
       const sentData = await sentResponse.json();
       const receivedData = await receivedResponse.json();
   
-      console.log('Gmail API responses:', {
-        sentCount: sentData.messages?.length || 0,
-        receivedCount: receivedData.messages?.length || 0
-      });
   
       // Process sent emails
       const sentEmails = [];
@@ -79,12 +66,6 @@ export async function getGmailActivity(date) {
           const subject = headers.find(h => h.name === 'Subject')?.value || 'No subject';
           const to = headers.find(h => h.name === 'To')?.value || '';
           const timestamp = emailData.internalDate;
-  
-          console.log('Processing sent email:', {
-            id: message.id,
-            subject,
-            timestamp: new Date(Number(timestamp)).toISOString()
-          });
   
           sentEmails.push({
             type: 'sent',
@@ -115,12 +96,6 @@ export async function getGmailActivity(date) {
           const from = headers.find(h => h.name === 'From')?.value || '';
           const timestamp = emailData.internalDate;
   
-          console.log('Processing received email:', {
-            id: message.id,
-            subject,
-            timestamp: new Date(Number(timestamp)).toISOString()
-          });
-  
           receivedEmails.push({
             type: 'received',
             subject,
@@ -133,13 +108,7 @@ export async function getGmailActivity(date) {
   
       // Combine and sort all emails
       const allEmails = [...sentEmails, ...receivedEmails].sort((a, b) => b.timestamp - a.timestamp);
-      
-      console.log('Final email counts:', {
-        sent: sentEmails.length,
-        received: receivedEmails.length,
-        total: allEmails.length
-      });
-  
+
       return {
         sent: sentEmails,
         received: receivedEmails,

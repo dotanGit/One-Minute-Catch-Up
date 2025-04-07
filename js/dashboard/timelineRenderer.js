@@ -107,23 +107,17 @@ export function buildTimeline(history, drive, emails, calendar) {
               { 
                 label: 'Find File', 
                 onClick: async (e) => {
-                  console.log('Find File button clicked');
                   e.preventDefault();
                   e.stopPropagation();
                   const filePath = decodeURIComponent(event.url.replace('file:///', ''));
                   const fileName = filePath.split('/').pop();
-                  console.log('File path:', filePath);
-                  console.log('File name:', fileName);
                   
                   // Create or update status div
                   const popup = e.target.closest('.event-popup');
                   const actionsDiv = popup.querySelector('.event-actions');
-                  console.log('Found popup:', !!popup);
-                  console.log('Found actions div:', !!actionsDiv);
                   
                   let statusDiv = actionsDiv.querySelector('.file-status');
                   if (!statusDiv) {
-                    console.log('Creating new status div');
                     statusDiv = document.createElement('div');
                     statusDiv.className = 'file-status';
                     actionsDiv.insertBefore(statusDiv, e.target);
@@ -135,10 +129,8 @@ export function buildTimeline(history, drive, emails, calendar) {
                     statusDiv.textContent = `Searching for "${fileName}"...`;
                     statusDiv.style.display = 'block';
                     statusDiv.style.opacity = '1';
-                    console.log('Showing searching message');
   
                     // First try exact filename match
-                    console.log('Searching for exact filename match...');
                     let downloadItems = await chrome.downloads.search({ 
                       query: [fileName],
                       exists: true
@@ -146,7 +138,6 @@ export function buildTimeline(history, drive, emails, calendar) {
                     
                     // If no exact match, try partial filename match
                     if (!downloadItems || downloadItems.length === 0) {
-                      console.log('No exact match found, trying partial match...');
                       downloadItems = await chrome.downloads.search({ 
                         exists: true
                       });
@@ -155,29 +146,24 @@ export function buildTimeline(history, drive, emails, calendar) {
                       );
                     }
                     
-                    console.log('Download search results:', downloadItems);
                     
                     if (downloadItems && downloadItems.length > 0) {
                       // Sort by most recent first
                       downloadItems.sort((a, b) => b.startTime - a.startTime);
-                      console.log('File found in downloads:', downloadItems[0]);
                       
                       // Found the file in downloads
                       statusDiv.className = 'file-status success';
                       statusDiv.textContent = 'Opening file...';
-                      console.log('Attempting to open file...');
                       
                       try {
                         // Try to open the file using the download ID
                         await chrome.downloads.open(downloadItems[0].id);
-                        console.log('File opened successfully using download ID');
                         statusDiv.textContent = 'File opened successfully!';
                       } catch (error) {
                         console.log('Failed to open using download ID, trying alternative method:', error);
                         
                         // If we can't open by ID, show the file path and provide a copy button
                         try {
-                          console.log('Attempting to open file at path:', filePath);
                           
                           // Create status message
                           const statusDiv = document.createElement('div');
@@ -217,7 +203,6 @@ export function buildTimeline(history, drive, emails, calendar) {
                         setTimeout(() => statusDiv.style.display = 'none', 300);
                       }, 2000);
                     } else {
-                      console.log('File not found in downloads');
                       // File not found in downloads
                       statusDiv.className = 'file-status warning';
                       statusDiv.innerHTML = `
@@ -291,10 +276,9 @@ export function buildTimeline(history, drive, emails, calendar) {
           return {
             title: 'Calendar Event',
             details: [
-              { label: 'Event', value: event.description },
               { label: 'Time', value: event.duration || 'All day' },
               { label: 'Location', value: event.location || 'No location' },
-              { label: 'Calendar', value: event.calendarName || 'Default' }
+              { label: 'Calendar', value: event.summaryOverride || event.calendarName || 'Default' }
             ],
             actions: [
               { label: 'View Event', url: event.eventUrl || '#' }
@@ -387,7 +371,6 @@ export function buildTimeline(history, drive, emails, calendar) {
   
     // Process emails
     if (emails && (emails.all || emails.sent || emails.received)) {
-      console.log('Processing emails:', emails);
       
       const emailList = emails.all || [...(emails.sent || []), ...(emails.received || [])];
       
@@ -395,12 +378,7 @@ export function buildTimeline(history, drive, emails, calendar) {
         if (email.timestamp) {
           // Convert the Unix timestamp (milliseconds) to a Date object
           const emailDate = new Date(Number(email.timestamp));
-          console.log('Processing email with timestamp:', {
-            rawTimestamp: email.timestamp,
-            parsedDate: emailDate.toISOString(),
-            subject: email.subject
-          });
-          
+
           // Create a description that includes the subject
           const description = email.subject || 'No subject';
           
@@ -427,6 +405,18 @@ export function buildTimeline(history, drive, emails, calendar) {
         if (eventTime) {
           const timestamp = safeGetTimestamp(eventTime);
           if (timestamp > 0) {
+            // Format time without seconds
+            const startTime = new Date(event.start.dateTime).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: false  // Use 24-hour format
+            });
+            const endTime = new Date(event.end.dateTime).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              hour12: false  // Use 24-hour format
+            });
+
             processedEvents.push({
               type: 'calendar',
               timestamp: timestamp,
@@ -434,7 +424,7 @@ export function buildTimeline(history, drive, emails, calendar) {
               description: event.summary || 'Untitled event',
               calendarName: event.calendarName,
               location: event.location,
-              duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString()} - ${new Date(event.end.dateTime).toLocaleTimeString()}` : 'All day',
+              duration: event.end ? `${startTime}-${endTime}` : 'All day',  // Changed format here
               eventUrl: event.htmlLink
             });
           }
@@ -485,11 +475,9 @@ export function buildTimeline(history, drive, emails, calendar) {
       // Add click handler for expanding details
       const popup = eventDiv.querySelector('.event-popup');
       eventDiv.addEventListener('click', (e) => {
-        console.log('Timeline event clicked');
         e.stopPropagation();
         // Don't toggle if clicking an action button
         if (!e.target.closest('.action-button')) {
-          console.log('Toggling popup expanded state');
           
           // Close all other expanded popups
           document.querySelectorAll('.event-popup.expanded').forEach(otherPopup => {
@@ -507,20 +495,15 @@ export function buildTimeline(history, drive, emails, calendar) {
       eventDiv.querySelectorAll('.action-button').forEach((button, index) => {
         const action = eventDetails.actions[index];
         button.addEventListener('click', (e) => {
-          console.log('Action button clicked:', action);
           e.preventDefault();
           e.stopPropagation();
           if (action.onClick) {
-            console.log('Action has onClick handler:', action.onClick);
             try {
-              console.log('Executing onClick handler...');
               action.onClick(e);
-              console.log('onClick handler completed successfully');
             } catch (error) {
               console.error('Error in onClick handler:', error);
             }
           } else if (action.url && action.url !== '#') {
-            console.log('Opening URL:', action.url);
             window.open(action.url, '_blank', 'noopener,noreferrer');
           } else {
             console.log('No valid action found for button:', action);
@@ -531,7 +514,6 @@ export function buildTimeline(history, drive, emails, calendar) {
       // Close expanded popup when clicking outside
       document.addEventListener('click', (e) => {
         if (!eventDiv.contains(e.target)) {
-          console.log('Clicking outside timeline event, closing popup');
           const popup = eventDiv.querySelector('.event-popup');
           popup.classList.remove('expanded');
         }
