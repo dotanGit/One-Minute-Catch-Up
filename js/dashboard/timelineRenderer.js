@@ -276,7 +276,6 @@ export function buildTimeline(history, drive, emails, calendar) {
           return {
             title: 'Calendar Event',
             details: [
-              { label: 'Time', value: event.duration || 'All day' },
               { label: 'Location', value: event.location || 'No location' },
               { label: 'Calendar', value: event.summaryOverride || event.calendarName || 'Default' }
             ],
@@ -445,7 +444,19 @@ export function buildTimeline(history, drive, emails, calendar) {
       eventDiv.setAttribute('data-category', getEventCategory(event));
       eventDiv.style.left = `${timestampToPercentage(event.timestamp)}%`;
   
-      const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      let timeText;
+      if (event.type === 'calendar') {
+        timeText = event.duration || new Date(Number(event.timestamp)).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      } else {
+        timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      }
+  
       const eventDetails = getEventDetails(event);
   
       const popupContent = `
