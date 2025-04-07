@@ -407,13 +407,11 @@ export function buildTimeline(history, drive, emails, calendar) {
             // Format time without seconds
             const startTime = new Date(event.start.dateTime).toLocaleTimeString([], { 
               hour: '2-digit', 
-              minute: '2-digit',
-              hour12: false  // Use 24-hour format
+              minute: '2-digit'
             });
             const endTime = new Date(event.end.dateTime).toLocaleTimeString([], { 
               hour: '2-digit', 
-              minute: '2-digit',
-              hour12: false  // Use 24-hour format
+              minute: '2-digit'
             });
 
             processedEvents.push({
