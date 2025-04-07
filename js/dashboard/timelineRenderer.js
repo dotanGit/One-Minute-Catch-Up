@@ -27,6 +27,15 @@ export function buildTimeline(history, drive, emails, calendar) {
     const timelineStartHour = 6;
     const timelineEndHour = 22;
   
+    // Get the user's timezone
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Get the region from the timezone (e.g., 'Asia' from 'Asia/Jerusalem')
+    const region = userTimeZone.split('/')[0];
+
+    // Define regions that typically use 24-hour format
+    const regions24Hour = ['Asia', 'Europe', 'Africa'];
+    const use24HourFormat = regions24Hour.includes(region);
+  
     function timestampToPercentage(timestamp) {
       const date = new Date(Number(timestamp));
       const totalMinutes = date.getHours() * 60 + date.getMinutes();
@@ -407,11 +416,13 @@ export function buildTimeline(history, drive, emails, calendar) {
             // Format time without seconds
             const startTime = new Date(event.start.dateTime).toLocaleTimeString([], { 
               hour: '2-digit', 
-              minute: '2-digit'
+              minute: '2-digit',
+              hour12: !use24HourFormat  // Will be 24-hour for Asia/Europe/Africa, 12-hour for Americas
             });
             const endTime = new Date(event.end.dateTime).toLocaleTimeString([], { 
               hour: '2-digit', 
-              minute: '2-digit'
+              minute: '2-digit',
+              hour12: !use24HourFormat
             });
 
             processedEvents.push({
