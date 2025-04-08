@@ -1,44 +1,57 @@
+//Original code - commented out for testing
+import { wallpaperImages } from '../../js/data/wallpaperImages.js';
+
 let isChangingBackground = false;
 
 // Create and populate the dropdown
 function createDropdown() {
     const dropdown = document.getElementById('wallpaperDropdown');
-    const grid = document.createElement('div');
-    grid.className = 'wallpaper-grid';
     
-    // Add your images directly
-    const images = [
-        'https://dotangit.github.io/chrome-extension-images/nature/2325447.jpg',
-        'https://dotangit.github.io/chrome-extension-images/nature/265216.jpg'
-    ];
-    
-    images.forEach(imageUrl => {
-        const img = document.createElement('img');
-        img.className = 'wallpaper-thumbnail';
-        img.src = imageUrl;
-        img.alt = 'Wallpaper';
+    Object.entries(wallpaperImages).forEach(([category, data]) => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'wallpaper-category';
         
-        img.addEventListener('click', () => {
-            if (!isChangingBackground) {
-                setBackground(imageUrl);
-                dropdown.classList.remove('show');
-            }
+        const title = document.createElement('h3');
+        title.textContent = data.name;
+        categoryDiv.appendChild(title);
+        
+        const grid = document.createElement('div');
+        grid.className = 'wallpaper-grid';
+        
+        data.images.forEach(imageUrl => {
+            const img = document.createElement('img');
+            img.className = 'wallpaper-thumbnail';
+            img.src = imageUrl;
+            img.alt = `${data.name} Wallpaper`;
+            
+            // Store the original URL as a data attribute
+            img.dataset.fullUrl = imageUrl;
+            
+            img.addEventListener('click', function() {
+                if (!isChangingBackground) {
+                    // Use the stored URL instead of the event
+                    setBackground(this.dataset.fullUrl);
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            grid.appendChild(img);
         });
         
-        grid.appendChild(img);
+        categoryDiv.appendChild(grid);
+        dropdown.appendChild(categoryDiv);
     });
-    
-    dropdown.appendChild(grid);
 }
 
 // Toggle dropdown visibility
-document.getElementById('changeWallpaper').addEventListener('click', () => {
+document.getElementById('changeWallpaper').addEventListener('click', function(e) {
+    e.preventDefault();
     const dropdown = document.getElementById('wallpaperDropdown');
     dropdown.classList.toggle('show');
 });
 
 // Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
+document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('wallpaperDropdown');
     const button = document.getElementById('changeWallpaper');
     
@@ -50,14 +63,16 @@ document.addEventListener('click', (e) => {
 function setBackground(imageUrl) {
     if (isChangingBackground) return;
     
+    console.log('Setting background with URL:', imageUrl);
     isChangingBackground = true;
     
     // Create a temporary image to preload
     const tempImg = new Image();
     tempImg.src = imageUrl;
     
-    tempImg.onload = () => {
-        document.body.style.backgroundImage = `url(${imageUrl})`;
+    tempImg.onload = function() {
+        console.log('Image loaded successfully:', imageUrl);
+        document.body.style.backgroundImage = `url("${imageUrl}")`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundRepeat = 'no-repeat';
@@ -65,18 +80,30 @@ function setBackground(imageUrl) {
         isChangingBackground = false;
     };
     
-    tempImg.onerror = () => {
+    tempImg.onerror = function() {
+        console.error('Failed to load image:', imageUrl);
         isChangingBackground = false;
-        console.error('Failed to load image from:', imageUrl);
     };
 }
 
-// Handle window resize
-window.addEventListener('resize', setBackground);
-
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     createDropdown();
-    // Set initial background
-    setBackground('https://dotangit.github.io/chrome-extension-images/nature/1955134.jpg');
+    // Set initial background with first nature image
+    if (wallpaperImages.nature.images.length > 0) {
+        setBackground(wallpaperImages.nature.images[0]);
+    }
 });
+
+
+// // SIMPLE TEST CODE
+// document.addEventListener('DOMContentLoaded', function() {
+//     // Change this path to your image file
+//     const testImage = './test-images/pexels-iriser-1379640.jpg';
+    
+//     document.body.style.backgroundImage = `url("${testImage}")`;
+//     document.body.style.backgroundSize = 'cover';
+//     document.body.style.backgroundPosition = 'center';
+//     document.body.style.backgroundRepeat = 'no-repeat';
+//     document.body.style.backgroundAttachment = 'fixed';
+// });
