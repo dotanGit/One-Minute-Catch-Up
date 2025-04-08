@@ -1,5 +1,5 @@
 import { safeGetTimestamp } from '../utils/dateUtils.js';
-
+import { shouldFilterUrl } from '../services/browserHistoryService.js';
 
 // Define buildTimeline function at the top level
 export function buildTimeline(history, drive, emails, calendar) {
@@ -315,6 +315,10 @@ export function buildTimeline(history, drive, emails, calendar) {
   
       sortedHistory.forEach(item => {
         if (!item.lastVisitTime || !item.url) return;
+
+        if (shouldFilterUrl(item.url)) return;
+
+
         const pattern = extractPattern(item.url);
         const currentTime = item.lastVisitTime;
   
