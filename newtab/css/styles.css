@@ -35,5 +35,75 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
+.wallpaper-selector {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
+
+.wallpaper-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: background 0.3s;
+}
+
+.wallpaper-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.wallpaper-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 50px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 10px;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.wallpaper-dropdown.show {
+    display: block;
+}
+
+.wallpaper-category {
+    margin-bottom: 15px;
+}
+
+.wallpaper-category h3 {
+    color: white;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.wallpaper-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+.wallpaper-thumbnail {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.wallpaper-thumbnail:hover {
+    transform: scale(1.05);
+}
+
 
 
