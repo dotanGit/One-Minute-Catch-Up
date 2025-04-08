@@ -21,11 +21,12 @@ function createDropdown() {
         data.images.forEach(imageUrl => {
             const img = document.createElement('img');
             img.className = 'wallpaper-thumbnail';
-            img.src = imageUrl;
-            img.alt = `${data.name} Wallpaper`;
-            
-            // Store the original URL as a data attribute
+            const thumbnailUrl = imageUrl.replace('/full/', '/thumbnails/');
+            img.src = thumbnailUrl;
+            img.loading = 'lazy';
             img.dataset.fullUrl = imageUrl;
+
+            img.alt = `${data.name} Wallpaper`;
             
             img.addEventListener('click', function() {
                 if (!isChangingBackground) {
