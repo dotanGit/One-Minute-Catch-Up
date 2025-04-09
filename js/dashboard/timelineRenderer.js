@@ -593,14 +593,14 @@ function timestampToPercentage(timestamp, index, totalEvents) {
     const timeBasedPercentage = (timeDiff / totalDiff) * 100;
     
     // Calculate a more evenly distributed position
-    const padding = 10; // percentage padding on each side
+    const padding = 5; // Reduced padding for more space
     const availableSpace = 100 - (padding * 2);
     const evenSpacing = availableSpace / (totalEvents - 1 || 1);
     const evenlySpacedPercentage = (index * evenSpacing) + padding;
     
     // Blend between time-based and evenly-spaced positions
     // This maintains time order but creates more even spacing
-    const blendFactor = 0.7; // 0 = pure time-based, 1 = pure even spacing
+    const blendFactor = 0.5; // Reduced blend factor for more natural spacing
     const blendedPercentage = (timeBasedPercentage * (1 - blendFactor)) + (evenlySpacedPercentage * blendFactor);
     
     return Math.min(Math.max(blendedPercentage, padding), 100 - padding);

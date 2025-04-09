@@ -62,8 +62,8 @@
 .timeline-line {
     position: absolute;
     top: 50%;
-    left: 60px; /* Match container padding */
-    width: calc(100% - 120px); /* Account for padding on both sides */
+    left: 0px; /* Match container padding */
+    width: 100%; /* Account for padding on both sides */
     height: 0px;
     transform: translateY(-50%);
     border-top: 2px dashed #c4d2e2;
