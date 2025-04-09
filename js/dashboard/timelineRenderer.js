@@ -9,7 +9,6 @@ const ZOOM_LEVELS = {
 };
 
 let currentZoomLevel = '15m';
-let currentPeriod = 0; // 0-based index of current period
 
 function formatTimeRange(startHour, endHour) {
     const formatHour = (hour) => {
@@ -25,26 +24,19 @@ function updateTimePeriodDisplay() {
 
     const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
     const hoursPerPeriod = zoomConfig.hours;
-    const startHour = currentPeriod * hoursPerPeriod;
-    const endHour = startHour + hoursPerPeriod;
+    const startHour = 0;
+    const endHour = hoursPerPeriod;
     
     periodElement.textContent = formatTimeRange(startHour, endHour);
 }
 
 function getCurrentTimeRange() {
-    const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
-    const hoursPerPeriod = zoomConfig.hours;
-    const startHour = currentPeriod * hoursPerPeriod;
-    const endHour = startHour + hoursPerPeriod;
-    
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start from midnight
     
     const start = new Date(today);
-    start.setHours(startHour, 0, 0, 0);
-    
     const end = new Date(today);
-    end.setHours(endHour, 0, 0, 0);
+    end.setHours(24, 0, 0, 0); // End at midnight next day
     
     return { start, end };
 }
@@ -62,8 +54,6 @@ function initializeTimePeriodControls(history, drive, emails, calendar) {
     if (prevButton) {
         prevButton.addEventListener('click', () => {
             const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
-            currentPeriod = (currentPeriod - 1 + zoomConfig.periods) % zoomConfig.periods;
-            updateTimePeriodDisplay();
             rebuildTimeline(history, drive, emails, calendar);
         });
     }
@@ -71,8 +61,6 @@ function initializeTimePeriodControls(history, drive, emails, calendar) {
     if (nextButton) {
         nextButton.addEventListener('click', () => {
             const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
-            currentPeriod = (currentPeriod + 1) % zoomConfig.periods;
-            updateTimePeriodDisplay();
             rebuildTimeline(history, drive, emails, calendar);
         });
     }
@@ -272,8 +260,6 @@ function initializeZoomControls(history, drive, emails, calendar) {
             zoomButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             currentZoomLevel = button.id.replace('zoom-', '');
-            currentPeriod = 0; // Reset period when changing zoom level
-            updateTimePeriodDisplay();
             rebuildTimeline(history, drive, emails, calendar);
         });
     });
@@ -284,13 +270,7 @@ function groupEventsByTimeInterval(events) {
     const { start, end } = getCurrentTimeRange();
     const interval = ZOOM_LEVELS[currentZoomLevel].interval;
 
-    // Filter events for current period
-    const periodEvents = events.filter(event => {
-        const eventTime = new Date(Number(event.timestamp));
-        return eventTime >= start && eventTime < end;
-    });
-
-    periodEvents.forEach(event => {
+    events.forEach(event => {
         const timestamp = Number(event.timestamp);
         const intervalStart = Math.floor((timestamp - start) / interval) * interval + start.getTime();
         
