@@ -13,6 +13,12 @@
     margin-bottom: 20px;
 }
 
+.timeline-zoom {
+    display: flex;
+    gap: 8px;
+    margin-left: 20px;
+}
+
 .nav-button {
     background: transparent;
     border: none;
@@ -503,5 +509,25 @@
     height: 18px;       /* Increased from 12px */
     background: url('../icons/description.svg') no-repeat center center;
     background-size: contain;
+}
+
+.zoom-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.zoom-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.zoom-button.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
 }
   
