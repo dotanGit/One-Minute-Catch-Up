@@ -530,4 +530,31 @@
     background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.4);
 }
+
+.time-period-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    margin-left: 20px;
+}
+
+.time-period {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
+}
+
+.time-period-selector .nav-button {
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.time-period-selector .nav-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
   
