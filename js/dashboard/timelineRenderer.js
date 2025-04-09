@@ -71,10 +71,20 @@ function initializeTimePeriodControls(history, drive, emails, calendar) {
 // Define rebuildTimeline at the top level
 function rebuildTimeline(history, drive, emails, calendar) {
     const timelineEvents = document.getElementById('timeline-events');
-    if (!timelineEvents) return;
+    const timelineLine = document.querySelector('.timeline-line');
+    if (!timelineEvents || !timelineLine) return;
 
     timelineEvents.innerHTML = '';
     const processedEvents = [];
+    
+    // Adjust timeline width based on zoom level
+    const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
+    const timelineWidth = currentZoomLevel === '30m' ? '200%' : '100%';
+    const widthStyle = `calc(${timelineWidth} - 120px)`;
+    
+    // Apply width to both timeline events and line
+    timelineEvents.style.width = widthStyle;
+    timelineLine.style.width = widthStyle;
     
     // Process browser history
     if (history && history.length > 0) {
