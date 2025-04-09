@@ -84,14 +84,17 @@
 }
 
 .timeline-dot {
-    width: 20px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.1); /* Changed from white to transparent */
+    width: 40px;        /* Increased from 20px */
+    height: 40px;       /* Increased from 20px */
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 100px;
     border: 2px dashed #c4d2e2;
     position: relative;
     z-index: 2;
     transition: transform 0.2s ease;
+    display: flex;           
+    align-items: center;     
+    justify-content: center; 
 }
 
 /* Update category-specific colors to only affect borders */
@@ -140,31 +143,62 @@
 
 /* Position popups above/below with more space */
 .timeline-event.above .event-popup {
-    bottom: 30px; /* Adjust this value as needed */
+    bottom: 50px; /* Adjust this value as needed */
 }
 
 .timeline-event.below .event-popup {
-    top: 30px; /* Adjust this value as needed */
+    top: 50px; /* Adjust this value as needed */
 }
 
 /* Add a decorative pointer element */
 .timeline-event .event-popup::after {
     content: '';
     position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #2196F3;
+    width: 16px;
+    height: 16px;
     transform: rotate(45deg);
-    left: calc(50% - 6px);
+    left: calc(50% - 8px);
 }
 
 /* Position the pointer for above/below events */
-.timeline-event.above .event-popup::after {
-    bottom: -6px;
+.timeline-event.above[data-category="gmail"] .event-popup::after {
+    background: #c21000; /* Darker red */
+    bottom: -8px;
 }
 
-.timeline-event.below .event-popup::after {
-    top: -6px;
+.timeline-event.below[data-category="gmail"] .event-popup::after {
+    background: #c21000; /* Darker red */
+    top: -8px;
+}
+
+.timeline-event.above[data-category="calendar"] .event-popup::after {
+    background: #008120; /* Darker green */
+    bottom: -8px;
+}
+
+.timeline-event.below[data-category="calendar"] .event-popup::after {
+    background: #008120; /* Darker green */
+    top: -8px;
+}
+
+.timeline-event.above[data-category="drive"] .event-popup::after {
+    background: #db8e00; /* Darker yellow */
+    bottom: -8px;
+}
+
+.timeline-event.below[data-category="drive"] .event-popup::after {
+    background: #db8e00; /* Darker yellow */
+    top: -8px;
+}
+
+.timeline-event.above[data-category="browser"] .event-popup::after {
+    background: #004dd1; /* Darker blue */
+    bottom: -8px;
+}
+
+.timeline-event.below[data-category="browser"] .event-popup::after {
+    background: #004dd1; /* Darker blue */
+    top: -8px;
 }
 
 .event-popup .event-title {
@@ -345,43 +379,63 @@
 }
 
 /* Gmail style (red) */
-.timeline-event[data-category="gmail"] .event-popup {
-    background: linear-gradient(135deg, #EA4335, #C62828);
-    box-shadow: 0 4px 15px rgba(234, 67, 53, 0.3);
+.timeline-event.above[data-category="gmail"] .event-popup {
+    background: linear-gradient(to top, 
+        #D84335, /* Less dark red at bottom */
+        #EA4335  /* Lighter red at top */
+    );
 }
 
-.timeline-event[data-category="gmail"] .event-popup::after {
-    background: #EA4335;
+.timeline-event.below[data-category="gmail"] .event-popup {
+    background: linear-gradient(to bottom, 
+        #D84335, /* Less dark red at top */
+        #EA4335  /* Lighter red at bottom */
+    );
 }
 
 /* Calendar style (green) */
-.timeline-event[data-category="calendar"] .event-popup {
-    background: linear-gradient(135deg, #34A853, #2E7D32);
-    box-shadow: 0 4px 15px rgba(52, 168, 83, 0.3);
+.timeline-event.above[data-category="calendar"] .event-popup {
+    background: linear-gradient(to top,
+        #2D8B45, /* Less dark green at bottom */
+        #34A853  /* Lighter green at top */
+    );
 }
 
-.timeline-event[data-category="calendar"] .event-popup::after {
-    background: #34A853;
+.timeline-event.below[data-category="calendar"] .event-popup {
+    background: linear-gradient(to bottom,
+        #2D8B45, /* Less dark green at top */
+        #34A853  /* Lighter green at bottom */
+    );
 }
 
 /* Drive style (yellow) */
-.timeline-event[data-category="drive"] .event-popup {
-    background: linear-gradient(135deg, #FBBC05, #F9A825);
-    box-shadow: 0 4px 15px rgba(251, 188, 5, 0.3);
+.timeline-event.above[data-category="drive"] .event-popup {
+    background: linear-gradient(to top,
+        #F5A817, /* Less dark yellow at bottom */
+        #FBBC05  /* Lighter yellow at top */
+    );
 }
 
-.timeline-event[data-category="drive"] .event-popup::after {
-    background: #FBBC05;
+.timeline-event.below[data-category="drive"] .event-popup {
+    background: linear-gradient(to bottom,
+        #F5A817, /* Less dark yellow at top */
+        #FBBC05  /* Lighter yellow at bottom */
+    );
 }
 
 /* Browser style (blue) */
-.timeline-event[data-category="browser"] .event-popup {
-    background: linear-gradient(135deg, #4285F4, #1976D2);
-    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+.timeline-event.above[data-category="browser"] .event-popup {
+    background: linear-gradient(to top,
+        #3375E8, /* Less dark blue at bottom */
+        #4285F4  /* Lighter blue at top */
+    );
 }
 
-.timeline-event[data-category="browser"] .event-popup::after {
-    background: #4285F4;
+.timeline-event.below[data-category="browser"] .event-popup {
+    background: linear-gradient(to bottom,
+        #3375E8, /* Less dark blue at top */
+        #4285F4  /* Lighter blue at bottom */
+    );
 }
 
 /* Update hover effects for each category */
@@ -416,5 +470,38 @@
 
 .timeline-event[data-category="browser"] .action-button {
     background: rgba(66, 133, 244, 0.2);
+}
+
+/* Add icons for each category */
+.timeline-event[data-category="gmail"] .timeline-dot::before {
+    content: '';
+    width: 18px;        /* Increased from 12px */
+    height: 18px;       /* Increased from 12px */
+    background: url('../icons/mail.svg') no-repeat center center;
+    background-size: contain;
+}
+
+.timeline-event[data-category="browser"] .timeline-dot::before {
+    content: '';
+    width: 18px;        /* Increased from 12px */
+    height: 18px;       /* Increased from 12px */
+    background: url('../icons/explore.svg') no-repeat center center;
+    background-size: contain;
+}
+
+.timeline-event[data-category="calendar"] .timeline-dot::before {
+    content: '';
+    width: 18px;        /* Increased from 12px */
+    height: 18px;       /* Increased from 12px */
+    background: url('../icons/calendar.svg') no-repeat center center;
+    background-size: contain;
+}
+
+.timeline-event[data-category="drive"] .timeline-dot::before {
+    content: '';
+    width: 18px;        /* Increased from 12px */
+    height: 18px;       /* Increased from 12px */
+    background: url('../icons/description.svg') no-repeat center center;
+    background-size: contain;
 }
   

@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add history icon
             const historyIcon = document.createElement('img');
-            historyIcon.src = 'history.svg';
+            historyIcon.src = 'icons/history.svg';
             historyIcon.className = 'history-icon';
             historyIcon.alt = 'History';
             
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add remove button
             const removeButton = document.createElement('button');
             removeButton.className = 'remove-button';
-            removeButton.innerHTML = '<img src="close.svg" alt="Remove" class="remove-icon">';
+            removeButton.innerHTML = '<img src="icons/close.svg" alt="Remove" class="remove-icon">';
             removeButton.title = 'Remove from history';
             
             // Add click event to remove the item from history
