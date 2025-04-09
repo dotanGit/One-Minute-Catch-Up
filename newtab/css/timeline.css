@@ -71,10 +71,11 @@
 }
 
 .timeline-events {
-    position: relative;
-    width: calc(100% - 120px); /* Account for padding */
+    position: absolute;
+    width: 100%; /* Account for padding */
     height: 100%;
     margin: 0 auto;
+    left: 0px;
 }
 
 .timeline-event {
