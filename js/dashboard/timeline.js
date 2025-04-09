@@ -8,8 +8,8 @@ const timelineEvents = document.getElementById('timeline-events');
 const timelineWrapper = document.querySelector('.timeline-wrapper');
 
 
-// Initialize currentDate at the top level
-let currentDate = normalizeDateToStartOfDay(new Date());
+// Initialize currentDate at the top level and export it
+export let currentDate = normalizeDateToStartOfDay(new Date());
 let currentTimelineData = null;
 
 

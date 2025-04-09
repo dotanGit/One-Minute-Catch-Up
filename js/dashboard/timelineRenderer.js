@@ -1,5 +1,6 @@
 import { safeGetTimestamp } from '../utils/dateUtils.js';
 import { shouldFilterUrl } from '../services/browserHistoryService.js';
+import { currentDate } from '../dashboard/timeline.js';
 
 // Define zoom levels in milliseconds
 const ZOOM_LEVELS = {
@@ -31,12 +32,13 @@ function updateTimePeriodDisplay() {
 }
 
 function getCurrentTimeRange() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start from midnight
+    // Use the selected date instead of today
+    const selectedDate = new Date(currentDate);
+    const start = new Date(selectedDate);
+    start.setHours(0, 0, 0, 0);
     
-    const start = new Date(today);
-    const end = new Date(today);
-    end.setHours(24, 0, 0, 0); // End at midnight next day
+    const end = new Date(selectedDate);
+    end.setHours(23, 59, 59, 999);
     
     return { start, end };
 }
@@ -199,7 +201,7 @@ function rebuildTimeline(history, drive, emails, calendar) {
         const categories = Array.from(group.categories);
         eventDiv.setAttribute('data-category', categories[0] || 'browser');
         
-        eventDiv.style.left = `${timestampToPercentage(group.timestamp, index, groupedEvents.length)}%`;
+        eventDiv.style.left = `${timestampToPercentage(group.timestamp)}%`;
 
         const timeText = new Date(Number(group.timestamp)).toLocaleTimeString([], { 
             hour: '2-digit', 
@@ -260,6 +262,7 @@ function initializeZoomControls(history, drive, emails, calendar) {
             zoomButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             currentZoomLevel = button.id.replace('zoom-', '');
+            console.log('Zoom level changed to:', currentZoomLevel); // Debug log
             rebuildTimeline(history, drive, emails, calendar);
         });
     });
@@ -267,12 +270,19 @@ function initializeZoomControls(history, drive, emails, calendar) {
 
 function groupEventsByTimeInterval(events) {
     const groupedEvents = {};
-    const { start, end } = getCurrentTimeRange();
-    const interval = ZOOM_LEVELS[currentZoomLevel].interval;
-
+    const { start } = getCurrentTimeRange();
+    
+    // Get interval based on current zoom level
+    const intervalMs = ZOOM_LEVELS[currentZoomLevel].interval;
+    
     events.forEach(event => {
         const timestamp = Number(event.timestamp);
-        const intervalStart = Math.floor((timestamp - start) / interval) * interval + start.getTime();
+        const eventTime = new Date(timestamp);
+        
+        // Round to nearest interval based on zoom level
+        const timeSinceStart = eventTime.getTime() - start.getTime();
+        const intervalIndex = Math.floor(timeSinceStart / intervalMs);
+        const intervalStart = start.getTime() + (intervalIndex * intervalMs);
         
         if (!groupedEvents[intervalStart]) {
             groupedEvents[intervalStart] = {
@@ -285,8 +295,8 @@ function groupEventsByTimeInterval(events) {
         groupedEvents[intervalStart].events.push(event);
         groupedEvents[intervalStart].categories.add(getEventCategory(event));
     });
-
-    return Object.values(groupedEvents);
+    
+    return Object.values(groupedEvents).sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function simplifyUrl(url) {
@@ -563,27 +573,18 @@ function getEventDetails(event) {
     }
 }
 
-function timestampToPercentage(timestamp, index, totalEvents) {
+function timestampToPercentage(timestamp) {
     const { start, end } = getCurrentTimeRange();
-    
-    // Calculate the basic time-based position
     const eventTime = new Date(Number(timestamp));
-    const timeDiff = eventTime - start;
-    const totalDiff = end - start;
-    const timeBasedPercentage = (timeDiff / totalDiff) * 100;
     
-    // Calculate a more evenly distributed position
-    const padding = 5; // Reduced padding for more space
-    const availableSpace = 100 - (padding * 2);
-    const evenSpacing = availableSpace / (totalEvents - 1 || 1);
-    const evenlySpacedPercentage = (index * evenSpacing) + padding;
+    // Simple percentage calculation
+    const totalMs = end.getTime() - start.getTime();
+    const eventMs = eventTime.getTime() - start.getTime();
+    const percentage = (eventMs / totalMs) * 100;
     
-    // Blend between time-based and evenly-spaced positions
-    // This maintains time order but creates more even spacing
-    const blendFactor = 0.5; // Reduced blend factor for more natural spacing
-    const blendedPercentage = (timeBasedPercentage * (1 - blendFactor)) + (evenlySpacedPercentage * blendFactor);
-    
-    return Math.min(Math.max(blendedPercentage, padding), 100 - padding);
+    // Add small padding
+    const padding = 2;
+    return Math.max(padding, Math.min(100 - padding, percentage));
 }
 
 export function buildTimeline(history, drive, emails, calendar) {
