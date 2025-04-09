@@ -54,33 +54,54 @@
 .timeline-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 300px;
     margin-top: 20px;
+    padding: 0 60px; /* Add padding on sides */
 }
 
 .timeline-line {
     position: absolute;
     top: 50%;
-    left: 0;
-    width: 100%;
+    left: 60px; /* Match container padding */
+    width: calc(100% - 120px); /* Account for padding on both sides */
     height: 0px;
     transform: translateY(-50%);
-    border-top: 2px dashed #c4d2e2; /* Added dashed border instead of background */
-    background: transparent; /* Remove the previous background */
+    border-top: 2px dashed #c4d2e2;
+    background: transparent;
 }
 
 .timeline-events {
     position: relative;
-    width: 100%;
+    width: calc(100% - 120px); /* Account for padding */
     height: 100%;
+    margin: 0 auto;
 }
 
 .timeline-event {
     position: absolute;
     cursor: pointer;
     z-index: 1;
-    top: 50%; /* Center on the line */
-    transform: translate(-50%, -50%); /* Center both horizontally and vertically */
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.timeline-event-time {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 11px;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px 8px;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.timeline-event:hover .timeline-event-time {
+    background: rgba(0, 0, 0, 0.5);
 }
 
 /* Remove the old above/below positioning */
@@ -89,9 +110,18 @@
     top: 50%; /* Keep all events centered on the line */
 }
 
+/* Alternate time positions for even/odd events */
+.timeline-event.above .timeline-event-time {
+    top: -30px;
+}
+
+.timeline-event.below .timeline-event-time {
+    top: 50px;
+}
+
 .timeline-dot {
-    width: 40px;        /* Increased from 20px */
-    height: 40px;       /* Increased from 20px */
+    width: 40px;        /* Restored to original size */
+    height: 40px;       /* Restored to original size */
     background: rgba(255, 255, 255, 0.1);
     border-radius: 100px;
     border: 2px dashed #c4d2e2;
@@ -481,32 +511,32 @@
 /* Add icons for each category */
 .timeline-event[data-category="gmail"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Increased from 12px */
-    height: 18px;       /* Increased from 12px */
+    width: 18px;        /* Restored to original size */
+    height: 18px;       /* Restored to original size */
     background: url('../icons/mail.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="browser"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Increased from 12px */
-    height: 18px;       /* Increased from 12px */
+    width: 18px;        /* Restored to original size */
+    height: 18px;       /* Restored to original size */
     background: url('../icons/explore.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="calendar"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Increased from 12px */
-    height: 18px;       /* Increased from 12px */
+    width: 18px;        /* Restored to original size */
+    height: 18px;       /* Restored to original size */
     background: url('../icons/calendar.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="drive"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Increased from 12px */
-    height: 18px;       /* Increased from 12px */
+    width: 18px;        /* Restored to original size */
+    height: 18px;       /* Restored to original size */
     background: url('../icons/description.svg') no-repeat center center;
     background-size: contain;
 }
