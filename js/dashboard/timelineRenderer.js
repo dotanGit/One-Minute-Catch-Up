@@ -59,6 +59,205 @@ function initializeTimePeriodControls(history, drive, emails, calendar) {
     }
 }
 
+
+export function prependTimeline(history, drive, emails, calendar) {
+    const timelineEvents = document.getElementById('timeline-events');
+    const timelineLine = document.querySelector('.timeline-line');
+    if (!timelineEvents || !timelineLine) return;
+
+    const processedEvents = [];
+
+    // Process history, drive, emails, calendar — same logic as rebuildTimeline
+    // History
+    if (history && history.length > 0) {
+        const sortedHistory = history.sort((a, b) => a.lastVisitTime - b.lastVisitTime);
+        const sessions = {};
+        const SESSION_TIMEOUT = 60 * 60 * 1000;
+
+        sortedHistory.forEach(item => {
+            if (!item.lastVisitTime || !item.url) return;
+            if (shouldFilterUrl(item.url)) return;
+
+            const pattern = extractPattern(item.url);
+            const currentTime = item.lastVisitTime;
+
+            if (!sessions[pattern]) {
+                sessions[pattern] = { start: currentTime, end: currentTime };
+                processedEvents.push({
+                    type: 'browser',
+                    timestamp: currentTime,
+                    title: item.title || 'Website Visit',
+                    description: simplifyUrl(item.url),
+                    url: item.url,
+                    duration: 0
+                });
+                return;
+            }
+
+            const session = sessions[pattern];
+            const timeSinceLast = currentTime - session.end;
+
+            if (timeSinceLast < SESSION_TIMEOUT) {
+                sessions[pattern].end = currentTime;
+                const duration = Math.floor((currentTime - session.start) / 60000);
+                const lastEvent = processedEvents.find(e => e.type === 'browser' && e.url === item.url);
+                if (lastEvent) {
+                    lastEvent.duration = duration;
+                }
+            } else {
+                sessions[pattern] = { start: currentTime, end: currentTime };
+                processedEvents.push({
+                    type: 'browser',
+                    timestamp: currentTime,
+                    title: item.title || 'Website Visit',
+                    description: simplifyUrl(item.url),
+                    url: item.url,
+                    duration: 0
+                });
+            }
+        });
+    }
+
+    // Drive
+    if (drive && drive.files && drive.files.length > 0) {
+        drive.files.forEach(file => {
+            if (file.modifiedTime) {
+                const timestamp = safeGetTimestamp(file.modifiedTime);
+                if (timestamp > 0) {
+                    processedEvents.push({
+                        type: 'drive',
+                        timestamp: timestamp,
+                        title: 'Drive File Edit',
+                        description: file.name,
+                        webViewLink: file.webViewLink,
+                        changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
+                    });
+                }
+            }
+        });
+    }
+
+    // Emails
+    if (emails && (emails.all || emails.sent || emails.received)) {
+        const emailList = emails.all || [...(emails.sent || []), ...(emails.received || [])];
+        emailList.forEach(email => {
+            if (email.timestamp) {
+                processedEvents.push({
+                    type: 'email',
+                    timestamp: Number(email.timestamp),
+                    title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
+                    description: email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`,
+                    subject: email.subject || 'No subject',
+                    from: email.from,
+                    to: email.to,
+                    emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
+                });
+            }
+        });
+    }
+
+    // Calendar
+    if (calendar && calendar.today && calendar.today.length > 0) {
+        calendar.today.forEach(event => {
+            const eventTime = event.start?.dateTime || event.start?.date;
+            if (eventTime) {
+                const timestamp = safeGetTimestamp(eventTime);
+                if (timestamp > 0) {
+                    processedEvents.push({
+                        type: 'calendar',
+                        timestamp: timestamp,
+                        title: 'Calendar Event',
+                        description: event.summary || 'Untitled event',
+                        calendarName: event.calendarName,
+                        location: event.location,
+                        duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
+                        eventUrl: event.htmlLink
+                    });
+                }
+            }
+        });
+    }
+
+    // Sort events
+    processedEvents.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Build elements
+    const fragment = document.createDocumentFragment();
+
+    processedEvents.forEach((event, index) => {
+        const eventDiv = document.createElement('div');
+        eventDiv.className = `timeline-event ${index % 2 === 0 ? 'above' : 'below'}`;
+
+        const percentage = timestampToGlobalPercentage(event.timestamp);
+        eventDiv.style.left = `${percentage}%`;
+
+
+        const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const eventDetails = getEventDetails(event);
+        const popupContent = `
+            <div class="timeline-event-time">${timeText}</div>
+            <div class="timeline-dot"></div>
+            <div class="event-popup">
+                <div class="event-title">${eventDetails.title}</div>
+                <div class="event-time">${timeText}</div>
+                <div class="event-description">${event.description}</div>
+                <div class="event-details">
+                    ${eventDetails.details.map(detail => `
+                        <div class="detail-item">
+                            <span class="detail-label">${detail.label}:</span>
+                            <span class="detail-value">${detail.value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ${eventDetails.actions.length > 0 ? `
+                    <div class="event-actions">
+                        ${eventDetails.actions.map(action => `
+                            <button class="action-button" onclick="event.stopPropagation(); ${action.onClick ? action.onClick.toString() : `window.open('${action.url}', '_blank')`}">
+                                ${action.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        eventDiv.innerHTML = popupContent;
+        eventDiv.setAttribute('data-category', getEventCategory(event));
+
+        const popup = eventDiv.querySelector('.event-popup');
+        eventDiv.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!e.target.closest('.action-button')) {
+                document.querySelectorAll('.event-popup.expanded').forEach(otherPopup => {
+                    if (otherPopup !== popup) {
+                        otherPopup.classList.remove('expanded');
+                    }
+                });
+                popup.classList.toggle('expanded');
+            }
+        });
+
+        fragment.appendChild(eventDiv);
+    });
+
+    // Prepend to timeline
+    timelineEvents.prepend(fragment);
+
+    // Adjust scroll to prevent jump
+    const container = document.querySelector('.timeline-container');
+    if (container) {
+        container.scrollLeft += fragment.scrollWidth;
+    }
+}
+
+
+
+
+
 // Define rebuildTimeline at the top level
 function rebuildTimeline(history, drive, emails, calendar) {
     const timelineEvents = document.getElementById('timeline-events');
@@ -69,12 +268,12 @@ function rebuildTimeline(history, drive, emails, calendar) {
     const processedEvents = [];
     
     // Set fixed width for timeline
-    const timelineWidth = '200%';
-    const widthStyle = `calc(${timelineWidth} - 120px)`;
+    const now = Date.now();
+    const timeSpanInHours = (now - window.globalStartTime) / (1000 * 60 * 60);
+    const widthInPixels = timeSpanInHours * 50; // adjust scale here
     
-    // Apply width to both timeline events and line
-    timelineEvents.style.width = widthStyle;
-    timelineLine.style.width = widthStyle;
+    timelineEvents.style.width = `${widthInPixels}px`;
+    timelineLine.style.width = `${widthInPixels}px`;
     
     // Process browser history
     if (history && history.length > 0) {
@@ -191,9 +390,9 @@ function rebuildTimeline(history, drive, emails, calendar) {
     processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
     // Calculate total time span
-    const now = Date.now();
-    const oldestEvent = processedEvents[0]?.timestamp || now;
-    const totalTimeSpan = now - oldestEvent;
+    const currentTime = Date.now();
+    const oldestEvent = processedEvents[0]?.timestamp || currentTime;
+    const totalTimeSpan = currentTime - oldestEvent;
 
     // Create event elements with equal spacing
     processedEvents.forEach((event, index) => {
@@ -552,6 +751,22 @@ function timestampToPercentage(timestamp) {
     const padding = 2;
     return Math.max(padding, Math.min(100 - padding, percentage));
 }
+
+
+function timestampToGlobalPercentage(timestamp) {
+    const start = window.globalStartTime;
+    const end = Date.now(); // or keep extending max rightward
+
+    const totalSpan = end - start;
+    const offset = timestamp - start;
+
+    const percentage = (offset / totalSpan) * 100;
+
+    const padding = 2;
+    return Math.max(padding, Math.min(100 - padding, percentage));
+}
+
+
 
 export function buildTimeline(history, drive, emails, calendar) {
     const timelineEvents = document.getElementById('timeline-events');

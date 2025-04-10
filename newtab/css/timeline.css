@@ -33,6 +33,8 @@
     overflow-y: hidden;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 .timeline-container::-webkit-scrollbar {

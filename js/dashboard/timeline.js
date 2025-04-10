@@ -1,11 +1,14 @@
 import { normalizeDateToStartOfDay } from '../utils/dateUtils.js';
 import { safeParseDate } from '../utils/dateUtils.js';
 import { buildTimeline } from './timelineRenderer.js';
+import { prependTimeline } from './timelineRenderer.js';
+import { safeGetTimestamp } from '../utils/dateUtils.js';
 
 
 const loadingSection = document.getElementById('loading');
 const timelineEvents = document.getElementById('timeline-events');
 const timelineWrapper = document.querySelector('.timeline-wrapper');
+window.globalStartTime = null;
 
 
 // Initialize currentDate at the top level and export it
@@ -117,6 +120,17 @@ async function loadTimelineData(date) {
       getCalendarEvents(normalizedDate)
     ]);
 
+    const allTimestamps = [
+      ...history.map(item => item.lastVisitTime),
+      ...drive.files.map(file => new Date(file.modifiedTime).getTime()),
+      ...(emails.all?.map(email => Number(email.timestamp)) || []),
+      ...(calendar.today?.map(event => safeGetTimestamp(event.start?.dateTime || event.start?.date)) || [])
+    ].filter(Boolean);
+    
+    const earliestTimestamp = Math.min(...allTimestamps);
+    window.globalStartTime = earliestTimestamp;
+    
+
     // Cache the new data
     timelineCache.set(dateKey, { history, drive, emails, calendar });
 
@@ -160,61 +174,54 @@ export function showTimeline() {
   if (timelineWrapper) timelineWrapper.style.display = 'block';
 }
 
-export function initTimeline() {
+export async function initTimeline() {
   updateTimelineDate();
-  
-  // Initial load of current day and prefetch adjacent days
-  loadTimelineData(currentDate).then(() => {
-    // Prefetch yesterday and tomorrow silently after initial load
-    const tomorrow = new Date(currentDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const yesterday = new Date(currentDate);
-    yesterday.setDate(yesterday.getDate() - 1);
 
-    // Prefetch both adjacent days silently
-    [yesterday, tomorrow].forEach(date => {
-      const dateKey = getDateKey(date);
-      if (!timelineCache.isValid(dateKey)) {
-        silentLoadTimelineData(date).catch(console.error);
-      }
-    });
-  });
-
-  const prevDayButton = document.getElementById('prev-day');
-  const nextDayButton = document.getElementById('next-day');
-
-  if (prevDayButton) {
-    prevDayButton.addEventListener('click', async () => {
-      currentDate.setDate(currentDate.getDate() - 1);
-      updateTimelineDate();
-      await loadTimelineData(currentDate);
-      
-      // Prefetch one more day back quietly
-      const prevDate = new Date(currentDate);
-      prevDate.setDate(prevDate.getDate() - 1);
-      const prevDateKey = getDateKey(prevDate);
-      if (!timelineCache.isValid(prevDateKey)) {
-        silentLoadTimelineData(prevDate).catch(console.error);
-      }
-    });
+  const datesToLoad = [];
+  const today = new Date(currentDate);
+  for (let i = 0; i < 3; i++) { // or however many days you want
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    datesToLoad.push(safeParseDate(date));
   }
 
-  if (nextDayButton) {
-    nextDayButton.addEventListener('click', async () => {
-      currentDate.setDate(currentDate.getDate() + 1);
-      updateTimelineDate();
-      await loadTimelineData(currentDate);
-      
-      // Prefetch one more day forward quietly
-      const nextDate = new Date(currentDate);
-      nextDate.setDate(nextDate.getDate() + 1);
-      const nextDateKey = getDateKey(nextDate);
-      if (!timelineCache.isValid(nextDateKey)) {
-        silentLoadTimelineData(nextDate).catch(console.error);
-      }
-    });
-  }
+  const allData = await Promise.all(datesToLoad.map(date => 
+    Promise.all([
+      getBrowserHistory(date),
+      getGoogleDriveActivity(date),
+      getGmailActivity(date),
+      getCalendarEvents(date)
+    ]).then(([history, drive, emails, calendar]) => ({
+      date,
+      history,
+      drive,
+      emails,
+      calendar
+    }))
+  ));
+
+  const mergedData = {
+    history: allData.flatMap(data => data.history),
+    drive: { files: allData.flatMap(data => data.drive.files) },
+    emails: { all: allData.flatMap(data => data.emails.all || []) },
+    calendar: { today: allData.flatMap(data => data.calendar.today || []) }
+  };
+
+  // Set global start time
+  const allTimestamps = [
+    ...mergedData.history.map(item => item.lastVisitTime),
+    ...mergedData.drive.files.map(file => new Date(file.modifiedTime).getTime()),
+    ...(mergedData.emails.all?.map(email => Number(email.timestamp)) || []),
+    ...(mergedData.calendar.today?.map(event => safeGetTimestamp(event.start?.dateTime || event.start?.date)) || [])
+  ].filter(Boolean);
+
+  const earliestTimestamp = Math.min(...allTimestamps);
+  window.globalStartTime = earliestTimestamp;
+
+  // Build full timeline
+  buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar);
 }
+
 
 // New function for silent loading (no loading indicator)
 async function silentLoadTimelineData(date) {
@@ -271,3 +278,30 @@ const timelineCache = {
     return age < 30 * 60 * 1000; // 30 minutes
   }
 };
+
+
+async function loadAndPrependTimelineData(date) {
+  const dateKey = getDateKey(date);
+
+  if (timelineCache.isValid(dateKey)) {
+      const cachedData = timelineCache.get(dateKey);
+      prependTimeline(
+          cachedData.data.history,
+          cachedData.data.drive,
+          cachedData.data.emails,
+          cachedData.data.calendar
+      );
+      return;
+  }
+
+  const normalizedDate = safeParseDate(date);
+  const [history, drive, emails, calendar] = await Promise.all([
+      getBrowserHistory(normalizedDate),
+      getGoogleDriveActivity(normalizedDate),
+      getGmailActivity(normalizedDate),
+      getCalendarEvents(normalizedDate)
+  ]);
+
+  timelineCache.set(dateKey, { history, drive, emails, calendar });
+  prependTimeline(history, drive, emails, calendar);
+}
