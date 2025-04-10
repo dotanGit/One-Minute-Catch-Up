@@ -78,8 +78,7 @@ function rebuildTimeline(history, drive, emails, calendar) {
     const processedEvents = [];
     
     // Adjust timeline width based on zoom level
-    const zoomConfig = ZOOM_LEVELS[currentZoomLevel];
-    const timelineWidth = currentZoomLevel === '30m' ? '200%' : '100%';
+    const timelineWidth = '200%'; // Always use 200% width for all zoom levels
     const widthStyle = `calc(${timelineWidth} - 120px)`;
     
     // Apply width to both timeline events and line
@@ -200,40 +199,33 @@ function rebuildTimeline(history, drive, emails, calendar) {
     // Sort all events by timestamp
     processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
-    // Group events by time interval and filter by current period
-    const groupedEvents = groupEventsByTimeInterval(processedEvents);
+    // Calculate total time span
+    const now = Date.now();
+    const oldestEvent = processedEvents[0]?.timestamp || now;
+    const totalTimeSpan = now - oldestEvent;
 
-    // Build timeline events
-    groupedEvents.forEach((group, index) => {
+    // Create event elements with equal spacing
+    processedEvents.forEach((event, index) => {
         const eventDiv = document.createElement('div');
         eventDiv.className = `timeline-event ${index % 2 === 0 ? 'above' : 'below'}`;
         
-        const categories = Array.from(group.categories);
-        eventDiv.setAttribute('data-category', categories[0] || 'browser');
-        
-        eventDiv.style.left = `${timestampToPercentage(group.timestamp)}%`;
+        // Calculate position based on index (equal spacing)
+        const position = (index / (processedEvents.length - 1)) * 100;
+        eventDiv.style.left = `${position}%`;
 
-        const timeText = new Date(Number(group.timestamp)).toLocaleTimeString([], { 
+        const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
 
-        const eventDetails = {
-            title: `${group.events.length} Events`,
-            details: [
-                { label: 'Time Range', value: `${timeText} - ${new Date(Number(group.timestamp + ZOOM_LEVELS[currentZoomLevel].interval)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` },
-                { label: 'Event Count', value: group.events.length }
-            ],
-            actions: []
-        };
-
+        const eventDetails = getEventDetails(event);
         const popupContent = `
             <div class="timeline-event-time">${timeText}</div>
             <div class="timeline-dot"></div>
             <div class="event-popup">
                 <div class="event-title">${eventDetails.title}</div>
                 <div class="event-time">${timeText}</div>
-                <div class="event-description">${group.events.map(e => e.description).join(', ')}</div>
+                <div class="event-description">${event.description}</div>
                 <div class="event-details">
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
@@ -242,10 +234,20 @@ function rebuildTimeline(history, drive, emails, calendar) {
                         </div>
                     `).join('')}
                 </div>
+                ${eventDetails.actions.length > 0 ? `
+                    <div class="event-actions">
+                        ${eventDetails.actions.map(action => `
+                            <button class="action-button" onclick="event.stopPropagation(); ${action.onClick ? action.onClick.toString() : `window.open('${action.url}', '_blank')`}">
+                                ${action.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : ''}
             </div>
         `;
 
         eventDiv.innerHTML = popupContent;
+        eventDiv.setAttribute('data-category', getEventCategory(event));
 
         // Add click handler for expanding details
         const popup = eventDiv.querySelector('.event-popup');
@@ -263,6 +265,13 @@ function rebuildTimeline(history, drive, emails, calendar) {
 
         timelineEvents.appendChild(eventDiv);
     });
+
+    // Add "NOW" marker at the right end
+    const nowMarker = document.createElement('div');
+    nowMarker.className = 'timeline-now-marker';
+    nowMarker.style.left = '100%';
+    nowMarker.innerHTML = '<div class="now-text">NOW</div>';
+    timelineEvents.appendChild(nowMarker);
 }
 
 function initializeZoomControls(history, drive, emails, calendar) {
