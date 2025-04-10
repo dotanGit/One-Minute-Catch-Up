@@ -2,15 +2,6 @@ import { safeGetTimestamp } from '../utils/dateUtils.js';
 import { shouldFilterUrl } from '../services/browserHistoryService.js';
 import { currentDate } from '../dashboard/timeline.js';
 
-// Define zoom levels in milliseconds
-const ZOOM_LEVELS = {
-    '15m': { interval: 15 * 60 * 1000, hours: 6, periods: 4 }, // 4 periods of 6 hours
-    '30m': { interval: 30 * 60 * 1000, hours: 12, periods: 2 }, // 2 periods of 12 hours
-    '1h': { interval: 60 * 60 * 1000, hours: 24, periods: 1 } // 1 period of 24 hours
-};
-
-let currentZoomLevel = '15m';
-
 function formatTimeRange(startHour, endHour) {
     const formatHour = (hour) => {
         hour = hour % 24;
@@ -77,8 +68,8 @@ function rebuildTimeline(history, drive, emails, calendar) {
     timelineEvents.innerHTML = '';
     const processedEvents = [];
     
-    // Adjust timeline width based on zoom level
-    const timelineWidth = '200%'; // Always use 200% width for all zoom levels
+    // Set fixed width for timeline
+    const timelineWidth = '200%';
     const widthStyle = `calc(${timelineWidth} - 120px)`;
     
     // Apply width to both timeline events and line
@@ -272,50 +263,6 @@ function rebuildTimeline(history, drive, emails, calendar) {
     nowMarker.style.left = '100%';
     nowMarker.innerHTML = '<div class="now-text">NOW</div>';
     timelineEvents.appendChild(nowMarker);
-}
-
-function initializeZoomControls(history, drive, emails, calendar) {
-    const zoomButtons = document.querySelectorAll('.zoom-button');
-    zoomButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            zoomButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            currentZoomLevel = button.id.replace('zoom-', '');
-            console.log('Zoom level changed to:', currentZoomLevel); // Debug log
-            rebuildTimeline(history, drive, emails, calendar);
-        });
-    });
-}
-
-function groupEventsByTimeInterval(events) {
-    const groupedEvents = {};
-    const { start } = getCurrentTimeRange();
-    
-    // Get interval based on current zoom level
-    const intervalMs = ZOOM_LEVELS[currentZoomLevel].interval;
-    
-    events.forEach(event => {
-        const timestamp = Number(event.timestamp);
-        const eventTime = new Date(timestamp);
-        
-        // Round to nearest interval based on zoom level
-        const timeSinceStart = eventTime.getTime() - start.getTime();
-        const intervalIndex = Math.floor(timeSinceStart / intervalMs);
-        const intervalStart = start.getTime() + (intervalIndex * intervalMs);
-        
-        if (!groupedEvents[intervalStart]) {
-            groupedEvents[intervalStart] = {
-                timestamp: intervalStart,
-                events: [],
-                categories: new Set()
-            };
-        }
-        
-        groupedEvents[intervalStart].events.push(event);
-        groupedEvents[intervalStart].categories.add(getEventCategory(event));
-    });
-    
-    return Object.values(groupedEvents).sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function simplifyUrl(url) {
@@ -611,7 +558,6 @@ export function buildTimeline(history, drive, emails, calendar) {
     if (!timelineEvents) return;
   
     // Initialize controls
-    initializeZoomControls(history, drive, emails, calendar);
     initializeTimePeriodControls(history, drive, emails, calendar);
     updateTimePeriodDisplay();
   
