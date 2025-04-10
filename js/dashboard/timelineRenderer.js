@@ -462,6 +462,11 @@ function rebuildTimeline(history, drive, emails, calendar) {
     nowMarker.style.left = '100%';
     nowMarker.innerHTML = '<div class="now-text">NOW</div>';
     timelineEvents.appendChild(nowMarker);
+
+    const container = document.querySelector('.timeline-container');
+    if (container) {
+    container.scrollLeft = container.scrollWidth;
+    }
 }
 
 function simplifyUrl(url) {

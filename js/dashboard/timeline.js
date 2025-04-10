@@ -220,13 +220,6 @@ export async function initTimeline() {
 
   // Build full timeline
   buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar);
-
-  const timelineContainer = document.querySelector('.timeline-container');
-  if (timelineContainer) {
-    requestAnimationFrame(() => {
-      timelineContainer.scrollLeft = timelineContainer.scrollWidth;
-    });
-  }
 }
 
 
