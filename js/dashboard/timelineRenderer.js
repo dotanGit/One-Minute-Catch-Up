@@ -455,8 +455,8 @@
             const parsedUrl = new URL(url);
             let cleanUrl = parsedUrl.hostname + parsedUrl.pathname;
             
-            if (cleanUrl.length > 30) {
-                return cleanUrl.substring(0, 30) + '...';
+            if (cleanUrl.length > 20) {
+                return cleanUrl.substring(0, 20) + '...';
             }
 
             return cleanUrl;
