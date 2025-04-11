@@ -154,7 +154,7 @@
                         timestamp: Number(email.timestamp),
                         title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
                         description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
-                        subject: simplifyText(email.subject || 'No subject'),
+                        subject: email.subject || 'No subject',
                         from: simplifyText(email.from),
                         to: simplifyText(email.to),
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
@@ -174,9 +174,9 @@
                             type: 'calendar',
                             timestamp: timestamp,
                             title: simplifyText('Calendar Event'),
-                            description: simplifyText(event.summary || 'Untitled event'),
+                            description: event.summary || 'Untitled event',
                             calendarName: simplifyText(event.calendarName),
-                            location: simplifyText(event.location),
+                            location: event.location,
                             accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
                             eventUrl: event.htmlLink
@@ -358,7 +358,7 @@
                         timestamp: Number(email.timestamp),
                         title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
                         description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
-                        subject: simplifyText(email.subject || 'No subject'),
+                        subject: email.subject || 'No subject',
                         from: simplifyText(email.from),
                         to: simplifyText(email.to),
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
@@ -378,9 +378,9 @@
                             type: 'calendar',
                             timestamp: timestamp,
                             title: simplifyText('Calendar Event'),
-                            description: simplifyText(event.summary || 'Untitled event'),
+                            description: event.summary || 'Untitled event',
                             calendarName: simplifyText(event.calendarName),
-                            location: simplifyText(event.location),
+                            location: event.location,
                             accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
                             eventUrl: event.htmlLink

@@ -12,25 +12,26 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 40px 20px;
+    padding: 10px 20px;
     color: #ffffff;
+    overflow: hidden;
 }
 
 .container {
     width: 100%;
     max-width: 2000px;
     text-align: center;
-    padding: 20px;
+    padding: 0px;
     margin: 0 auto;
-    margin-top: 0px;
 }
 
 .greeting {
     font-size: 35px;
     font-weight: 600;
     color: #ffffff;
-    margin-bottom: 40px;
-    background: linear-gradient(45deg, #00ff87, #60efff);
+    margin-bottom: 60px;
+    margin-top: 60px;
+    background: linear-gradient(45deg, #6d6b6b, #323232);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
