@@ -625,6 +625,18 @@
     right:70px; /* adjust as you like */
 }
 
+/* Add styles for clickable details */
+.detail-value.link {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.detail-value.link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
   
   
   

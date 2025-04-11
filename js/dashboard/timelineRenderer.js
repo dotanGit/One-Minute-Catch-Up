@@ -206,14 +206,12 @@
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
-                            <span class="detail-value">${detail.value}</span>
+                            ${detail.isLink 
+                                ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
+                                : `<span class="detail-value">${detail.value}</span>`
+                            }
                         </div>
                     `).join('')}
-                    <div class="event-actions">
-                        ${eventDetails.actions.map(action => `
-                            <button class="action-button" data-url="${action.url || ''}">${action.label}</button>
-                        `).join('')}
-                    </div>
                 </div>
             `;
 
@@ -410,14 +408,12 @@
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
-                            <span class="detail-value">${detail.value}</span>
+                            ${detail.isLink 
+                                ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
+                                : `<span class="detail-value">${detail.value}</span>`
+                            }
                         </div>
                     `).join('')}
-                    <div class="event-actions">
-                        ${eventDetails.actions.map(action => `
-                            <button class="action-button" data-url="${action.url || ''}">${action.label}</button>
-                        `).join('')}
-                    </div>
                 </div>
             `;
 
@@ -506,33 +502,29 @@
                 return {
                     title: 'Drive File Activity',
                     details: [
-                        { label: 'File Name', value: event.description },
+                        { 
+                            label: 'File Name', 
+                            value: event.description,
+                            isLink: true,
+                            url: event.webViewLink || '#'
+                        },
                         { label: 'Last Edit', value: new Date(event.timestamp).toLocaleTimeString() },
                         { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' },
                         { label: 'Changes', value: event.changes || 'Content modified' }
                     ],
-                    actions: [
-                        { 
-                            label: 'Open in Drive', 
-                            url: event.webViewLink || '#',
-                            onClick: (e) => {
-                                e.preventDefault();
-                                if (event.webViewLink) {
-                                    window.open(event.webViewLink, '_blank');
-                                } else {
-                                    console.error('No webViewLink available for file:', event);
-                                    alert('Unable to open file. Drive link not available.');
-                                }
-                            }
-                        }
-                    ]
+                    actions: [] // Remove buttons
                 };
             case 'browser':
                 const isLocalFile = event.url.startsWith('file://');
                 return {
                     title: 'Browser Activity',
                     details: [
-                        { label: 'Website', value: event.description },
+                        { 
+                            label: 'Website', 
+                            value: event.description,
+                            isLink: true,
+                            url: event.url
+                        },
                         { label: 'Title', value: event.title },
                         { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
@@ -688,42 +680,46 @@
                     ]
                 };
             case 'email':
-                const emailTime = new Date(Number(event.timestamp)).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    hour12: true 
-                });
                 return {
                     title: event.title,
                     details: [
-                        { label: 'Subject', value: event.subject || 'No subject' }
+                        { 
+                            label: 'Subject', 
+                            value: event.subject || 'No subject',
+                            isLink: true,
+                            url: event.emailUrl || '#'
+                        }
                     ],
-                    actions: [
-                        { label: 'Open Email', url: event.emailUrl || '#' }
-                    ]
+                    actions: [] // Remove buttons
                 };
             case 'calendar':
                 return {
                     title: 'Calendar Event',
                     details: [
                         { label: 'Location', value: event.location || 'No location' },
-                        { label: 'Calendar', value: event.summaryOverride || event.calendarName || 'Default' }
+                        { 
+                            label: 'Calendar', 
+                            value: event.summaryOverride || event.calendarName || 'Default',
+                            isLink: true,
+                            url: event.eventUrl || '#'
+                        }
                     ],
-                    actions: [
-                        { label: 'View Event', url: event.eventUrl || '#' }
-                    ]
+                    actions: [] // Remove buttons
                 };
             default:
                 return {
                     title: 'Browser Activity',
                     details: [
-                        { label: 'Website', value: event.description },
+                        { 
+                            label: 'Website', 
+                            value: event.description,
+                            isLink: true,
+                            url: event.url || '#'
+                        },
                         { label: 'Title', value: event.title },
                         { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
-                    actions: [
-                        { label: 'Visit Site', url: event.url || '#' }
-                    ]
+                    actions: [] // Remove buttons
                 };
         }
     }
