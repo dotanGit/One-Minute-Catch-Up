@@ -28,7 +28,7 @@
 .timeline-container {
     position: relative;
     width: 100%;
-    height: 700px;
+    height: 400px;
     margin-top: 20px;
     padding: 0 60px;
     overflow: hidden; 
@@ -193,7 +193,7 @@
     text-align: center;
     background-color: var(--accent-color);
     color: white;
-    font-size: 0.9rem;        /* Made slightly smaller to fit both pieces of text */
+    font-size: 0.8rem;        /* Reduce header size */
     font-weight: 500;
     display: grid;
     place-content: center;
@@ -235,7 +235,7 @@
 
 .event-popup .descr {
     padding-block-end: 1rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 300;
     color: var(--color, rgba(30, 30, 30));
 }
@@ -296,7 +296,7 @@
     color: white;
     padding: 6px 12px;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;       /* Reduce button text size */
     font-weight: 500;
     opacity: 0.8;
     transition: all 0.2s ease;
@@ -314,17 +314,19 @@
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;       /* Reduce overall detail item size */
 }
 
 .detail-item .detail-label {
     color: var(--color, rgba(30, 30, 30, 0.7));
     font-weight: 500;
+    font-size: 0.8rem;       /* Reduce label size */
 }
 
 .detail-item .detail-value {
     color: var(--color, rgba(30, 30, 30));
     flex-grow: 1;
+    font-size: 0.8rem;       /* Reduce value size */
 }
 
 /* File status message styles */
@@ -633,6 +635,7 @@
     text-decoration: none;
     cursor: pointer;
     transition: opacity 0.2s ease;
+    font-size: 0.8rem;       /* Reduce link size */
 }
 
 .detail-value.link:hover {

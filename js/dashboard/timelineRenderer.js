@@ -92,7 +92,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: 'Website Visit',
+                        title: 'Browser Visit',
+                        actualTitle: item.title,
                         description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
@@ -115,7 +116,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: 'Website Visit',
+                        title: 'Browser Visit',
+                        actualTitle: item.title,
                         description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
@@ -294,7 +296,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: 'Website Visit',
+                        title: 'Browser Visit',
+                        actualTitle: item.title,
                         description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
@@ -317,7 +320,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: 'Website Visit',
+                        title: 'Browser Visit',
+                        actualTitle: item.title,
                         description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
@@ -537,15 +541,18 @@
             case 'browser':
                 const isLocalFile = event.url.startsWith('file://');
                 return {
-                    title: event.title,
+                    title: 'Browser Visit',
                     details: [
+                        { 
+                            label: 'Title', 
+                            value: event.actualTitle || 'No title'
+                        },
                         { 
                             label: 'Website', 
                             value: event.description,
                             isLink: true,
                             url: event.url
                         },
-                        { label: 'Title', value: event.title },
                         { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
                     actions: isLocalFile ? [
