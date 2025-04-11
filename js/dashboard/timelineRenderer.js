@@ -138,7 +138,6 @@
                             title: simplifyText('Drive File Edit'),
                             description: simplifyText(file.name),
                             webViewLink: file.webViewLink,
-                            changes: file.lastModifyingUser ? simplifyText(`Modified by ${file.lastModifyingUser.displayName}`) : 'Modified'
                         });
                     }
                 }
@@ -342,7 +341,6 @@
                             title: simplifyText('Drive File Edit'),
                             description: simplifyText(file.name),
                             webViewLink: file.webViewLink,
-                            changes: file.lastModifyingUser ? simplifyText(`Modified by ${file.lastModifyingUser.displayName}`) : 'Modified'
                         });
                     }
                 }
@@ -534,7 +532,6 @@
                             url: event.webViewLink || '#'
                         },
                         { label: 'Last Edit', value: new Date(event.timestamp).toLocaleTimeString() },
-                        { label: 'Changes', value: event.changes }
                     ],
                     actions: []
                 };
@@ -553,7 +550,6 @@
                             isLink: true,
                             url: event.url
                         },
-                        { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
                     actions: isLocalFile ? [
                         { 
@@ -749,7 +745,6 @@
                             url: event.url || '#'
                         },
                         { label: 'Title', value: event.title },
-                        { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
                     actions: []
                 };

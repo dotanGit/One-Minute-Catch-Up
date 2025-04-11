@@ -272,6 +272,8 @@
 
 .timeline-event.below .event-popup {
     top: 45px;
+    border-bottom-right-radius: 14px;
+    border-bottom-left-radius: 14px;
 }
 
 .timeline-event.below .event-popup .date {
