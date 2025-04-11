@@ -216,7 +216,9 @@
                             <span class="detail-label">${detail.label}:</span>
                             ${detail.isLink 
                                 ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
-                                : `<span class="detail-value">${detail.value}</span>`
+                                : detail.role === 'heading'
+                                    ? `<span class="detail-value heading" role="heading">${detail.value}</span>`
+                                    : `<span class="detail-value">${detail.value}</span>`
                             }
                         </div>
                     `).join('')}
@@ -420,7 +422,9 @@
                             <span class="detail-label">${detail.label}:</span>
                             ${detail.isLink 
                                 ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
-                                : `<span class="detail-value">${detail.value}</span>`
+                                : detail.role === 'heading'
+                                    ? `<span class="detail-value heading" role="heading">${detail.value}</span>`
+                                    : `<span class="detail-value">${detail.value}</span>`
                             }
                         </div>
                     `).join('')}
@@ -804,3 +808,4 @@
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         }
     }
+
