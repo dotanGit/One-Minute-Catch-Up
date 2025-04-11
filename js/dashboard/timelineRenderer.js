@@ -199,20 +199,17 @@
 
             const eventDetails = getEventDetails(event);
             const popupContent = `
-                <div class="timeline-event-time">${timeText}</div>
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="event-title">${eventDetails.title}</div>
-                    <div class="event-time">${timeText}</div>
-                    <div class="event-description">${event.description}</div>
-                    <div class="event-details">
-                        ${eventDetails.details.map(detail => `
-                            <div class="detail-item">
-                                <span class="detail-label">${detail.label}:</span>
-                                <span class="detail-value">${detail.value}</span>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="date">${timeText}</div>
+                    <div class="title">${eventDetails.title}</div>
+                    <div class="descr">${event.description}</div>
+                    ${eventDetails.details.map(detail => `
+                        <div class="detail-item">
+                            <span class="detail-label">${detail.label}:</span>
+                            <span class="detail-value">${detail.value}</span>
+                        </div>
+                    `).join('')}
                     <div class="event-actions">
                         ${eventDetails.actions.map(action => `
                             <button class="action-button" data-url="${action.url || ''}">${action.label}</button>
@@ -407,20 +404,17 @@
 
             const eventDetails = getEventDetails(event);
             const popupContent = `
-                <div class="timeline-event-time">${timeText}</div>
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="event-title">${eventDetails.title}</div>
-                    <div class="event-time">${timeText}</div>
-                    <div class="event-description">${event.description}</div>
-                    <div class="event-details">
-                        ${eventDetails.details.map(detail => `
-                            <div class="detail-item">
-                                <span class="detail-label">${detail.label}:</span>
-                                <span class="detail-value">${detail.value}</span>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="date">${timeText}</div>
+                    <div class="title">${eventDetails.title}</div>
+                    <div class="descr">${event.description}</div>
+                    ${eventDetails.details.map(detail => `
+                        <div class="detail-item">
+                            <span class="detail-label">${detail.label}:</span>
+                            <span class="detail-value">${detail.value}</span>
+                        </div>
+                    `).join('')}
                     <div class="event-actions">
                         ${eventDetails.actions.map(action => `
                             <button class="action-button" data-url="${action.url || ''}">${action.label}</button>

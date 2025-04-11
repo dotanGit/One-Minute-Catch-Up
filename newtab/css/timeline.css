@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap");
+
 .timeline-wrapper {
     margin-top: 40px;
     width: 100%;
@@ -155,22 +157,109 @@
 
 /* Update popup positioning */
 .timeline-event .event-popup {
-    display: block;
+    --inlineP: 1.5rem;
+    --dateH: 3rem;
+    --accent-color: #FBCA3E;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 12px;
-    white-space: normal;
-    font-size: 14px;
-    z-index: 100;
+    margin-inline: var(--inlineP);
     width: 280px;
-    border: none;
-    transition: all 0.2s ease;
+    font-family: "Poppins", sans-serif;
+    z-index: 100;
 }
 
-/* Position popups above/below with more space */
+/* Update category-specific accent colors */
+.timeline-event[data-category="gmail"] .event-popup {
+    --accent-color: #EA4335;
+}
+
+.timeline-event[data-category="calendar"] .event-popup {
+    --accent-color: #34A853;
+}
+
+.timeline-event[data-category="drive"] .event-popup {
+    --accent-color: #FBBC05;
+}
+
+.timeline-event[data-category="browser"] .event-popup {
+    --accent-color: #4285F4;
+}
+
+/* Style the date header */
+.event-popup .date {
+    height: var(--dateH);
+    margin-inline: calc(var(--inlineP) * -1);
+    text-align: center;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: grid;
+    place-content: center;
+    position: relative;
+    border-radius: calc(var(--dateH) / 2) 0 0 calc(var(--dateH) / 2);
+}
+
+/* Add the date flap */
+.event-popup .date::before {
+    content: "";
+    width: var(--inlineP);
+    aspect-ratio: 1;
+    background: var(--accent-color);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.2) 100%, transparent);
+    position: absolute;
+    top: 100%;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+    right: 0;
+}
+
+/* Style the title and description */
+.event-popup .title,
+.event-popup .descr {
+    background: var(--bgColor, rgba(245, 245, 245));
+    position: relative;
+    padding-inline: 1.5rem;
+}
+
+.event-popup .title {
+    overflow: hidden;
+    padding-block-start: 1.5rem;
+    padding-block-end: 1rem;
+    font-weight: 500;
+    color: var(--color, rgba(30, 30, 30));
+}
+
+.event-popup .descr {
+    padding-block-end: 1.5rem;
+    font-weight: 300;
+    color: var(--color, rgba(30, 30, 30));
+}
+
+/* Add shadows */
+.event-popup .title::before,
+.event-popup .descr::before {
+    content: "";
+    position: absolute;
+    width: 90%;
+    height: 0.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    left: 50%;
+    border-radius: 50%;
+    filter: blur(4px);
+    transform: translate(-50%, 50%);
+}
+
+.event-popup .title::before {
+    bottom: calc(100% + 0.125rem);
+}
+
+.event-popup .descr::before {
+    z-index: -1;
+    bottom: 0.25rem;
+}
+
+/* Update positioning for above/below events */
 .timeline-event.above .event-popup {
     bottom: 60px;
 }
@@ -179,87 +268,57 @@
     top: 60px;
 }
 
-.event-popup .event-title {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #fff;
-    font-size: 16px;
+.timeline-event.below .event-popup .date {
+    border-radius: 0 calc(var(--dateH) / 2) calc(var(--dateH) / 2) 0;
 }
 
-.event-popup .event-time {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 13px;
-    margin-bottom: 12px;
+.timeline-event.below .event-popup .date::before {
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    left: 0;
+    right: auto;
 }
 
-.event-popup .event-description {
-    color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 12px;
-    line-height: 1.5;
-}
-
-.event-popup .event-meta {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding-top: 12px;
-    margin-top: 12px;
-}
-
-.event-popup .event-details {
-    display: block;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Remove hover and click display logic */
-.timeline-event:hover .event-popup {
-    display: block;
-}
-
-.timeline-event .event-popup.expanded {
-    display: block;
-}
-
-.event-details .detail-item {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8px;
-    font-size: 12px;
-}
-
-.detail-item .detail-label {
-    color: rgba(255, 255, 255, 0.5);
-    width: 80px;
-    flex-shrink: 0;
-}
-
-.detail-item .detail-value {
-    color: rgba(255, 255, 255, 0.9);
-    flex-grow: 1;
-}
-
+/* Update action buttons */
 .event-popup .event-actions {
+    padding: 1rem 1.5rem;
+    background: var(--bgColor, rgba(245, 245, 245));
     display: flex;
     gap: 8px;
-    margin-top: 12px;
 }
 
 .event-actions .action-button {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--accent-color);
+    border: none;
     color: white;
     padding: 8px 16px;
     border-radius: 6px;
     font-weight: 500;
+    opacity: 0.8;
     transition: all 0.2s ease;
 }
 
 .event-actions .action-button:hover {
-    background: rgba(255, 255, 255, 0.25);
+    opacity: 1;
     transform: translateY(-1px);
-    cursor: pointer;
+}
+
+/* Update details section */
+.event-popup .detail-item {
+    padding: 0.5rem 1.5rem;
+    background: var(--bgColor, rgba(245, 245, 245));
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.detail-item .detail-label {
+    color: var(--color, rgba(30, 30, 30, 0.7));
+    font-weight: 500;
+}
+
+.detail-item .detail-value {
+    color: var(--color, rgba(30, 30, 30));
+    flex-grow: 1;
 }
 
 /* File status message styles */
