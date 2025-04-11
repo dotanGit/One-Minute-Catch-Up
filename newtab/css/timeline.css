@@ -265,13 +265,13 @@
 
 /* Update positioning for above/below events */
 .timeline-event.above .event-popup {
-    bottom: 45px;
+    bottom: 65px;
     border-bottom-right-radius: 14px;
     border-bottom-left-radius: 14px;
 }
 
 .timeline-event.below .event-popup {
-    top: 45px;
+    top: 65px;
     border-bottom-right-radius: 14px;
     border-bottom-left-radius: 14px;
 }
