@@ -157,14 +157,14 @@
 
 /* Update popup positioning */
 .timeline-event .event-popup {
-    --inlineP: 1.5rem;
-    --dateH: 3rem;
+    --inlineP: 1rem;
+    --dateH: 2.5rem;
     --accent-color: #FBCA3E;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     margin-inline: var(--inlineP);
-    width: 280px;
+    width: 300px;
     font-family: "Poppins", sans-serif;
     z-index: 100;
 }
@@ -193,7 +193,7 @@
     text-align: center;
     background-color: var(--accent-color);
     color: white;
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     display: grid;
     place-content: center;
@@ -219,19 +219,21 @@
 .event-popup .descr {
     background: var(--bgColor, rgba(245, 245, 245));
     position: relative;
-    padding-inline: 1.5rem;
+    padding-inline: 1rem;
 }
 
 .event-popup .title {
     overflow: hidden;
-    padding-block-start: 1.5rem;
-    padding-block-end: 1rem;
+    padding-block-start: 1rem;
+    padding-block-end: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: var(--color, rgba(30, 30, 30));
 }
 
 .event-popup .descr {
-    padding-block-end: 1.5rem;
+    padding-block-end: 1rem;
+    font-size: 0.85rem;
     font-weight: 300;
     color: var(--color, rgba(30, 30, 30));
 }
@@ -261,11 +263,11 @@
 
 /* Update positioning for above/below events */
 .timeline-event.above .event-popup {
-    bottom: 60px;
+    bottom: 45px;
 }
 
 .timeline-event.below .event-popup {
-    top: 60px;
+    top: 45px;
 }
 
 .timeline-event.below .event-popup .date {
@@ -280,7 +282,7 @@
 
 /* Update action buttons */
 .event-popup .event-actions {
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem;
     background: var(--bgColor, rgba(245, 245, 245));
     display: flex;
     gap: 8px;
@@ -290,8 +292,9 @@
     background: var(--accent-color);
     border: none;
     color: white;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 6px;
+    font-size: 0.85rem;
     font-weight: 500;
     opacity: 0.8;
     transition: all 0.2s ease;
@@ -304,11 +307,12 @@
 
 /* Update details section */
 .event-popup .detail-item {
-    padding: 0.5rem 1.5rem;
+    padding: 0.4rem 1rem;
     background: var(--bgColor, rgba(245, 245, 245));
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    font-size: 0.85rem;
 }
 
 .detail-item .detail-label {

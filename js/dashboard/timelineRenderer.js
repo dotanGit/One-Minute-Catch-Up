@@ -201,9 +201,8 @@
             const popupContent = `
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="date">${timeText}</div>
-                    <div class="title">${eventDetails.title}</div>
-                    <div class="descr">${event.description}</div>
+                    <div class="date">${eventDetails.title}</div>
+                    <div class="title">${timeText}</div>
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
@@ -406,9 +405,8 @@
             const popupContent = `
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="date">${timeText}</div>
-                    <div class="title">${eventDetails.title}</div>
-                    <div class="descr">${event.description}</div>
+                    <div class="date">${eventDetails.title}</div>
+                    <div class="title">${timeText}</div>
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
