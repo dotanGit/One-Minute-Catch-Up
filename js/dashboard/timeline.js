@@ -222,8 +222,18 @@ export async function initTimeline() {
   const earliestTimestamp = Math.min(...allTimestamps);
   window.globalStartTime = earliestTimestamp;
 
+  const timelineWrapper = document.querySelector('.timeline-wrapper');
+  if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
+
   // Build full timeline
   buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar);
+
+  // ✅ Now set the scroll position immediately
+  const container = document.querySelector('.timeline-container');
+  container.scrollLeft = container.scrollWidth;
+
+  // ✅ Finally, show the wrapper
+  if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
 }
 
 
@@ -331,28 +341,39 @@ async function loadAndPrependTimelineData(date) {
 
 
 const container = document.querySelector('.timeline-container');
-const scrollSpeed = 5;
+const scrollSpeed = 10;
 let scrollInterval = null;
 
-document.getElementById('scroll-left').addEventListener('mouseenter', () => {
+function startScroll(direction) {
+  stopScroll(); // Clear previous interval
+
   scrollInterval = setInterval(() => {
-    container.scrollLeft -= scrollSpeed;
-  }, 16); // Left = subtract
-});
+    const isRTL = getComputedStyle(container).direction === 'rtl';
+    const scrollAmount = scrollSpeed * (isRTL ? -1 : 1) * direction;
+    container.scrollLeft += scrollAmount;
+  }, 16); // ~60fps
+}
 
-document.getElementById('scroll-left').addEventListener('mouseleave', () => {
-  clearInterval(scrollInterval);
-});
+function stopScroll() {
+  if (scrollInterval !== null) {
+    clearInterval(scrollInterval);
+    scrollInterval = null;
 
-document.getElementById('scroll-right').addEventListener('mouseenter', () => {
-  scrollInterval = setInterval(() => {
-    container.scrollLeft += scrollSpeed;
-  }, 16); // Right = add
-});
+    // ✨ Add this to force a repaint and eliminate the visual "jump"
+    container.scrollLeft = container.scrollLeft;
+  }
+}
 
-document.getElementById('scroll-right').addEventListener('mouseleave', () => {
-  clearInterval(scrollInterval);
-});
+document.getElementById('scroll-left').addEventListener('mouseenter', () => startScroll(-1));
+document.getElementById('scroll-left').addEventListener('mouseleave', stopScroll);
+
+document.getElementById('scroll-right').addEventListener('mouseenter', () => startScroll(1));
+document.getElementById('scroll-right').addEventListener('mouseleave', stopScroll);
+
+
+
+
+
 
 
 

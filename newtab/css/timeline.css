@@ -30,9 +30,9 @@
     margin-top: 20px;
     padding: 0 60px;
     overflow: hidden; 
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
     -webkit-overflow-scrolling: touch;
-    direction: rtl; /* if you want to keep RTL */
+    /* direction: rtl; */
 }
 
 /* You can remove the entire scrollbar code below */
@@ -67,7 +67,7 @@
     right: 60px;
     height: 100%;
     min-width: 100%;
-    direction: ltr;
+    /* direction: ltr; */
 }
 
 .timeline-event {
@@ -602,29 +602,27 @@
 }
   
 
-
-.timeline-navigation {
-    position: fixed; /* fixed so it's always visible */
+.nav-button {
+    position: absolute;
     top: 50%;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
     transform: translateY(-50%);
-    pointer-events: none; /* important: children buttons will handle events */
-    z-index: 1000;
-  }
-  
-  .nav-button {
-    pointer-events: auto;
-    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
-    padding: 12px 16px;
-    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
     font-size: 22px;
-    border-radius: 4px;
-    margin: 0 10px;
   }
+  
+  #scroll-left {
+    left: 10px;
+  }
+  
+  #scroll-right {
+    right: 10px;
+  }
+  
   
   
