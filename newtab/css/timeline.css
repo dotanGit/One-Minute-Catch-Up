@@ -603,10 +603,10 @@
   
 
 .nav-button {
-    position: absolute;
-    top: 50%;
+    position: fixed; /* changed from absolute */
+    top: calc(50% + 84px); /* align to middle of screen */
     transform: translateY(-50%);
-    z-index: 10;
+    z-index: 100; /* make sure on top */
     cursor: pointer;
     background: rgba(0, 0, 0, 0.5);
     color: white;
@@ -614,15 +614,16 @@
     padding: 10px;
     border-radius: 50%;
     font-size: 22px;
-  }
-  
-  #scroll-left {
-    left: 10px;
-  }
-  
-  #scroll-right {
-    right: 10px;
-  }
+}
+
+#scroll-left {
+    left: 70px; /* adjust as you like */
+}
+
+#scroll-right {
+    right:70px; /* adjust as you like */
+}
+
   
   
   
