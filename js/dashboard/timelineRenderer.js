@@ -725,12 +725,6 @@
                             role: 'heading'
                         },
                         { label: 'Location', value: event.location || 'No location' },
-                        { 
-                            label: 'Calendar', 
-                            value: event.calendarName,
-                            isLink: true,
-                            url: event.eventUrl || '#'
-                        }
                     ],
                     actions: []
                 };

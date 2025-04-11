@@ -164,7 +164,7 @@
     left: 50%;
     transform: translateX(-50%);
     margin-inline: var(--inlineP);
-    width: 275px;
+    width: 300px;
     font-family: "Poppins", sans-serif;
     z-index: 100;
 }
