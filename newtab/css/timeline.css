@@ -164,7 +164,7 @@
     left: 50%;
     transform: translateX(-50%);
     margin-inline: var(--inlineP);
-    width: 300px;
+    width: 275px;
     font-family: "Poppins", sans-serif;
     z-index: 100;
 }
@@ -193,12 +193,14 @@
     text-align: center;
     background-color: var(--accent-color);
     color: white;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: 0.9rem;        /* Made slightly smaller to fit both pieces of text */
+    font-weight: 500;
     display: grid;
     place-content: center;
     position: relative;
     border-radius: calc(var(--dateH) / 2) 0 0 calc(var(--dateH) / 2);
+    padding: 0 1rem;          /* Added padding for text */
+    white-space: nowrap;      /* Keep text on one line */
 }
 
 /* Add the date flap */

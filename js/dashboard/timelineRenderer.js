@@ -59,6 +59,12 @@
         }
     }
 
+    function simplifyTitle(title) {
+        if (title.length > 20) {
+            return title.substring(0, 20) + '...';
+        }
+        return title;
+    }
 
     export function prependTimeline(history, drive, emails, calendar) {
         const timelineEvents = document.getElementById('timeline-events');
@@ -86,8 +92,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: item.title || 'Website Visit',
-                        description: simplifyUrl(item.url),
+                        title: 'Website Visit',
+                        description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
                     });
@@ -109,8 +115,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: item.title || 'Website Visit',
-                        description: simplifyUrl(item.url),
+                        title: 'Website Visit',
+                        description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
                     });
@@ -127,10 +133,10 @@
                         processedEvents.push({
                             type: 'drive',
                             timestamp: timestamp,
-                            title: 'Drive File Edit',
-                            description: file.name,
+                            title: simplifyText('Drive File Edit'),
+                            description: simplifyText(file.name),
                             webViewLink: file.webViewLink,
-                            changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
+                            changes: file.lastModifyingUser ? simplifyText(`Modified by ${file.lastModifyingUser.displayName}`) : 'Modified'
                         });
                     }
                 }
@@ -145,11 +151,11 @@
                     processedEvents.push({
                         type: 'email',
                         timestamp: Number(email.timestamp),
-                        title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
-                        description: email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`,
-                        subject: email.subject || 'No subject',
-                        from: email.from,
-                        to: email.to,
+                        title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
+                        description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
+                        subject: simplifyText(email.subject || 'No subject'),
+                        from: simplifyText(email.from),
+                        to: simplifyText(email.to),
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
                     });
                 }
@@ -166,10 +172,11 @@
                         processedEvents.push({
                             type: 'calendar',
                             timestamp: timestamp,
-                            title: 'Calendar Event',
-                            description: event.summary || 'Untitled event',
-                            calendarName: event.calendarName,
-                            location: event.location,
+                            title: simplifyText('Calendar Event'),
+                            description: simplifyText(event.summary || 'Untitled event'),
+                            calendarName: simplifyText(event.calendarName),
+                            location: simplifyText(event.location),
+                            accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
                             eventUrl: event.htmlLink
                         });
@@ -201,8 +208,9 @@
             const popupContent = `
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="date">${eventDetails.title}</div>
-                    <div class="title">${timeText}</div>
+                    <div class="date">
+                        ${eventDetails.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${timeText}
+                    </div>
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
@@ -284,8 +292,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: item.title || 'Website Visit',
-                        description: simplifyUrl(item.url),
+                        title: 'Website Visit',
+                        description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
                     });
@@ -307,8 +315,8 @@
                     processedEvents.push({
                         type: 'browser',
                         timestamp: currentTime,
-                        title: item.title || 'Website Visit',
-                        description: simplifyUrl(item.url),
+                        title: 'Website Visit',
+                        description: simplifyText(item.url),
                         url: item.url,
                         duration: 0
                     });
@@ -325,10 +333,10 @@
                         processedEvents.push({
                             type: 'drive',
                             timestamp: timestamp,
-                            title: 'Drive File Edit',
-                            description: file.name,
+                            title: simplifyText('Drive File Edit'),
+                            description: simplifyText(file.name),
                             webViewLink: file.webViewLink,
-                            changes: file.lastModifyingUser ? `Modified by ${file.lastModifyingUser.displayName}` : 'Modified'
+                            changes: file.lastModifyingUser ? simplifyText(`Modified by ${file.lastModifyingUser.displayName}`) : 'Modified'
                         });
                     }
                 }
@@ -344,11 +352,11 @@
                     processedEvents.push({
                         type: 'email',
                         timestamp: Number(email.timestamp),
-                        title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
-                        description: email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`,
-                        subject: email.subject || 'No subject',
-                        from: email.from,
-                        to: email.to,
+                        title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
+                        description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
+                        subject: simplifyText(email.subject || 'No subject'),
+                        from: simplifyText(email.from),
+                        to: simplifyText(email.to),
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
                     });
                 }
@@ -365,10 +373,11 @@
                         processedEvents.push({
                             type: 'calendar',
                             timestamp: timestamp,
-                            title: 'Calendar Event',
-                            description: event.summary || 'Untitled event',
-                            calendarName: event.calendarName,
-                            location: event.location,
+                            title: simplifyText('Calendar Event'),
+                            description: simplifyText(event.summary || 'Untitled event'),
+                            calendarName: simplifyText(event.calendarName),
+                            location: simplifyText(event.location),
+                            accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
                             eventUrl: event.htmlLink
                         });
@@ -403,8 +412,9 @@
             const popupContent = `
                 <div class="timeline-dot"></div>
                 <div class="event-popup">
-                    <div class="date">${eventDetails.title}</div>
-                    <div class="title">${timeText}</div>
+                    <div class="date">
+                        ${eventDetails.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${timeText}
+                    </div>
                     ${eventDetails.details.map(detail => `
                         <div class="detail-item">
                             <span class="detail-label">${detail.label}:</span>
@@ -465,6 +475,13 @@
         }
     }
 
+    function simplifyFileName(fileName) {
+        if (fileName.length > 20) {
+            return fileName.substring(0, 20) + '...';
+        }
+        return fileName;
+    }
+
     function extractPattern(url) {
         try {
             const parsedUrl = new URL(url);
@@ -500,7 +517,7 @@
         switch (event.type) {
             case 'drive':
                 return {
-                    title: 'Drive File Activity',
+                    title: event.title,
                     details: [
                         { 
                             label: 'File Name', 
@@ -509,15 +526,14 @@
                             url: event.webViewLink || '#'
                         },
                         { label: 'Last Edit', value: new Date(event.timestamp).toLocaleTimeString() },
-                        { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' },
-                        { label: 'Changes', value: event.changes || 'Content modified' }
+                        { label: 'Changes', value: event.changes }
                     ],
-                    actions: [] // Remove buttons
+                    actions: []
                 };
             case 'browser':
                 const isLocalFile = event.url.startsWith('file://');
                 return {
-                    title: 'Browser Activity',
+                    title: event.title,
                     details: [
                         { 
                             label: 'Website', 
@@ -685,7 +701,7 @@
                     details: [
                         { 
                             label: 'Subject', 
-                            value: event.subject || 'No subject',
+                            value: event.subject,
                             isLink: true,
                             url: event.emailUrl || '#'
                         }
@@ -694,21 +710,26 @@
                 };
             case 'calendar':
                 return {
-                    title: 'Calendar Event',
+                    title: event.title,
                     details: [
+                        { 
+                            label: 'Summary', 
+                            value: event.description,
+                            role: 'heading'
+                        },
                         { label: 'Location', value: event.location || 'No location' },
                         { 
                             label: 'Calendar', 
-                            value: event.summaryOverride || event.calendarName || 'Default',
+                            value: event.calendarName,
                             isLink: true,
                             url: event.eventUrl || '#'
                         }
                     ],
-                    actions: [] // Remove buttons
+                    actions: []
                 };
             default:
                 return {
-                    title: 'Browser Activity',
+                    title: simplifyTitle(event.title || 'Browser Activity'),
                     details: [
                         { 
                             label: 'Website', 
@@ -719,7 +740,7 @@
                         { label: 'Title', value: event.title },
                         { label: 'Duration', value: event.duration ? formatDuration(event.duration) : 'N/A' }
                     ],
-                    actions: [] // Remove buttons
+                    actions: []
                 };
         }
     }
@@ -764,4 +785,22 @@
     
         // Initial build
         rebuildTimeline(history, drive, emails, calendar);
+    }
+
+    // Generic simplify function
+    function simplifyText(text, maxLength = 20) {
+        if (!text) return '';
+        try {
+            // Special handling for URLs
+            if (text.startsWith('http://') || text.startsWith('https://')) {
+                const url = new URL(text);
+                text = url.hostname + url.pathname;
+            }
+            if (text.length > maxLength) {
+                return text.substring(0, maxLength) + '...';
+            }
+            return text;
+        } catch {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
     }
