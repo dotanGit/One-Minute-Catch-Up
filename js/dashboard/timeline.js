@@ -14,6 +14,10 @@ window.globalStartTime = null;
 // Initialize currentDate at the top level and export it
 export let currentDate = normalizeDateToStartOfDay(new Date());
 let currentTimelineData = null;
+let oldestLoadedDate = new Date(currentDate);
+let isLoadingMorePastDays = false;
+
+
 
 
 // Function to get date key for cache
@@ -283,25 +287,83 @@ const timelineCache = {
 async function loadAndPrependTimelineData(date) {
   const dateKey = getDateKey(date);
 
+  let cachedData;
   if (timelineCache.isValid(dateKey)) {
-      const cachedData = timelineCache.get(dateKey);
-      prependTimeline(
-          cachedData.data.history,
-          cachedData.data.drive,
-          cachedData.data.emails,
-          cachedData.data.calendar
-      );
-      return;
-  }
-
-  const normalizedDate = safeParseDate(date);
-  const [history, drive, emails, calendar] = await Promise.all([
+    cachedData = timelineCache.get(dateKey);
+  } else {
+    const normalizedDate = safeParseDate(date);
+    const [history, drive, emails, calendar] = await Promise.all([
       getBrowserHistory(normalizedDate),
       getGoogleDriveActivity(normalizedDate),
       getGmailActivity(normalizedDate),
       getCalendarEvents(normalizedDate)
-  ]);
+    ]);
 
-  timelineCache.set(dateKey, { history, drive, emails, calendar });
-  prependTimeline(history, drive, emails, calendar);
+    cachedData = { data: { history, drive, emails, calendar } };
+    timelineCache.set(dateKey, cachedData.data);
+  }
+
+  const { history, drive, emails, calendar } = cachedData.data;
+
+  const hasData = 
+    (history && history.length > 0) ||
+    (drive && drive.files && drive.files.length > 0) ||
+    (emails && emails.all && emails.all.length > 0) ||
+    (calendar && calendar.today && calendar.today.length > 0);
+
+  if (hasData) {
+    prependTimeline(history, drive, emails, calendar);
+    oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
+  }
+
+  // ✅ Always expand width, no matter what
+  const timelineEvents = document.getElementById('timeline-events');
+  const timelineLine = document.querySelector('.timeline-line');
+
+  if (timelineEvents && timelineLine) {
+    const currentWidth = parseFloat(timelineEvents.style.width) || timelineEvents.scrollWidth;
+    const extraWidth = 1000;
+    timelineEvents.style.width = `${currentWidth + extraWidth}px`;
+    timelineLine.style.width = `${currentWidth + extraWidth}px`;
+  }
 }
+
+
+
+const container = document.querySelector('.timeline-container');
+const scrollSpeed = 5;
+let scrollInterval = null;
+
+document.getElementById('scroll-left').addEventListener('mouseenter', () => {
+  scrollInterval = setInterval(() => {
+    container.scrollLeft -= scrollSpeed;
+  }, 16); // Left = subtract
+});
+
+document.getElementById('scroll-left').addEventListener('mouseleave', () => {
+  clearInterval(scrollInterval);
+});
+
+document.getElementById('scroll-right').addEventListener('mouseenter', () => {
+  scrollInterval = setInterval(() => {
+    container.scrollLeft += scrollSpeed;
+  }, 16); // Right = add
+});
+
+document.getElementById('scroll-right').addEventListener('mouseleave', () => {
+  clearInterval(scrollInterval);
+});
+
+
+
+container.addEventListener('scroll', () => {
+  if (container.scrollLeft === 0 && !isLoadingMorePastDays) {
+    isLoadingMorePastDays = true;
+
+    const previousDate = new Date(oldestLoadedDate);
+
+    loadAndPrependTimelineData(previousDate).finally(() => {
+      isLoadingMorePastDays = false;
+    });
+  }
+});
