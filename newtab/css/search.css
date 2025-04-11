@@ -6,6 +6,12 @@
     display: flex;
     align-items: center;
     gap: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    padding: 15px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .search-container {
@@ -19,8 +25,8 @@
     font-size: 18px;
     background: transparent;
     border: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    border-bottom: none;
+    color: #000000;
     outline: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -29,11 +35,12 @@
 }
 
 .search-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.8);
+    font-weight: 500;
 }
 
 .search-input:focus {
-    border-bottom: 2px solid #00ff87;
+    border-bottom: none;
     background: transparent;
     -webkit-tap-highlight-color: transparent;
     border-radius: 0;
@@ -48,7 +55,7 @@
     border: none;
     padding: 10px;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 .search-button svg {
@@ -58,7 +65,7 @@
 }
 
 .search-button:hover {
-    color: #00ff87;
+    color: #000000;
 }
 
 .search-suggestions {
@@ -162,7 +169,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 8px 16px;
-    color: #fff;
+    color: #000000;
     cursor: pointer;
     display: flex;
     align-items: center;

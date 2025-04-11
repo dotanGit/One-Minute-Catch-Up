@@ -583,38 +583,16 @@
 }
 
 .timeline-now-marker {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
+    display: none; /* This will hide the NOW marker */
 }
 
 .timeline-now-marker::before {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #00ff87;
-    border-radius: 50%;
-    left: 50%;
-    transform: translateX(-50%);
-    top: -6px;
+    display: none;
 }
 
 .now-text {
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #00ff87;
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 4px 8px;
-    border-radius: 12px;
+    display: none;
 }
-  
 
 .nav-button {
     position: fixed; /* changed from absolute */
