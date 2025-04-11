@@ -149,13 +149,13 @@
 
 
 .timeline-event:hover .timeline-dot {
-    transform: scale(1.2);
-    background: transparent; 
+    transform: none;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Update popup positioning */
 .timeline-event .event-popup {
-    display: none;
+    display: block;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -172,62 +172,11 @@
 
 /* Position popups above/below with more space */
 .timeline-event.above .event-popup {
-    bottom: 50px; /* Adjust this value as needed */
+    bottom: 60px;
 }
 
 .timeline-event.below .event-popup {
-    top: 50px; /* Adjust this value as needed */
-}
-
-/* Add a decorative pointer element */
-.timeline-event .event-popup::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    transform: rotate(45deg);
-    left: calc(50% - 8px);
-}
-
-/* Position the pointer for above/below events */
-.timeline-event.above[data-category="gmail"] .event-popup::after {
-    background: #c21000; /* Darker red */
-    bottom: -8px;
-}
-
-.timeline-event.below[data-category="gmail"] .event-popup::after {
-    background: #c21000; /* Darker red */
-    top: -8px;
-}
-
-.timeline-event.above[data-category="calendar"] .event-popup::after {
-    background: #008120; /* Darker green */
-    bottom: -8px;
-}
-
-.timeline-event.below[data-category="calendar"] .event-popup::after {
-    background: #008120; /* Darker green */
-    top: -8px;
-}
-
-.timeline-event.above[data-category="drive"] .event-popup::after {
-    background: #db8e00; /* Darker yellow */
-    bottom: -8px;
-}
-
-.timeline-event.below[data-category="drive"] .event-popup::after {
-    background: #db8e00; /* Darker yellow */
-    top: -8px;
-}
-
-.timeline-event.above[data-category="browser"] .event-popup::after {
-    background: #004dd1; /* Darker blue */
-    bottom: -8px;
-}
-
-.timeline-event.below[data-category="browser"] .event-popup::after {
-    background: #004dd1; /* Darker blue */
-    top: -8px;
+    top: 60px;
 }
 
 .event-popup .event-title {
@@ -257,20 +206,19 @@
     margin-top: 12px;
 }
 
-/* Expanded state for click interaction */
-.event-popup.expanded {
-    width: 320px;
-    z-index: 101;
-}
-
 .event-popup .event-details {
-    display: none;
+    display: block;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.event-popup.expanded .event-details {
+/* Remove hover and click display logic */
+.timeline-event:hover .event-popup {
+    display: block;
+}
+
+.timeline-event .event-popup.expanded {
     display: block;
 }
 
@@ -384,27 +332,33 @@
     color: #00FF87;
 }
 
-/* Show popup on hover */
-.timeline-event:hover .event-popup {
-    display: block !important; /* Force display on hover */
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-/* Show popup when expanded (clicked) */
-.timeline-event .event-popup.expanded {
-    display: block !important; /* Force display when expanded */
-}
-
-/* Add a fade-in animation */
+/* Remove fade-in animation and hover effects */
 @keyframes fadeIn {
     from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(10px);
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
     }
+}
+
+/* Remove hover effects for each category */
+.timeline-event[data-category="gmail"]:hover .event-popup {
+    box-shadow: none;
+}
+
+.timeline-event[data-category="calendar"]:hover .event-popup {
+    box-shadow: none;
+}
+
+.timeline-event[data-category="drive"]:hover .event-popup {
+    box-shadow: none;
+}
+
+.timeline-event[data-category="browser"]:hover .event-popup {
+    box-shadow: none;
 }
 
 /* Gmail style (red) */
@@ -465,23 +419,6 @@
         #3375E8, /* Less dark blue at top */
         #4285F4  /* Lighter blue at bottom */
     );
-}
-
-/* Update hover effects for each category */
-.timeline-event[data-category="gmail"]:hover .event-popup {
-    box-shadow: 0 6px 20px rgba(234, 67, 53, 0.4);
-}
-
-.timeline-event[data-category="calendar"]:hover .event-popup {
-    box-shadow: 0 6px 20px rgba(52, 168, 83, 0.4);
-}
-
-.timeline-event[data-category="drive"]:hover .event-popup {
-    box-shadow: 0 6px 20px rgba(251, 188, 5, 0.4);
-}
-
-.timeline-event[data-category="browser"]:hover .event-popup {
-    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
 }
 
 /* Update action buttons to match category colors */
