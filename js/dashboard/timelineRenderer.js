@@ -213,32 +213,29 @@
                             </div>
                         `).join('')}
                     </div>
-                    ${eventDetails.actions.length > 0 ? `
-                        <div class="event-actions">
-                            ${eventDetails.actions.map(action => `
-                                <button class="action-button" onclick="event.stopPropagation(); ${action.onClick ? action.onClick.toString() : `window.open('${action.url}', '_blank')`}">
-                                    ${action.label}
-                                </button>
-                            `).join('')}
-                        </div>
-                    ` : ''}
+                    <div class="event-actions">
+                        ${eventDetails.actions.map(action => `
+                            <button class="action-button" data-url="${action.url || ''}">${action.label}</button>
+                        `).join('')}
+                    </div>
                 </div>
             `;
 
             eventDiv.innerHTML = popupContent;
             eventDiv.setAttribute('data-category', getEventCategory(event));
 
-            const popup = eventDiv.querySelector('.event-popup');
-            eventDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!e.target.closest('.action-button')) {
-                    document.querySelectorAll('.event-popup.expanded').forEach(otherPopup => {
-                        if (otherPopup !== popup) {
-                            otherPopup.classList.remove('expanded');
-                        }
-                    });
-                    popup.classList.toggle('expanded');
-                }
+            // After setting innerHTML, add event listeners to all buttons
+            const actionButtons = eventDiv.querySelectorAll('.action-button');
+            actionButtons.forEach((button, index) => {
+                const action = eventDetails.actions[index];
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (action.onClick) {
+                        action.onClick(e);
+                    } else if (action.url) {
+                        window.open(action.url, '_blank');
+                    }
+                });
             });
 
             fragment.appendChild(eventDiv);
@@ -424,33 +421,29 @@
                             </div>
                         `).join('')}
                     </div>
-                    ${eventDetails.actions.length > 0 ? `
-                        <div class="event-actions">
-                            ${eventDetails.actions.map(action => `
-                                <button class="action-button" onclick="event.stopPropagation(); ${action.onClick ? action.onClick.toString() : `window.open('${action.url}', '_blank')`}">
-                                    ${action.label}
-                                </button>
-                            `).join('')}
-                        </div>
-                    ` : ''}
+                    <div class="event-actions">
+                        ${eventDetails.actions.map(action => `
+                            <button class="action-button" data-url="${action.url || ''}">${action.label}</button>
+                        `).join('')}
+                    </div>
                 </div>
             `;
 
             eventDiv.innerHTML = popupContent;
             eventDiv.setAttribute('data-category', getEventCategory(event));
 
-            // Add click handler for expanding details
-            const popup = eventDiv.querySelector('.event-popup');
-            eventDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (!e.target.closest('.action-button')) {
-                    document.querySelectorAll('.event-popup.expanded').forEach(otherPopup => {
-                        if (otherPopup !== popup) {
-                            otherPopup.classList.remove('expanded');
-                        }
-                    });
-                    popup.classList.toggle('expanded');
-                }
+            // After setting innerHTML, add event listeners to all buttons
+            const actionButtons = eventDiv.querySelectorAll('.action-button');
+            actionButtons.forEach((button, index) => {
+                const action = eventDetails.actions[index];
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (action.onClick) {
+                        action.onClick(e);
+                    } else if (action.url) {
+                        window.open(action.url, '_blank');
+                    }
+                });
             });
 
             timelineEvents.appendChild(eventDiv);
