@@ -266,6 +266,8 @@
 /* Update positioning for above/below events */
 .timeline-event.above .event-popup {
     bottom: 45px;
+    border-bottom-right-radius: 14px;
+    border-bottom-left-radius: 14px;
 }
 
 .timeline-event.below .event-popup {
@@ -315,6 +317,12 @@
     align-items: flex-start;
     gap: 1rem;
     font-size: 0.8rem;       /* Reduce overall detail item size */
+}
+
+.event-popup .detail-item:last-child {
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    
 }
 
 .detail-item .detail-label {
