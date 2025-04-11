@@ -71,16 +71,20 @@
 .search-suggestions {
     position: absolute;
     top: 100%;
-    left: 0;
-    width: 100%;
-    background-color: rgba(28, 28, 28, 0.95);
-    border-radius: 0 0 8px 8px;
+    left: -20px;
+    width: calc(100% + 174px);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 0 0 12px 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     max-height: 320px;
     overflow-y: auto;
     display: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: -1px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    padding: 0 20px;
 }
 
 .suggestion-item {
@@ -494,7 +498,6 @@
     fill: currentColor;
 }
 
-
 @media (max-width: 768px) {
     .plus-icon {
         width: 20px;
@@ -537,4 +540,10 @@
     .quick-link-title {
         font-size: 12px;
     }
+}
+
+/* Update the search bar container to have rounded corners only at the top when suggestions are shown */
+.search-bar-container.showing-suggestions {
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
 }
