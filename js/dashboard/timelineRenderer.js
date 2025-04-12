@@ -339,7 +339,7 @@
                             type: 'drive',
                             timestamp: timestamp,
                             title: simplifyText('Drive File Edit'),
-                            description: simplifyText(file.name),
+                            description: file.name,
                             webViewLink: file.webViewLink,
                         });
                     }
@@ -788,7 +788,7 @@
     }
 
     // Generic simplify function
-    function simplifyText(text, maxLength = 20) {
+    function simplifyText(text, maxLength = 15) {
         if (!text) return '';
         try {
             // Special handling for URLs
