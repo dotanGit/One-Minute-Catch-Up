@@ -165,6 +165,7 @@
     width: 230px;
     font-family: "Poppins", sans-serif;
     z-index: 100;
+    max-height: 200px; /* Adjust as you like */
 }
 
 /* Update category-specific accent colors */
@@ -336,6 +337,26 @@
     color: var(--color, rgba(30, 30, 30));
     flex-grow: 1;
     font-size: 0.8rem;       /* Reduce value size */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+/* Subject → 2 lines */
+.subject-value {
+    -webkit-line-clamp: 2;
+}
+
+/* Title → 1 line */
+.title-value {
+    -webkit-line-clamp: 2;
+}
+
+/* Website → 1 line */
+.website-value {
+    -webkit-line-clamp: 1;
 }
 
 /* File status message styles */

@@ -59,12 +59,6 @@
         }
     }
 
-    function simplifyTitle(title) {
-        if (title.length > 20) {
-            return title.substring(0, 20) + '...';
-        }
-        return title;
-    }
 
     export function prependTimeline(history, drive, emails, calendar) {
         const timelineEvents = document.getElementById('timeline-events');
@@ -94,7 +88,7 @@
                         timestamp: currentTime,
                         title: 'Browser Visit',
                         actualTitle: item.title,
-                        description: simplifyText(item.url),
+                        description: item.url,
                         url: item.url,
                         duration: 0
                     });
@@ -118,7 +112,7 @@
                         timestamp: currentTime,
                         title: 'Browser Visit',
                         actualTitle: item.title,
-                        description: simplifyText(item.url),
+                        description: item.url,
                         url: item.url,
                         duration: 0
                     });
@@ -135,8 +129,8 @@
                         processedEvents.push({
                             type: 'drive',
                             timestamp: timestamp,
-                            title: simplifyText('Drive File Edit'),
-                            description: simplifyText(file.name),
+                            title: 'Drive File Edit',
+                            description: file.name,
                             webViewLink: file.webViewLink,
                         });
                     }
@@ -152,11 +146,11 @@
                     processedEvents.push({
                         type: 'email',
                         timestamp: Number(email.timestamp),
-                        title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
-                        description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
+                        title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
+                        description: email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`,
                         subject: email.subject || 'No subject',
-                        from: simplifyText(email.from),
-                        to: simplifyText(email.to),
+                        from: email.from,
+                        to: email.to,
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
                     });
                 }
@@ -173,9 +167,9 @@
                         processedEvents.push({
                             type: 'calendar',
                             timestamp: timestamp,
-                            title: simplifyText('Calendar Event'),
+                            title: 'Calendar Event',
                             description: event.summary || 'Untitled event',
-                            calendarName: simplifyText(event.calendarName),
+                            calendarName: event.calendarName,
                             location: event.location,
                             accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
@@ -212,17 +206,21 @@
                     <div class="date">
                         ${eventDetails.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${timeText}
                     </div>
-                    ${eventDetails.details.map(detail => `
-                        <div class="detail-item">
-                            <span class="detail-label">${detail.label}:</span>
-                            ${detail.isLink 
-                                ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
-                                : detail.role === 'heading'
-                                    ? `<span class="detail-value heading" role="heading">${detail.value}</span>`
-                                    : `<span class="detail-value">${detail.value}</span>`
-                            }
-                        </div>
-                    `).join('')}
+                    ${eventDetails.details.map(detail => {
+                        const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
+                        const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
+                        return `
+                            <div class="detail-item">
+                                <span class="detail-label ${labelClass}">${detail.label}:</span>
+                                ${detail.isLink 
+                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value}</a>`
+                                    : detail.role === 'heading'
+                                        ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
+                                        : `<span class="detail-value ${valueClass}">${detail.value}</span>`
+                                }
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
 
@@ -297,7 +295,7 @@
                         timestamp: currentTime,
                         title: 'Browser Visit',
                         actualTitle: item.title,
-                        description: simplifyText(item.url),
+                        description: item.url,
                         url: item.url,
                         duration: 0
                     });
@@ -321,7 +319,7 @@
                         timestamp: currentTime,
                         title: 'Browser Visit',
                         actualTitle: item.title,
-                        description: simplifyText(item.url),
+                        description: item.url,
                         url: item.url,
                         duration: 0
                     });
@@ -338,7 +336,7 @@
                         processedEvents.push({
                             type: 'drive',
                             timestamp: timestamp,
-                            title: simplifyText('Drive File Edit'),
+                            title: 'Drive File Edit',
                             description: file.name,
                             webViewLink: file.webViewLink,
                         });
@@ -356,11 +354,11 @@
                     processedEvents.push({
                         type: 'email',
                         timestamp: Number(email.timestamp),
-                        title: simplifyText(email.type === 'sent' ? 'Email Sent' : 'Email Received'),
-                        description: simplifyText(email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`),
+                        title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
+                        description: email.type === 'sent' ? `To: ${email.to || 'No recipient'}` : `From: ${email.from || 'No sender'}`,
                         subject: email.subject || 'No subject',
-                        from: simplifyText(email.from),
-                        to: simplifyText(email.to),
+                        from: email.from,
+                        to: email.to,
                         emailUrl: email.threadId ? `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
                     });
                 }
@@ -377,9 +375,9 @@
                         processedEvents.push({
                             type: 'calendar',
                             timestamp: timestamp,
-                            title: simplifyText('Calendar Event'),
+                            title: 'Calendar Event',
                             description: event.summary || 'Untitled event',
-                            calendarName: simplifyText(event.calendarName),
+                            calendarName: event.calendarName,
                             location: event.location,
                             accessRole: event.accessRole,
                             duration: event.end ? `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'All day',
@@ -419,17 +417,21 @@
                     <div class="date">
                         ${eventDetails.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${timeText}
                     </div>
-                    ${eventDetails.details.map(detail => `
-                        <div class="detail-item">
-                            <span class="detail-label">${detail.label}:</span>
-                            ${detail.isLink 
-                                ? `<a href="${detail.url}" class="detail-value link" target="_blank">${detail.value}</a>`
-                                : detail.role === 'heading'
-                                    ? `<span class="detail-value heading" role="heading">${detail.value}</span>`
-                                    : `<span class="detail-value">${detail.value}</span>`
-                            }
-                        </div>
-                    `).join('')}
+                    ${eventDetails.details.map(detail => {
+                        const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
+                        const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
+                        return `
+                            <div class="detail-item">
+                                <span class="detail-label ${labelClass}">${detail.label}:</span>
+                                ${detail.isLink 
+                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value}</a>`
+                                    : detail.role === 'heading'
+                                        ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
+                                        : `<span class="detail-value ${valueClass}">${detail.value}</span>`
+                                }
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
 
@@ -466,27 +468,6 @@
         }
     }
 
-    function simplifyUrl(url) {
-        try {
-            const parsedUrl = new URL(url);
-            let cleanUrl = parsedUrl.hostname + parsedUrl.pathname;
-            
-            if (cleanUrl.length > 20) {
-                return cleanUrl.substring(0, 20) + '...';
-            }
-
-            return cleanUrl;
-        } catch {
-            return url;
-        }
-    }
-
-    function simplifyFileName(fileName) {
-        if (fileName.length > 20) {
-            return fileName.substring(0, 20) + '...';
-        }
-        return fileName;
-    }
 
     function extractPattern(url) {
         try {
@@ -730,7 +711,7 @@
                 };
             default:
                 return {
-                    title: simplifyTitle(event.title || 'Browser Activity'),
+                    title: event.title || 'Browser Activity',
                     details: [
                         { 
                             label: 'Website', 
@@ -785,23 +766,5 @@
     
         // Initial build
         rebuildTimeline(history, drive, emails, calendar);
-    }
-
-    // Generic simplify function
-    function simplifyText(text, maxLength = 15) {
-        if (!text) return '';
-        try {
-            // Special handling for URLs
-            if (text.startsWith('http://') || text.startsWith('https://')) {
-                const url = new URL(text);
-                text = url.hostname + url.pathname;
-            }
-            if (text.length > maxLength) {
-                return text.substring(0, maxLength) + '...';
-            }
-            return text;
-        } catch {
-            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-        }
     }
 
