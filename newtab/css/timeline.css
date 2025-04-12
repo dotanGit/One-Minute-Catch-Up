@@ -344,20 +344,16 @@
     word-break: break-word;
 }
 
-/* Subject → 2 lines */
-.subject-value {
+
+.subject-value, .summary-value, .location-value, .title-value, .file-name-value {
     -webkit-line-clamp: 2;
 }
 
-/* Title → 1 line */
-.title-value {
-    -webkit-line-clamp: 2;
-}
 
-/* Website → 1 line */
 .website-value {
     -webkit-line-clamp: 1;
 }
+
 
 /* File status message styles */
 .file-status {

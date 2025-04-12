@@ -213,7 +213,7 @@
                             <div class="detail-item">
                                 <span class="detail-label ${labelClass}">${detail.label}:</span>
                                 ${detail.isLink 
-                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value}</a>`
+                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
                                     : detail.role === 'heading'
                                         ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
                                         : `<span class="detail-value ${valueClass}">${detail.value}</span>`
@@ -424,7 +424,7 @@
                             <div class="detail-item">
                                 <span class="detail-label ${labelClass}">${detail.label}:</span>
                                 ${detail.isLink 
-                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value}</a>`
+                                    ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
                                     : detail.role === 'heading'
                                         ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
                                         : `<span class="detail-value ${valueClass}">${detail.value}</span>`
