@@ -183,10 +183,20 @@ export async function initTimeline() {
 async function loadAndPrependTimelineData(date) {
     const dateKey = getDateKey(date);
     try {
+        // Log the date we're trying to fetch
+        console.log('Fetching events for date:', date.toISOString());
+        
+        // Get current leftmost event timestamp for comparison
+        const timelineEvents = document.getElementById('timeline-events');
+        const existingEvents = timelineEvents.querySelectorAll('.timeline-event');
+        const leftmostEvent = existingEvents[0];
+        
         let cachedData;
         if (timelineCache.isValid(dateKey)) {
+            console.log('Using cached data for:', dateKey);
             cachedData = timelineCache.get(dateKey);
         } else {
+            console.log('Fetching new data for:', dateKey);
             const normalizedDate = safeParseDate(date);
             const [history, drive, emails, calendar] = await Promise.all([
                 getBrowserHistory(normalizedDate),
@@ -200,6 +210,15 @@ async function loadAndPrependTimelineData(date) {
         }
 
         const { history, drive, emails, calendar } = cachedData.data;
+        
+        // Log what we got
+        console.log('Fetched data:', {
+            historyCount: history?.length || 0,
+            driveCount: drive?.files?.length || 0,
+            emailCount: emails?.all?.length || 0,
+            calendarCount: calendar?.today?.length || 0
+        });
+
         const hasData = 
             (history?.length > 0) ||
             (drive?.files?.length > 0) ||
@@ -209,6 +228,9 @@ async function loadAndPrependTimelineData(date) {
         if (hasData) {
             prependTimeline(history, drive, emails, calendar);
             oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
+            console.log('Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
+        } else {
+            console.log('No data found for date:', dateKey);
         }
     } catch (error) {
         console.error('Error loading timeline data:', error);
@@ -242,12 +264,18 @@ function stopScroll() {
 }
 
 container.addEventListener('scroll', () => {
-    if (container.scrollLeft === 0 && !isLoadingMorePastDays) {
+    if (container.scrollLeft < 300 && !isLoadingMorePastDays) {
         isLoadingMorePastDays = true;
+
         const previousDate = new Date(oldestLoadedDate);
+        previousDate.setDate(previousDate.getDate() - 1);
+
+        console.log('Fetching data for:', previousDate.toISOString());
+
         loadAndPrependTimelineData(previousDate)
             .finally(() => {
                 isLoadingMorePastDays = false;
             });
     }
 });
+

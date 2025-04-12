@@ -1,26 +1,42 @@
 import { getEventDetails } from './timelineEventDetails.js';
 import { getEventCategory } from './timelineEventProcessor.js';
 
-export function createEventElements(events) {
+export function createEventElements(events, mode = 'append', currentTimelineWidth = 0, invertPosition = false) {
     const fragment = document.createDocumentFragment();
-    const FIXED_SPACE = 200; // Fixed space between events in pixels
+    const FIXED_SPACE = 200;
 
-    // Sort events by timestamp in ascending order (oldest to newest)
-    const sortedEvents = [...events].sort((a, b) => a.timestamp - b.timestamp);
+    // Get existing events to know where to position new ones
+    const timelineEvents = document.getElementById('timeline-events');
+    const existingEvents = timelineEvents ? timelineEvents.querySelectorAll('.timeline-event') : [];
     
-    // Calculate total width needed (number of gaps * fixed space)
-    const totalWidth = (sortedEvents.length - 1) * FIXED_SPACE;
-    
+    // Sort events by timestamp
+    const sortedEvents = [...events].sort((a, b) => {
+        // For prepending, we want oldest to newest (left to right)
+        if (mode === 'prepend') {
+            return a.timestamp - b.timestamp;
+        }
+        // For initial load/append, we want newest to oldest (right to left)
+        return b.timestamp - a.timestamp;
+    });
+
     sortedEvents.forEach((event, index) => {
         const eventDiv = document.createElement('div');
-        eventDiv.className = `timeline-event ${index % 2 === 0 ? 'above' : 'below'}`;
+        const positionClass = (index % 2 === 0)
+            ? (invertPosition ? 'below' : 'above')
+            : (invertPosition ? 'above' : 'below');
 
-        // Position from right: most recent event at right edge (100%),
-        // others spaced FIXED_SPACE pixels to the left
-        const rightOffset = (sortedEvents.length - 1 - index) * FIXED_SPACE;
-        eventDiv.style.right = `${rightOffset}px`;
-        // Use absolute positioning from right instead of left
+eventDiv.className = `timeline-event ${positionClass}`;
+
+        let position;
+        if (mode === 'prepend') {
+            position = currentTimelineWidth - ((sortedEvents.length - index) * FIXED_SPACE);
+        } else {
+            position = index * FIXED_SPACE;
+        }
+
+        eventDiv.style.right = `${position}px`;
         eventDiv.style.left = 'auto';
+        eventDiv.style.position = 'absolute';
 
         const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], {
             hour: '2-digit',
@@ -34,14 +50,6 @@ export function createEventElements(events) {
         attachEventListeners(eventDiv, eventDetails);
         fragment.appendChild(eventDiv);
     });
-
-    // Set the timeline width to accommodate all events
-    const timelineEvents = document.getElementById('timeline-events');
-    const timelineLine = document.querySelector('.timeline-line');
-    if (timelineEvents && timelineLine) {
-        timelineEvents.style.width = `${totalWidth}px`;
-        timelineLine.style.width = `${totalWidth}px`;
-    }
 
     return fragment;
 }
