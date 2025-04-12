@@ -1,6 +1,7 @@
 // ===== Imports =====
 import { normalizeDateToStartOfDay, safeParseDate, safeGetTimestamp } from '../../utils/dateUtils.js';
 import { buildTimeline, prependTimeline } from './timelineRenderer.js';
+import { getDownloadsService } from '../../services/downloadService.js';
 
 // ===== Global Variables =====
 const loadingSection = document.getElementById('loading');
@@ -135,13 +136,15 @@ export async function initTimeline() {
                 getBrowserHistory(date),
                 getGoogleDriveActivity(date),
                 getGmailActivity(date),
-                getCalendarEvents(date)
-            ]).then(([history, drive, emails, calendar]) => ({
+                getCalendarEvents(date),
+                getDownloadsService(date)
+            ]).then(([history, drive, emails, calendar, downloads]) => ({
                 date,
                 history,
                 drive,
                 emails,
-                calendar
+                calendar,
+                downloads
             }))
         ));
 
@@ -149,20 +152,22 @@ export async function initTimeline() {
             history: allData.flatMap(data => data.history),
             drive: { files: allData.flatMap(data => data.drive.files) },
             emails: { all: allData.flatMap(data => data.emails.all || []) },
-            calendar: { today: allData.flatMap(data => data.calendar.today || []) }
+            calendar: { today: allData.flatMap(data => data.calendar.today || []) },
+            downloads: allData.flatMap(data => data.downloads || [])
         };
 
         const allTimestamps = [
             ...mergedData.history.map(item => item.lastVisitTime),
             ...mergedData.drive.files.map(file => new Date(file.modifiedTime).getTime()),
             ...(mergedData.emails.all?.map(email => Number(email.timestamp)) || []),
-            ...(mergedData.calendar.today?.map(event => safeGetTimestamp(event.start?.dateTime || event.start?.date)) || [])
+            ...(mergedData.calendar.today?.map(event => safeGetTimestamp(event.start?.dateTime || event.start?.date)) || []),
+            ...mergedData.downloads.map(download => download.startTime)
         ].filter(Boolean);
 
         window.globalStartTime = Math.min(...allTimestamps);
 
         if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
-        buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar);
+        buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar, mergedData.downloads);
 
         const container = document.querySelector('.timeline-container');
         if (container) {
@@ -198,18 +203,19 @@ async function loadAndPrependTimelineData(date) {
         } else {
             console.log('Fetching new data for:', dateKey);
             const normalizedDate = safeParseDate(date);
-            const [history, drive, emails, calendar] = await Promise.all([
+            const [history, drive, emails, calendar, downloads] = await Promise.all([
                 getBrowserHistory(normalizedDate),
                 getGoogleDriveActivity(normalizedDate),
                 getGmailActivity(normalizedDate),
-                getCalendarEvents(normalizedDate)
+                getCalendarEvents(normalizedDate),
+                getDownloadsService(normalizedDate)
             ]);
 
-            cachedData = { data: { history, drive, emails, calendar } };
+            cachedData = { data: { history, drive, emails, calendar, downloads } };
             timelineCache.set(dateKey, cachedData.data);
         }
 
-        const { history, drive, emails, calendar } = cachedData.data;
+        const { history, drive, emails, calendar, downloads } = cachedData.data;
 
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
@@ -227,7 +233,7 @@ async function loadAndPrependTimelineData(date) {
             // If it's a full-day event, skip it
             const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getUTCHours() === 0 && new Date(event.start.dateTime).getUTCMinutes() === 0);
             if (isFullDayEvent) return false;
-        
+
             const eventTime = new Date(event.start.dateTime || event.start.date).getTime();
             return isInRange(eventTime);
         }
@@ -238,6 +244,7 @@ async function loadAndPrependTimelineData(date) {
         const filteredEmails = emails.all?.filter(email => isInRange(Number(email.timestamp))) || [];
         const filteredCalendarToday = calendar.today?.filter(isCalendarEventValid) || [];
         const filteredCalendarTomorrow = calendar.tomorrow?.filter(isCalendarEventValid) || [];
+        const filteredDownloads = downloads?.filter(download => isInRange(download.startTime)) || [];
         
         // Prepare final filtered calendar object
         const filteredCalendar = {
@@ -251,17 +258,20 @@ async function loadAndPrependTimelineData(date) {
             drive: filteredDrive.length,
             emails: filteredEmails.length,
             calendarToday: filteredCalendarToday.length,
-            calendarTomorrow: filteredCalendarTomorrow.length
+            calendarTomorrow: filteredCalendarTomorrow.length,
+            downloads: filteredDownloads.length
         });
         
         const hasData = 
             (history?.length > 0) ||
             (drive?.files?.length > 0) ||
             (emails?.all?.length > 0) ||
-            (calendar?.today?.length > 0);
+            (calendar?.today?.length > 0) ||
+            (downloads?.length > 0);
 
         if (hasData) {
-            prependTimeline(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar);
+            const events = processAllEvents(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar, filteredDownloads);
+            prependTimeline(events);
             oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
             console.log('Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
         } else {

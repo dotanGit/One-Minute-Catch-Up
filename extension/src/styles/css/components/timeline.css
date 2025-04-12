@@ -146,6 +146,10 @@
     border: 2px dashed rgb(66, 133, 244); 
 }
 
+.timeline-event[data-category="download"] .timeline-dot {
+    background: rgba(255, 87, 34, 0.4); 
+    border: 2px dashed rgb(255, 87, 34); 
+}
 
 .timeline-event:hover .timeline-dot {
     transform: none;
@@ -182,6 +186,10 @@
 
 .timeline-event[data-category="browser"] .event-popup {
     --accent-color: #4285F4;
+}
+
+.timeline-event[data-category="download"] .event-popup {
+    --accent-color: #FF5722;
 }
 
 /* Style the date header */
@@ -454,6 +462,10 @@
     box-shadow: none;
 }
 
+.timeline-event[data-category="download"]:hover .event-popup {
+    box-shadow: none;
+}
+
 /* Gmail style (red) */
 .timeline-event.above[data-category="gmail"] .event-popup {
     background: linear-gradient(to top, 
@@ -531,6 +543,10 @@
     background: rgba(66, 133, 244, 0.2);
 }
 
+.timeline-event[data-category="download"] .action-button {
+    background: rgba(255, 87, 34, 0.2);
+}
+
 /* Add icons for each category */
 .timeline-event[data-category="gmail"] .timeline-dot::before {
     content: '';
@@ -564,6 +580,10 @@
     background-size: contain;
 }
 
+.timeline-event[data-category="download"] .timeline-dot::before {
+    content: '📥';
+    font-size: 18px;
+}
 
 .timeline-now-marker {
     display: none; /* This will hide the NOW marker */

@@ -1,6 +1,9 @@
 import { SESSION_TIMEOUT } from './timelineEventProcessor.js';
 
 export function processHistoryEvent(item, currentTime, pattern, sessions, processedEvents) {
+    // Skip downloads
+    if (item.url.startsWith('chrome://downloads')) return;
+
     if (!sessions[pattern]) {
         // New session
         sessions[pattern] = { 

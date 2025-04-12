@@ -4,14 +4,14 @@ import { addNowMarker } from './timelineDomUtils.js';
 
 let lastLeftmostPositionIsAbove = true; // default assumption
 
-function updateTimeline(history, drive, emails, calendar, mode = 'rebuild') {
-    const timelineEvents = document.getElementById('timeline-events');
-    const timelineLine = document.querySelector('.timeline-line');
+function updateTimeline(history, drive, emails, calendar, downloads, mode = 'rebuild') {
+        const timelineEvents = document.getElementById('timeline-events');
+        const timelineLine = document.querySelector('.timeline-line');
     const container = document.querySelector('.timeline-container');
     if (!timelineEvents || !timelineLine || !container) return;
 
-    const processedEvents = processAllEvents(history, drive, emails, calendar);
-    processedEvents.sort((a, b) => a.timestamp - b.timestamp);
+    const processedEvents = processAllEvents(history, drive, emails, calendar, downloads);
+        processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
     const FIXED_SPACE = 200;
 
@@ -69,11 +69,11 @@ function updateTimeline(history, drive, emails, calendar, mode = 'rebuild') {
     }
 }
 
-export function buildTimeline(history, drive, emails, calendar) {
-    updateTimeline(history, drive, emails, calendar, 'rebuild');
+export function buildTimeline(history, drive, emails, calendar, downloads) {
+    updateTimeline(history, drive, emails, calendar, downloads, 'rebuild');
 }
 
-export function prependTimeline(history, drive, emails, calendar) {
-    updateTimeline(history, drive, emails, calendar, 'prepend');
-}
+export function prependTimeline(history, drive, emails, calendar, downloads) {
+    updateTimeline(history, drive, emails, calendar, downloads, 'prepend');
+    }
 

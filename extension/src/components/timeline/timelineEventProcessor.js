@@ -8,7 +8,7 @@ import { processCalendarEvent } from './timelineCalendarRenderer.js';
 // Constants
 export const SESSION_TIMEOUT = 60 * 60 * 1000;
 
-export function processAllEvents(history, drive, emails, calendar) {
+export function processAllEvents(history, drive, emails, calendar, downloads) {
     const processedEvents = [];
 
     //-----------------------  Process History -----------------------
@@ -21,6 +21,44 @@ export function processAllEvents(history, drive, emails, calendar) {
             const pattern = extractPattern(item.url);
             const currentTime = item.lastVisitTime;
             processHistoryEvent(item, currentTime, pattern, sessions, processedEvents);
+        });
+    }
+
+    //-----------------------  Process Downloads -----------------------
+    if (downloads?.length > 0) {
+        console.log('Processing downloads:', downloads);
+        downloads.forEach(download => {
+            const downloadTime = new Date(download.startTime).getTime();
+            console.log('Processing download:', {
+                originalUrl: download.url,
+                sourceUrl: download.sourceUrl,
+                finalUrl: download.finalUrl,
+                referrer: download.referrer
+            });
+            
+            // Clean the URL to remove download parameters
+            const sourceUrl = cleanDownloadUrl(download.sourceUrl || download.referrer || download.url);
+            const pattern = extractPattern(sourceUrl);
+            
+            console.log('Using URL:', {
+                sourceUrl,
+                pattern
+            });
+            
+            processedEvents.push({
+                type: 'download',
+                timestamp: downloadTime,
+                title: 'Download',
+                actualTitle: download.filename.split('\\').pop().split('/').pop(),
+                description: pattern,
+                url: sourceUrl,  // The cleaned webpage URL
+                sourceUrl: sourceUrl,  // Explicitly include cleaned sourceUrl
+                downloadUrl: download.url,  // Keep the original download URL
+                filename: download.filename,
+                icon: '📥',
+                duration: 0,
+                downloadId: download.id
+            });
         });
     }
 
@@ -43,6 +81,15 @@ export function processAllEvents(history, drive, emails, calendar) {
     return processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 }
 
+export function cleanDownloadUrl(url) {
+    try {
+        // Remove /download and any query parameters
+        return url.split('/download')[0];
+    } catch {
+        return url;
+    }
+}
+
 export function extractPattern(url) {
     try {
         const parsedUrl = new URL(url);
@@ -63,5 +110,6 @@ export function getEventCategory(event) {
     if (event.type === 'email') return 'gmail';
     if (event.type === 'calendar') return 'calendar';
     if (event.type === 'drive') return 'drive';
+    if (event.type === 'download') return 'download';
     return 'browser';
 }

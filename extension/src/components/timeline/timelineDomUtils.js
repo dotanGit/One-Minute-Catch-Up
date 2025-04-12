@@ -59,6 +59,7 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
 }
 
 export function createEventPopupContent(eventDetails, timeText) {
+    console.log('Creating event popup content:', eventDetails);
     // Use the timestamp from the original event object
     const eventDate = timeText.split(',')[0]; // Extract just the date part
     return `
@@ -67,14 +68,17 @@ export function createEventPopupContent(eventDetails, timeText) {
             <div class="date">
                 ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
             </div>
-            ${eventDetails.details.map(detail => {
+            ${eventDetails.details.map((detail, index) => {
+                console.log('Processing detail:', detail);
                 const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
                 const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
                 return `
                     <div class="detail-item">
                         <span class="detail-label ${labelClass}">${detail.label}:</span>
                         ${detail.isLink 
-                            ? `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
+                            ? detail.onClick
+                                ? `<a href="#" class="detail-value link ${valueClass}" data-has-click-handler="true" data-detail-index="${index}">${detail.value}</a>`
+                                : `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
                             : detail.role === 'heading'
                                 ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
                                 : `<span class="detail-value ${valueClass}">${detail.value}</span>`
@@ -95,6 +99,8 @@ export function addNowMarker(timelineEvents) {
 }
 
 export function attachEventListeners(eventDiv, eventDetails) {
+    console.log('Attaching event listeners:', { eventDiv, eventDetails });
+    // Handle action buttons
     const actionButtons = eventDiv.querySelectorAll('.action-button');
     actionButtons.forEach((button, index) => {
         const action = eventDetails.actions[index];
@@ -106,5 +112,18 @@ export function attachEventListeners(eventDiv, eventDetails) {
                 window.open(action.url, '_blank');
             }
         });
+    });
+
+    // Handle links with click handlers
+    eventDetails.details.forEach((detail, index) => {
+        if (detail.isLink && detail.onClick) {
+            console.log('Looking for link with click handler:', index);
+            const link = eventDiv.querySelector(`.detail-value.link[data-detail-index="${index}"]`);
+            console.log('Found link element:', link);
+            if (link) {
+                console.log('Attaching click handler to link');
+                link.addEventListener('click', detail.onClick);
+            }
+        }
     });
 }

@@ -14,6 +14,90 @@ export function getEventDetails(event) {
                 ],
                 actions: []
             };
+        case 'download':
+            console.log('Creating download event details:', {
+                type: event.type,
+                title: event.title,
+                actualTitle: event.actualTitle,
+                description: event.description,
+                url: event.url,
+                downloadUrl: event.downloadUrl,
+                filename: event.filename,
+                downloadId: event.downloadId,
+                sourceUrl: event.sourceUrl
+            });
+            return {
+                title: 'Download',
+                details: [
+                    { 
+                        label: 'File', 
+                        value: event.actualTitle,
+                        isLink: true,
+                        onClick: async (e) => {
+                            console.log('File click handler triggered');
+                            console.log('Event data:', event);
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const detailItem = e.target.closest('.detail-item');
+                            console.log('Detail item found:', detailItem);
+                            
+                            let statusDiv = detailItem.querySelector('.file-status');
+                            if (!statusDiv) {
+                                statusDiv = document.createElement('div');
+                                statusDiv.className = 'file-status';
+                                detailItem.appendChild(statusDiv);
+                            }
+
+                            try {
+                                statusDiv.className = 'file-status pending';
+                                statusDiv.textContent = 'Opening file...';
+                                statusDiv.style.display = 'block';
+                                statusDiv.style.opacity = '1';
+                                
+                                console.log('Attempting to open download with ID:', event.downloadId);
+                                try {
+                                    await chrome.downloads.open(event.downloadId);
+                                    console.log('Download opened successfully');
+                                    statusDiv.className = 'file-status success';
+                                    statusDiv.textContent = 'File opened successfully!';
+                                    setTimeout(() => {
+                                        statusDiv.style.display = 'none';
+                                    }, 2000);
+                                } catch (openError) {
+                                    console.error('Error opening download:', openError);
+                                    statusDiv.className = 'file-status error';
+                                    statusDiv.textContent = 'Error: Could not open the file';
+                                }
+                            } catch (error) {
+                                console.error('Error in click handler:', error);
+                                statusDiv.className = 'file-status error';
+                                statusDiv.textContent = 'Error: Could not open the file';
+                                statusDiv.style.display = 'block';
+                                statusDiv.style.opacity = '1';
+                            }
+                        }
+                    },
+                    { 
+                        label: 'From', 
+                        value: event.description,
+                        isLink: true,
+                        onClick: (e) => {
+                            e.preventDefault();
+                            console.log('From link clicked. Available URLs:', {
+                                url: event.url,
+                                downloadUrl: event.downloadUrl,
+                                sourceUrl: event.sourceUrl,
+                                description: event.description
+                            });
+                            const targetUrl = event.sourceUrl || event.url;
+                            console.log('Opening URL:', targetUrl);
+                            window.open(targetUrl, '_blank');
+                        }
+                    }
+                ],
+                actions: []
+            };
         case 'browser':
             const isLocalFile = event.url.startsWith('file://');
             return {
@@ -24,81 +108,13 @@ export function getEventDetails(event) {
                         value: event.actualTitle || 'No title'
                     },
                     { 
-                        label: 'Website', 
-                        value: event.description,
+                        label: isLocalFile ? 'File' : 'Website', 
+                        value: isLocalFile ? event.url.replace('file:///', '') : event.description,
                         isLink: true,
                         url: event.url
-                    },
-                ],
-                actions: isLocalFile ? [
-                    { 
-                        label: 'Find File', 
-                        onClick: async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const filePath = decodeURIComponent(event.url.replace('file:///', ''));
-                            const fileName = filePath.split('/').pop();
-                            
-                            const popup = e.target.closest('.event-popup');
-                            const actionsDiv = popup.querySelector('.event-actions');
-                            
-                            let statusDiv = actionsDiv.querySelector('.file-status');
-                            if (!statusDiv) {
-                                statusDiv = document.createElement('div');
-                                statusDiv.className = 'file-status';
-                                actionsDiv.insertBefore(statusDiv, e.target);
-                            }
-
-                            try {
-                                statusDiv.className = 'file-status pending';
-                                statusDiv.textContent = 'Searching for file...';
-                                statusDiv.style.display = 'block';
-                                statusDiv.style.opacity = '1';
-
-                                const downloadItems = await chrome.downloads.search({
-                                    query: [fileName],
-                                    exists: true
-                                });
-                                
-                                if (downloadItems && downloadItems.length > 0) {
-                                    downloadItems.sort((a, b) => b.startTime - a.startTime);
-                                    
-                                    statusDiv.className = 'file-status success';
-                                    statusDiv.textContent = 'Opening file...';
-                                    
-                                    try {
-                                        await chrome.downloads.open(downloadItems[0].id);
-                                        statusDiv.textContent = 'File opened successfully!';
-                                    } catch (openError) {
-                                        console.error('Error opening file:', openError);
-                                        statusDiv.className = 'file-status error';
-                                        statusDiv.textContent = 'Error: Could not open the file';
-                                    }
-                                } else {
-                                    statusDiv.className = 'file-status warning';
-                                    statusDiv.textContent = 'File not found in downloads';
-                                    
-                                    const openButton = document.createElement('button');
-                                    openButton.className = 'action-button secondary';
-                                    openButton.textContent = 'Open File Location';
-                                    openButton.onclick = (e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        window.open(event.url, '_blank');
-                                    };
-                                    
-                                    actionsDiv.appendChild(openButton);
-                                }
-                            } catch (error) {
-                                console.error('Error in Find File handler:', error);
-                                statusDiv.className = 'file-status error';
-                                statusDiv.textContent = 'Error: Could not search for the file';
-                                statusDiv.style.display = 'block';
-                                statusDiv.style.opacity = '1';
-                            }
-                        }
                     }
-                ] : [
+                ],
+                actions: [
                     { 
                         label: 'Visit Site', 
                         url: event.url,
