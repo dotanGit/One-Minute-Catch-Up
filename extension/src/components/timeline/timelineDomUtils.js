@@ -38,10 +38,14 @@ eventDiv.className = `timeline-event ${positionClass}`;
         eventDiv.style.left = 'auto';
         eventDiv.style.position = 'absolute';
 
-        const timeText = new Date(Number(event.timestamp)).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const timeText = new Date(Number(event.timestamp))
+            .toLocaleString([], {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            .replace(',', ',&nbsp;');
 
         const eventDetails = getEventDetails(event);
         eventDiv.innerHTML = createEventPopupContent(eventDetails, timeText);
@@ -55,11 +59,13 @@ eventDiv.className = `timeline-event ${positionClass}`;
 }
 
 export function createEventPopupContent(eventDetails, timeText) {
+    // Use the timestamp from the original event object
+    const eventDate = timeText.split(',')[0]; // Extract just the date part
     return `
         <div class="timeline-dot"></div>
         <div class="event-popup">
             <div class="date">
-                ${eventDetails.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${timeText}
+                ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
             </div>
             ${eventDetails.details.map(detail => {
                 const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
