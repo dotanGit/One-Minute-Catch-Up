@@ -536,7 +536,7 @@
     content: '';
     width: 18px;        /* Restored to original size */
     height: 18px;       /* Restored to original size */
-    background: url('../icons/mail.svg') no-repeat center center;
+    background: url('../../../assets/icons/mail.svg') no-repeat center center;
     background-size: contain;
 }
 
@@ -544,7 +544,7 @@
     content: '';
     width: 18px;        /* Restored to original size */
     height: 18px;       /* Restored to original size */
-    background: url('../icons/explore.svg') no-repeat center center;
+    background: url('../../../assets/icons/explore.svg') no-repeat center center;
     background-size: contain;
 }
 
@@ -552,7 +552,7 @@
     content: '';
     width: 18px;        /* Restored to original size */
     height: 18px;       /* Restored to original size */
-    background: url('../icons/calendar.svg') no-repeat center center;
+    background: url('../../../assets/icons/calendar.svg') no-repeat center center;
     background-size: contain;
 }
 
@@ -560,7 +560,7 @@
     content: '';
     width: 18px;        /* Restored to original size */
     height: 18px;       /* Restored to original size */
-    background: url('../icons/description.svg') no-repeat center center;
+    background: url('../../../assets/icons/description.svg') no-repeat center center;
     background-size: contain;
 }
 

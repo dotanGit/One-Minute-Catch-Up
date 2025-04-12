@@ -1,5 +1,5 @@
 //Original code - commented out for testing
-import { wallpaperImages } from '../../js/data/wallpaperImages.js';
+import { wallpaperImages } from '../../assets/data/wallpaperImages.js';
 
 let isChangingBackground = false;
 

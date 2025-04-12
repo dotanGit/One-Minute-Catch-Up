@@ -1,8 +1,8 @@
-import { normalizeDateToStartOfDay } from '../utils/dateUtils.js';
-import { safeParseDate } from '../utils/dateUtils.js';
+import { normalizeDateToStartOfDay } from '../../utils/dateUtils.js';
+import { safeParseDate } from '../../utils/dateUtils.js';
 import { buildTimeline } from './timelineRenderer.js';
 import { prependTimeline } from './timelineRenderer.js';
-import { safeGetTimestamp } from '../utils/dateUtils.js';
+import { safeGetTimestamp } from '../../utils/dateUtils.js';
 
 
 const loadingSection = document.getElementById('loading');

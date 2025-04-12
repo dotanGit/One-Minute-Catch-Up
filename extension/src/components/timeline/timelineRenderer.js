@@ -1,6 +1,6 @@
-    import { safeGetTimestamp } from '../utils/dateUtils.js';
-    import { shouldFilterUrl } from '../services/browserHistoryService.js';
-    import { currentDate } from '../dashboard/timeline.js';
+    import { safeGetTimestamp } from '../../utils/dateUtils.js';
+    import { shouldFilterUrl } from '../../services/browserHistoryService.js';
+    import { currentDate } from './timeline.js';
 
     function formatTimeRange(startHour, endHour) {
         const formatHour = (hour) => {

@@ -1,9 +1,9 @@
-import { getGmailActivity } from './js/services/gmailService.js';
-import { getAuthToken } from './js/utils/auth.js';
-import { getDriveActivity } from './js/services/driveService.js';
-import { getCalendarEvents } from './js/services/calendarService.js';
-import { generateAISummary } from './js/services/aiService.js';
-import { getBrowserHistoryService } from './js/services/browserHistoryService.js';
+import { getGmailActivity } from '../src/services/gmailService.js';
+import { getAuthToken } from '../src/utils/auth.js';
+import { getDriveActivity } from '../src/services/driveService.js';
+import { getCalendarEvents } from '../src/services/calendarService.js';
+import { generateAISummary } from '../src/services/aiService.js';
+import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
 
 
 // Google API configuration

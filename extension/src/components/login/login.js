@@ -1,4 +1,4 @@
-import { showTimeline } from './timeline.js';
+import { showTimeline } from '../timeline/timeline.js';
 
 export function initLogin() {
   console.log('Login initialized');

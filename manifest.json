@@ -16,7 +16,7 @@
     "https://www.googleapis.com/*"
   ],
   "chrome_url_overrides": {
-    "newtab": "newtab/index.html"
+    "newtab": "extension/src/pages/index.html"
   },
   "oauth2": {
     "client_id": "1050975138446-27po0khg23c57busdfd00tlsc3a94bi0.apps.googleusercontent.com",
@@ -29,10 +29,10 @@
     ]
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "extension/popup/popup.html"
   },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "extension/background/background.js",
     "type": "module"
   }
 } 
