@@ -73,7 +73,6 @@
 
 .timeline-event {
     position: absolute;
-    cursor: pointer;
     z-index: 1;
     top: 50%;
     transform: translate(-50%, -50%);
