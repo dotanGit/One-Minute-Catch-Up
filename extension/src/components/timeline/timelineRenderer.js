@@ -1,9 +1,6 @@
 import { processAllEvents } from './timelineEventProcessor.js';
 import { createEventElements } from './timelineDomUtils.js';
 import { addNowMarker } from './timelineDomUtils.js';
-import { getEventDetails } from './timelineEventDetails.js';
-import { getEventCategory } from './timelineEventProcessor.js';
-import { createEventPopupContent } from './timelineDomUtils.js';
 
 let lastLeftmostPositionIsAbove = true; // default assumption
 
