@@ -29,7 +29,7 @@
     position: relative;
     width: 100%;
     height: 400px;
-    margin-top: 50px;
+    margin-top: 70px;
     padding: 0 60px;
     overflow: hidden; 
     scroll-behavior: auto;
@@ -68,7 +68,6 @@
     right: 60px;
     height: 100%;
     min-width: 100%;
-    /* direction: ltr; */
 }
 
 .timeline-event {
@@ -565,39 +564,6 @@
     background-size: contain;
 }
 
-/* Remove zoom button styles */
-.zoom-button,
-.zoom-button:hover,
-.zoom-button.active {
-    display: none;
-}
-
-.time-period-selector {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 20px;
-    margin-left: 20px;
-}
-
-.time-period {
-    color: white;
-    font-size: 14px;
-    font-weight: 500;
-    min-width: 120px;
-    text-align: center;
-}
-
-.time-period-selector .nav-button {
-    padding: 4px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.time-period-selector .nav-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
 
 .timeline-now-marker {
     display: none; /* This will hide the NOW marker */
@@ -613,24 +579,37 @@
 
 .nav-button {
     position: fixed; /* changed from absolute */
-    top: calc(50% + 84px); /* align to middle of screen */
+    top: calc(50% + 147px); /* align to middle of screen */
     transform: translateY(-50%);
     z-index: 100; /* make sure on top */
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.5);
+    background: transparent;
     color: white;
     border: none;
-    padding: 10px;
     border-radius: 50%;
-    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.nav-button img {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+.nav-button:hover img {
+    transform: translateY(1px) scale(1.5);
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);  /* Makes it white on hover */
 }
 
 #scroll-left {
-    left: 70px; /* adjust as you like */
+    left: 110px; /* adjust as you like */
 }
 
 #scroll-right {
-    right:70px; /* adjust as you like */
+    right:110px; /* adjust as you like */
 }
 
 /* Add styles for clickable details */
