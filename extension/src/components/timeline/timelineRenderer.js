@@ -11,6 +11,8 @@ function updateTimeline(history, drive, emails, calendar, mode = 'rebuild') {
     if (!timelineEvents || !timelineLine || !container) return;
 
     const processedEvents = processAllEvents(history, drive, emails, calendar);
+    processedEvents.sort((a, b) => a.timestamp - b.timestamp);
+
     const FIXED_SPACE = 200;
 
     if (mode === 'rebuild') {

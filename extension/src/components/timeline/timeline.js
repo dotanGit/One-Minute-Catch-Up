@@ -210,15 +210,50 @@ async function loadAndPrependTimelineData(date) {
         }
 
         const { history, drive, emails, calendar } = cachedData.data;
-        
-        // Log what we got
-        console.log('Fetched data:', {
-            historyCount: history?.length || 0,
-            driveCount: drive?.files?.length || 0,
-            emailCount: emails?.all?.length || 0,
-            calendarCount: calendar?.today?.length || 0
-        });
 
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        function isInRange(timestamp) {
+            return timestamp >= startOfDay.getTime() && timestamp <= endOfDay.getTime();
+        }
+        
+        function isCalendarEventValid(event) {
+            const hasDate = !!event.start?.date;
+            const hasDateTime = !!event.start?.dateTime;
+        
+            // If it's a full-day event, skip it
+            const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getUTCHours() === 0 && new Date(event.start.dateTime).getUTCMinutes() === 0);
+            if (isFullDayEvent) return false;
+        
+            const eventTime = new Date(event.start.dateTime || event.start.date).getTime();
+            return isInRange(eventTime);
+        }
+        
+        // Apply filters
+        const filteredHistory = history.filter(item => isInRange(item.lastVisitTime));
+        const filteredDrive = drive.files.filter(file => isInRange(new Date(file.modifiedTime).getTime()));
+        const filteredEmails = emails.all?.filter(email => isInRange(Number(email.timestamp))) || [];
+        const filteredCalendarToday = calendar.today?.filter(isCalendarEventValid) || [];
+        const filteredCalendarTomorrow = calendar.tomorrow?.filter(isCalendarEventValid) || [];
+        
+        // Prepare final filtered calendar object
+        const filteredCalendar = {
+            today: filteredCalendarToday,
+            tomorrow: filteredCalendarTomorrow
+        };
+        
+        // Debug check (optional, good!)
+        console.log('Filtered data counts:', {
+            history: filteredHistory.length,
+            drive: filteredDrive.length,
+            emails: filteredEmails.length,
+            calendarToday: filteredCalendarToday.length,
+            calendarTomorrow: filteredCalendarTomorrow.length
+        });
+        
         const hasData = 
             (history?.length > 0) ||
             (drive?.files?.length > 0) ||
@@ -226,7 +261,7 @@ async function loadAndPrependTimelineData(date) {
             (calendar?.today?.length > 0);
 
         if (hasData) {
-            prependTimeline(history, drive, emails, calendar);
+            prependTimeline(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar);
             oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
             console.log('Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
         } else {

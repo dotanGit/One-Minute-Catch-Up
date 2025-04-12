@@ -25,11 +25,11 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
             ? (invertPosition ? 'below' : 'above')
             : (invertPosition ? 'above' : 'below');
 
-eventDiv.className = `timeline-event ${positionClass}`;
+        eventDiv.className = `timeline-event ${positionClass}`;
 
         let position;
         if (mode === 'prepend') {
-            position = currentTimelineWidth - ((sortedEvents.length - index) * FIXED_SPACE);
+            position = currentTimelineWidth - ((index + 1) * FIXED_SPACE);
         } else {
             position = index * FIXED_SPACE;
         }
