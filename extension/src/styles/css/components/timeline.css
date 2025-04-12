@@ -609,7 +609,20 @@
 }
 
 #scroll-right {
-    right:110px; /* adjust as you like */
+    right: 110px; /* adjust as you like */
+}
+
+#scroll-latest {
+    right: 50px;
+}
+
+#scroll-latest img {
+    transform: scale(2);
+}
+
+#scroll-latest:hover img {
+    transform: scale(2.5);
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
 }
 
 /* Add styles for clickable details */
@@ -625,6 +638,4 @@
     opacity: 0.8;
     text-decoration: underline;
 }
-  
-  
   

@@ -281,6 +281,23 @@ document.getElementById('scroll-left').addEventListener('mouseleave', stopScroll
 document.getElementById('scroll-right').addEventListener('mouseenter', () => startScroll(1));
 document.getElementById('scroll-right').addEventListener('mouseleave', stopScroll);
 
+// Add Latest button functionality with smooth scroll
+document.getElementById('scroll-latest').addEventListener('click', () => {
+    const container = document.querySelector('.timeline-container');
+    if (container) {
+        // Temporarily enable smooth scrolling
+        container.style.scrollBehavior = 'smooth';
+        
+        // Scroll to the end
+        container.scrollLeft = container.scrollWidth;
+        
+        // Reset to default (instant) scrolling after animation
+        setTimeout(() => {
+            container.style.scrollBehavior = 'auto';
+        }, 500); // Match this with your desired scroll duration
+    }
+});
+
 function startScroll(direction) {
     stopScroll();
     scrollInterval = setInterval(() => {
