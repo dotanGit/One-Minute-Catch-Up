@@ -264,7 +264,7 @@ function stopScroll() {
 }
 
 container.addEventListener('scroll', () => {
-    if (container.scrollLeft < 300 && !isLoadingMorePastDays) {
+    if (container.scrollLeft < 600 && !isLoadingMorePastDays) {
         isLoadingMorePastDays = true;
 
         const previousDate = new Date(oldestLoadedDate);
