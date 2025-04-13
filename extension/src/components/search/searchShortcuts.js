@@ -102,7 +102,18 @@ function createQuickLinkElement(shortcut, index, elements) {
     
     const icon = document.createElement('div');
     icon.className = 'quick-link-icon';
-    icon.textContent = shortcut.name.charAt(0).toUpperCase();
+    
+    // Create favicon image
+    const favicon = document.createElement('img');
+    // Using Google's favicon service for reliable favicon fetching
+    favicon.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(shortcut.url)}&sz=32`;
+    favicon.alt = shortcut.name;
+    favicon.onerror = () => {
+        // Fallback to first letter if favicon fails to load
+        icon.textContent = shortcut.name.charAt(0).toUpperCase();
+    };
+    
+    icon.appendChild(favicon);
     
     const title = document.createElement('span');
     title.className = 'quick-link-title';
