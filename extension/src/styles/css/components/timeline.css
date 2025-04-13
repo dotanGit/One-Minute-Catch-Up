@@ -352,7 +352,7 @@
 }
 
 
-.subject-value, .summary-value, .location-value, .title-value, .file-name-value {
+.subject-value, .summary-value, .location-value, .title-value, .file-value {
     -webkit-line-clamp: 2;
 }
 
@@ -550,43 +550,46 @@
 /* Add icons for each category */
 .timeline-event[data-category="gmail"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Restored to original size */
-    height: 18px;       /* Restored to original size */
+    width: 18px;        
+    height: 18px;       
     background: url('../../../assets/icons/mail.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="browser"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Restored to original size */
-    height: 18px;       /* Restored to original size */
+    width: 18px;        
+    height: 18px;       
     background: url('../../../assets/icons/explore.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="calendar"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Restored to original size */
-    height: 18px;       /* Restored to original size */
+    width: 18px;        
+    height: 18px;       
     background: url('../../../assets/icons/calendar.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="drive"] .timeline-dot::before {
     content: '';
-    width: 18px;        /* Restored to original size */
-    height: 18px;       /* Restored to original size */
+    width: 18px;        
+    height: 18px;       
     background: url('../../../assets/icons/description.svg') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="download"] .timeline-dot::before {
-    content: '📥';
-    font-size: 18px;
+    content: '';
+    width: 22px;        
+    height: 22px;       
+    background: url('../../../assets/icons/download.svg') no-repeat center center;
+    background-size: contain;
 }
 
 .timeline-now-marker {
-    display: none; /* This will hide the NOW marker */
+    display: none; 
 }
 
 .timeline-now-marker::before {
