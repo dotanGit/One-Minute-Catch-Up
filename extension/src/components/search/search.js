@@ -41,6 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show suggestions when clicking the search input
     searchInput.addEventListener('click', (e) => {
         e.stopPropagation();
+        
+        // Close shortcuts dropdown if it's open
+        const shortcutsDropdown = document.getElementById('shortcuts-dropdown');
+        if (shortcutsDropdown) {
+            shortcutsDropdown.classList.remove('show');
+        }
+
         const query = e.target.value.trim();
         const suggestionsPromise = query === '' ? 
             getSearchSuggestions() : 
@@ -61,6 +68,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle search input changes
     searchInput.addEventListener('input', (e) => {
+        // Close shortcuts dropdown if it's open
+        const shortcutsDropdown = document.getElementById('shortcuts-dropdown');
+        if (shortcutsDropdown) {
+            shortcutsDropdown.classList.remove('show');
+        }
+
         const query = e.target.value.trim();
         const suggestionsPromise = query === '' ? 
             getSearchSuggestions() : 

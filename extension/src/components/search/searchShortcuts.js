@@ -10,6 +10,11 @@ export function initializeShortcuts() {
         shortcutsDropdown: document.getElementById('shortcuts-dropdown')
     };
 
+    // Move dropdown to body
+    if (elements.shortcutsDropdown) {
+        document.body.appendChild(elements.shortcutsDropdown);
+    }
+
     // Initialize shortcuts
     loadShortcuts(elements);
     setupEventListeners(elements);
@@ -29,6 +34,16 @@ function setupEventListeners(elements) {
     // Shortcuts button click
     shortcutsButton.addEventListener('click', (e) => {
         e.stopPropagation();
+        
+        // Close search suggestions if they're open
+        const searchSuggestions = document.getElementById('search-suggestions');
+        const searchBarContainer = document.querySelector('.search-bar-container');
+        if (searchSuggestions) {
+            searchSuggestions.style.display = 'none';
+            searchBarContainer.classList.remove('showing-suggestions');
+        }
+
+        // Toggle shortcuts dropdown
         shortcutsDropdown.classList.toggle('show');
     });
 
@@ -55,6 +70,10 @@ function setupEventListeners(elements) {
             handleCancelShortcut(elements);
         }
     });
+
+    // Update dropdown position on window resize
+    window.addEventListener('resize', () => updateDropdownPosition(elements));
+    updateDropdownPosition(elements);
 }
 
 function loadShortcuts(elements) {
@@ -259,4 +278,14 @@ function removeShortcut(index, elements) {
             loadShortcuts(elements);
         });
     });
+}
+
+function updateDropdownPosition(elements) {
+    const { shortcutsButton, shortcutsDropdown } = elements;
+    if (!shortcutsButton || !shortcutsDropdown) return;
+
+    const buttonRect = shortcutsButton.getBoundingClientRect();
+    document.documentElement.style.setProperty('--shortcuts-button-top', `${buttonRect.top}px`);
+    document.documentElement.style.setProperty('--shortcuts-button-height', `${buttonRect.height}px`);
+    document.documentElement.style.setProperty('--shortcuts-button-right', `${window.innerWidth - buttonRect.right}px`);
 }
