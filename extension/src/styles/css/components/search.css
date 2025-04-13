@@ -1,24 +1,15 @@
-/* Common variables for both elements */
-:root {
-    --blur-amount: 8px;
-    --bg-opacity: 0.5;
-    --bg-color: rgba(255, 255, 255, var(--bg-opacity));
-}
-
+/* Search Bar and Input */
 .search-bar-container {
     position: relative;
-    width: 100%;
-    max-width: 800px;
+    width: 800px;
     margin: 0 auto;
     display: flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(30px);
     padding: 0px 10px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     z-index: 1000;
 }
@@ -26,7 +17,7 @@
 .search-container {
     flex: 1;
     position: relative;
-    z-index: 3;
+    z-index: 1000;
 }
 
 .search-input {
@@ -35,13 +26,7 @@
     font-size: 18px;
     background: transparent;
     border: none;
-    border-bottom: none;
-    color: #000000;
     outline: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border-radius: 0;
 }
 
 .search-input::placeholder {
@@ -49,13 +34,8 @@
     font-weight: 500;
 }
 
-.search-input:focus {
-    border-bottom: none;
-    background: transparent;
-    -webkit-tap-highlight-color: transparent;
-    border-radius: 0;
-}
 
+/* Search Button */
 .search-button {
     position: absolute;
     right: 0;
@@ -65,7 +45,7 @@
     border: none;
     padding: 10px;
     cursor: pointer;
-    color: rgba(0, 0, 0, 0.5);
+    color: rgba(0, 0, 0, 0.6);
 }
 
 .search-button svg {
@@ -78,59 +58,43 @@
     color: #000000;
 }
 
+/* Search Suggestions */
 .search-suggestions {
-    position: absolute;
-    top: 100%;
-    left: -11px;
-    width: calc(100% + 155px);
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    position: fixed;
+    top: calc(var(--search-bar-top) + 50px);
+    width: 800px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(30px);
     border-radius: 0 0 12px 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 999;
     max-height: 320px;
     overflow-y: auto;
     display: none;
-    margin-top: -1px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: none;
-    padding: 0 20px;
 }
 
 .suggestion-item {
-    padding: 12px 18px;
+    padding: 12px 30px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 14px;
     color: #000000;
-    transition: background-color 0.2s;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    position: relative;
+    transition: background-color 0.1s;
     font-size: 15px;
 }
 
-.suggestion-item:last-child {
-    border-bottom: none;
-}
 
 .suggestion-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(150, 150, 150, 0.5);
 }
 
-.suggestion-text {
-    flex: 1;
-    text-align: left;
-}
 
 .history-icon {
     width: 18px;
     height: 18px;
     opacity: 0.7;
-    flex-shrink: 0;
     filter: brightness(0) saturate(100%);
-
 }
 
 .remove-button {
@@ -139,18 +103,15 @@
     cursor: pointer;
     padding: 5px;
     display: flex;
-    align-items: center;
-    justify-content: center;
     opacity: 0.5;
-    transition: opacity 0.2s;
+    transition: opacity 0.1s;
     border-radius: 50%;
     margin-left: auto;
-    flex-shrink: 0;
 }
 
 .remove-button:hover {
     opacity: 1;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .remove-icon {
@@ -159,25 +120,22 @@
     filter: brightness(0) saturate(100%);
 }
 
-/* Custom scrollbar for suggestions */
+/* Suggestions Scrollbar */
 .search-suggestions::-webkit-scrollbar {
     width: 8px;
 }
 
-.search-suggestions::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0 0 8px 0;
-}
-
 .search-suggestions::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
 
 .search-suggestions::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.4);
+    
 }
 
+/* Shortcuts Container and Button */
 .shortcuts-container {
     position: relative;
 }
@@ -206,6 +164,7 @@
     opacity: 0.8;
 }
 
+/* Shortcuts Dropdown */
 .shortcuts-dropdown {
     position: absolute;
     top: calc(100% + 10px);
@@ -225,31 +184,7 @@
     display: block;
 }
 
-.add-shortcut-button {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    padding: 6px 12px;
-    color: #00ff87;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.add-shortcut-button:hover {
-    background: rgba(0, 255, 135, 0.1);
-    border-color: #00ff87;
-}
-
-.add-shortcut-button svg {
-    width: 16px;
-    height: 16px;
-}
-
-/* Update quick links grid for 3x3 layout */
+/* Quick Links Grid */
 .quick-links-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -272,6 +207,7 @@
     border-radius: 3px;
 }
 
+/* Quick Link Items */
 .quick-link {
     position: relative;
     text-decoration: none;
@@ -325,6 +261,7 @@
     color: rgba(255, 255, 255, 0.8);
 }
 
+/* Menu Button and Dropdown */
 .menu-button {
     position: absolute;
     top: 0;
@@ -371,22 +308,21 @@
     display: block;
 }
 
-/* Horizontal alignment classes */
+/* Menu Dropdown Alignment */
 .menu-dropdown.left-align {
-    right: 0; /* Menu opens to the left */
+    right: 0;
 }
 
 .menu-dropdown.right-align {
-    left: 0; /* Menu opens to the right */
+    left: 0;
 }
 
-/* Vertical alignment classes */
 .menu-dropdown.top-align {
-    bottom: 20px; /* Menu opens upward */
+    bottom: 20px;
 }
 
 .menu-dropdown.bottom-align {
-    top: 20px; /* Menu opens downward */
+    top: 20px;
 }
 
 .menu-item {
@@ -405,6 +341,7 @@
     color: #00ff87;
 }
 
+/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -443,6 +380,7 @@
     -webkit-text-fill-color: transparent;
 }
 
+/* Form Elements */
 .form-group {
     margin-bottom: 20px;
 }
@@ -470,6 +408,7 @@
     border-color: #00ff87;
 }
 
+/* Modal Buttons */
 .modal-buttons {
     display: flex;
     justify-content: flex-end;
@@ -506,12 +445,21 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Icons */
 .plus-icon {
     width: 24px;
     height: 24px;
     fill: currentColor;
 }
 
+/* Search Bar State */
+.search-bar-container.showing-suggestions {
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    box-shadow: none;
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
     .plus-icon {
         width: 20px;
@@ -556,9 +504,7 @@
     }
 }
 
-/* Update the search bar container to have rounded corners only at the top when suggestions are shown */
-.search-bar-container.showing-suggestions {
-    border-radius: 12px 12px 0 0;
-    border-bottom: none;
-    box-shadow: none;
+/* Add this to track search bar position */
+:root {
+    --search-bar-top: 0px;
 }

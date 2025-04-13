@@ -14,13 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create and append suggestions container
     const suggestionsContainer = createSuggestionsContainer();
-    searchContainer.appendChild(suggestionsContainer);
+    document.body.appendChild(suggestionsContainer);
 
     function handleSearch(query) {
         if (!query || query.trim() === '') return;
         
         saveSearchToHistory(query);
-        suggestionsContainer.style.display = 'none';
+            suggestionsContainer.style.display = 'none';
         searchBarContainer.classList.remove('showing-suggestions');
         
         if (isValidUrl(query)) {
@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     handleSearch(query);
                 }
             );
+            });
         });
-    });
 
     // Handle search input changes
     searchInput.addEventListener('input', (e) => {
@@ -93,4 +93,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Focus search input on page load
     searchInput.focus();
+
+    // Add this after getting DOM elements
+    function updateSuggestionsPosition() {
+        const searchBarRect = searchBarContainer.getBoundingClientRect();
+        document.documentElement.style.setProperty('--search-bar-top', `${searchBarRect.top}px`);
+    }
+
+    // Call on page load and window resize
+    updateSuggestionsPosition();
+    window.addEventListener('resize', updateSuggestionsPosition);
 }); 
