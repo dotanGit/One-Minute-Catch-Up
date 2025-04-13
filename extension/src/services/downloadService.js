@@ -29,7 +29,7 @@ export function getDownloadsService(date) {
             // Add the source URL to each download
             downloads = downloads.map(download => ({
                 ...download,
-                sourceUrl: downloadSources.get(download.id) || download.url
+                sourceUrl: downloadSources.has(download.id) ? downloadSources.get(download.id) : null
             }));
             resolve(downloads || []);
         });

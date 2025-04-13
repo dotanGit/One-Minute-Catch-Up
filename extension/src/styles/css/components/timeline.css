@@ -133,7 +133,7 @@
 
 .timeline-event[data-category="calendar"] .timeline-dot {
     background: rgba(52, 168, 83, 0.4); 
-    border: 2px dashed rgb(52, 168, 83); 
+    border: 2px dashed rgb(255, 255, 255); 
 }
 
 .timeline-event[data-category="drive"] .timeline-dot {
@@ -352,12 +352,12 @@
 }
 
 
-.subject-value, .summary-value, .location-value, .title-value, .file-value {
+.subject-value, .summary-value, .location-value, .title-value, .file-value{
     -webkit-line-clamp: 2;
 }
 
 
-.website-value {
+.website-value, .source-value {
     -webkit-line-clamp: 1;
 }
 

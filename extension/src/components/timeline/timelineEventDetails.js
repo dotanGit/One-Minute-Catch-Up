@@ -1,3 +1,13 @@
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+
 export function getEventDetails(event) {
     switch (event.type) {
         case 'drive':
@@ -79,21 +89,10 @@ export function getEventDetails(event) {
                         }
                     },
                     { 
-                        label: 'From', 
-                        value: event.description,
-                        isLink: true,
-                        onClick: (e) => {
-                            e.preventDefault();
-                            console.log('From link clicked. Available URLs:', {
-                                url: event.url,
-                                downloadUrl: event.downloadUrl,
-                                sourceUrl: event.sourceUrl,
-                                description: event.description
-                            });
-                            const targetUrl = event.sourceUrl || event.url;
-                            console.log('Opening URL:', targetUrl);
-                            window.open(targetUrl, '_blank');
-                        }
+                        label: 'Source',
+                        value: event.sourceUrl && isValidUrl(event.sourceUrl) ? (new URL(event.sourceUrl)).hostname : 'Unknown',
+                        isLink: !!event.sourceUrl && isValidUrl(event.sourceUrl),
+                        url: event.sourceUrl && isValidUrl(event.sourceUrl) ? event.sourceUrl : '#'
                     }
                 ],
                 actions: []

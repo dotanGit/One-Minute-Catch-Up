@@ -77,7 +77,6 @@ export function createEventPopupContent(eventDetails, timeText) {
                 ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
             </div>
             ${eventDetails.details.map((detail, index) => {
-                console.log('Processing detail:', detail);
                 const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
                 const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
                 return `
