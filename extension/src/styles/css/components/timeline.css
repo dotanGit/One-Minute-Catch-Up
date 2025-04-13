@@ -550,9 +550,9 @@
 /* Add icons for each category */
 .timeline-event[data-category="gmail"] .timeline-dot::before {
     content: '';
-    width: 18px;        
-    height: 18px;       
-    background: url('../../../assets/icons/mail.svg') no-repeat center center;
+    width: 30px;        
+    height: 30px;       
+    background: url('../../../assets/icons/gmail.png') no-repeat center center;
     background-size: contain;
 }
 
@@ -560,23 +560,23 @@
     content: '';
     width: 18px;        
     height: 18px;       
-    background: url('../../../assets/icons/explore.svg') no-repeat center center;
+    background: var(--favicon-url, url('../../../assets/icons/explore.svg')) no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="calendar"] .timeline-dot::before {
     content: '';
-    width: 18px;        
-    height: 18px;       
-    background: url('../../../assets/icons/calendar.svg') no-repeat center center;
+    width: 30px;        
+    height: 30px;       
+    background: url('../../../assets/icons/google-calendar.png') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="drive"] .timeline-dot::before {
     content: '';
-    width: 18px;        
-    height: 18px;       
-    background: url('../../../assets/icons/description.svg') no-repeat center center;
+    width: 30px;        
+    height: 30px;       
+    background: url('../../../assets/icons/google-drive.png') no-repeat center center;
     background-size: contain;
 }
 

@@ -49,6 +49,14 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
 
         const eventDetails = getEventDetails(event);
         eventDiv.innerHTML = createEventPopupContent(eventDetails, timeText);
+        if (getEventCategory(event) === 'browser') {
+            const timelineDot = eventDiv.querySelector('.timeline-dot');
+            const eventDetailsWebsite = eventDetails.details.find(d => d.label.toLowerCase() === 'website');
+            if (eventDetailsWebsite && eventDetailsWebsite.value) {
+                const url = new URL(eventDetailsWebsite.value.startsWith('http') ? eventDetailsWebsite.value : 'https://' + eventDetailsWebsite.value);
+                timelineDot.style.setProperty('--favicon-url', `url('https://www.google.com/s2/favicons?domain=${url.hostname}&sz=32')`);
+            }
+        }
         eventDiv.setAttribute('data-category', getEventCategory(event));
 
         attachEventListeners(eventDiv, eventDetails);
