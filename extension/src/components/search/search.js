@@ -509,10 +509,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to display search suggestions
     function displaySearchSuggestions(suggestions) {
         const suggestionsContainer = document.getElementById('search-suggestions');
+        const searchBarContainer = document.querySelector('.search-bar-container');
         suggestionsContainer.innerHTML = '';
         
         if (suggestions.length === 0) {
             suggestionsContainer.style.display = 'none';
+            searchBarContainer.classList.remove('showing-suggestions'); // Remove class when hiding
             return;
         }
         
@@ -522,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add history icon
             const historyIcon = document.createElement('img');
-            historyIcon.src = 'icons/history.svg';
+            historyIcon.src = '../assets/icons/history.svg';
             historyIcon.className = 'history-icon';
             historyIcon.alt = 'History';
             
@@ -534,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add remove button
             const removeButton = document.createElement('button');
             removeButton.className = 'remove-button';
-            removeButton.innerHTML = '<img src="icons/close.svg" alt="Remove" class="remove-icon">';
+            removeButton.innerHTML = '<img src="../assets/icons/close.svg" alt="Remove" class="remove-icon">';
             removeButton.title = 'Remove from history';
             
             // Add click event to remove the item from history
@@ -565,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         suggestionsContainer.style.display = 'block';
+        searchBarContainer.classList.add('showing-suggestions'); // Add class when showing
     }
     
     // Function to remove an item from search history
@@ -608,8 +611,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close suggestions when clicking outside
     document.addEventListener('click', function(e) {
+        const searchBarContainer = document.querySelector('.search-bar-container');
         if (!searchContainer.contains(e.target)) {
             suggestionsContainer.style.display = 'none';
+            searchBarContainer.classList.remove('showing-suggestions'); // Remove class when closing
         }
     });
     
