@@ -236,7 +236,7 @@
 .quick-link-icon {
     width: 40px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -246,8 +246,8 @@
 }
 
 .quick-link-icon img {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
 }
 
