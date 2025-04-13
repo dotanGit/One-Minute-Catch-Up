@@ -237,7 +237,7 @@
     width: 40px;
     height: 40px;
     background: transparent;
-    border-radius: 8px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -251,9 +251,6 @@
     object-fit: contain;
 }
 
-.quick-link:hover .quick-link-icon {
-    background: rgba(119, 119, 119, 0.8);
-}
 
 .quick-link-icon.add-icon {
     background-color: rgba(150, 150, 150, 0.8);
