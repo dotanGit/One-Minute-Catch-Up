@@ -558,8 +558,8 @@
 
 .timeline-event[data-category="browser"] .timeline-dot::before {
     content: '';
-    width: 18px;        
-    height: 18px;       
+    width: 25px;        
+    height: 25px;       
     background: var(--favicon-url, url('../../../assets/icons/explore.svg')) no-repeat center center;
     background-size: contain;
 }
