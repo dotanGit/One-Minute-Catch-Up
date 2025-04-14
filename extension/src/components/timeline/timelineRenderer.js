@@ -36,18 +36,17 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         timelineLine.style.width = `${newWidth}px`;
 
         // ✅ Step 1: Check the position of the last event in the new batch
-        let newBatchLastPosition = lastLeftmostPositionIsAbove; // default fallback
+        // ✅ Step 1: Decide based on total number of events (clean and stable)
+        const existingEventsCount = timelineEvents.querySelectorAll('.timeline-event').length;
+        const newEventsCount = processedEvents.length;
+        const totalEvents = existingEventsCount + newEventsCount;
 
-        if (processedEvents.length > 0) {
-            const isEvenCount = processedEvents.length % 2 === 0;
-            newBatchLastPosition = isEvenCount ? !lastLeftmostPositionIsAbove : lastLeftmostPositionIsAbove;
-        }
-        const isLeftmostAbove = !newBatchLastPosition;
+        let startWithAbove = totalEvents % 2 === 0;
 
-        const fragment = createEventElements(processedEvents, 'prepend', newWidth, isLeftmostAbove);
+        console.log(`🟢 Total events calculation: existing=${existingEventsCount}, new=${newEventsCount}, total=${totalEvents}, startWithAbove=${startWithAbove}`);
+
+        const fragment = createEventElements(processedEvents, 'prepend', newWidth, startWithAbove);
         timelineEvents.prepend(fragment);
-
-        lastLeftmostPositionIsAbove = isLeftmostAbove;
 
         container.scrollLeft += additionalWidth;
 

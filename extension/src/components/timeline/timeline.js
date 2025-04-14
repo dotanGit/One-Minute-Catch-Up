@@ -41,6 +41,7 @@ function updateTimelineDate() {
     }
 }
 
+
 // ===== API Functions =====
 function getBrowserHistory(date) {
     return new Promise((resolve) => {
@@ -86,6 +87,7 @@ function getCalendarEvents(date) {
     });
 }
 
+
 // ===== Cache Logic =====
 const timelineCache = {
     data: new Map(),
@@ -113,6 +115,7 @@ const timelineCache = {
         return age < 30 * 60 * 1000;
     }
 };
+
 
 // ===== Timeline Functions =====
 export function showTimeline() {
@@ -349,6 +352,7 @@ async function loadAndPrependTimelineData(date) {
     }
 }
 
+
 // ===== Scroll Control =====
 const container = document.querySelector('.timeline-container');
 const scrollSpeed = 1;
@@ -415,7 +419,7 @@ function stopScroll() {
 }
 
 
-const scrollAmountOnClick = 1000; // or any amount you like
+const scrollAmountOnClick = 1000; // AMOUNT OF SCROLL ON CLICK
 
 document.getElementById('scroll-left').addEventListener('click', () => {
     stopScroll();
@@ -437,7 +441,6 @@ document.getElementById('scroll-right').addEventListener('click', () => {
     }, 400);
 });
 ;
-
 
 container.addEventListener('scroll', () => {
     if (container.scrollLeft < 1500 && !isLoadingMorePastDays) {
