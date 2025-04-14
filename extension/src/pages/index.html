@@ -37,6 +37,7 @@
                     </div>
                 </div>
             </div>
+
             
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="Search Google or type a URL">
@@ -111,6 +112,34 @@
                 </div>
             </div>
         </div>
+
+<!-- Modal for adding new search engine -->
+        <div id="addEngineModal" class="modal">
+            <div class="modal-content">
+                <h3>Add Search Engine</h3>
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label for="engineName">Engine Name</label>
+                        <input type="text" id="engineName" placeholder="Enter name (e.g., Google)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="engineUrl">Search URL</label>
+                        <input type="text" id="engineUrl" placeholder="Just enter the website (e.g., google.com)" />
+                        <small>Supported: google.com, youtube.com, reddit.com, chat.openai.com, wikipedia.org</small>
+
+                    </div>
+                    <div class="form-group">
+                        <label for="engineIcon">Icon URL (optional)</label>
+                        <input type="text" id="engineIcon" placeholder="Enter icon URL (optional)" />
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="cancelEngine" class="btn-secondary">Cancel</button>
+                        <button id="saveEngine" class="btn-primary">Save Engine</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     <script type="module" src="../components/search/search.js"></script>
     <script type="module" src="./main.js"></script>
