@@ -31,40 +31,29 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         const currentWidth = timelineEvents.offsetWidth;
         const additionalWidth = processedEvents.length * FIXED_SPACE;
         const newWidth = currentWidth + additionalWidth;
-        
-        // Update the container width BEFORE creating events
+
         timelineEvents.style.width = `${newWidth}px`;
         timelineLine.style.width = `${newWidth}px`;
-        
 
-        const isLeftmostAbove = lastLeftmostPositionIsAbove;
+        // ✅ Step 1: Check the position of the last event in the new batch
+        let newBatchLastPosition = lastLeftmostPositionIsAbove; // default fallback
 
-        // Pass the newWidth to createEventElements
+        if (processedEvents.length > 0) {
+            const isEvenCount = processedEvents.length % 2 === 0;
+            newBatchLastPosition = isEvenCount ? !lastLeftmostPositionIsAbove : lastLeftmostPositionIsAbove;
+        }
+        const isLeftmostAbove = !newBatchLastPosition;
+
+        console.log('🧭 New batch last position:', newBatchLastPosition ? 'above' : 'below');
+        console.log('🧭 Decided isLeftmostAbove for prepend:', isLeftmostAbove ? 'above' : 'below');
+
         const fragment = createEventElements(processedEvents, 'prepend', newWidth, isLeftmostAbove);
         timelineEvents.prepend(fragment);
-        
-        const events = timelineEvents.querySelectorAll('.timeline-event');
-        let leftmostEvent = null;
-        let maxRight = -Infinity;
 
-        events.forEach(event => {
-            const right = parseFloat(event.style.right);
-            if (right > maxRight) {
-                maxRight = right;
-                leftmostEvent = event;
-            }
-        });
+        lastLeftmostPositionIsAbove = isLeftmostAbove;
 
-        if (leftmostEvent) {
-            lastLeftmostPositionIsAbove = leftmostEvent.classList.contains('above');
-        }
-    
-        // Adjust scroll position to prevent visual jump
-        const container = document.querySelector('.timeline-container');
-        if (container) {
-            container.scrollLeft += additionalWidth;
-        }
-    
+        container.scrollLeft += additionalWidth;
+
         console.log(`Prepended ${processedEvents.length} events and adjusted width to ${newWidth}px`);
     }
 }
