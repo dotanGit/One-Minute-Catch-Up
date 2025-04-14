@@ -186,7 +186,7 @@ export async function initTimeline() {
                 const date = new Date(timestamp);
                 const dateString = date.toISOString().split('T')[0];
                 const timeString = date.toISOString().split('T')[1].split('.')[0]; // hh:mm:ss
-                console.log(`${dateString} | ${timeString} | ${type}`);
+                console.log(`${dateString} | ${timeString} | ${type} | ${title}`);
             });
         
         
@@ -328,7 +328,7 @@ async function loadAndPrependTimelineData(date) {
                     const date = new Date(timestamp);
                     const dateString = date.toISOString().split('T')[0];
                     const timeString = date.toISOString().split('T')[1].split('.')[0]; // hh:mm:ss
-                    console.log(`${dateString} | ${timeString} | ${type}`);
+                    console.log(`${dateString} | ${timeString} | ${type} | ${title}`);
                 });
             
             
