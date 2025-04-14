@@ -1,8 +1,10 @@
+import { normalizeTimestamp } from '../../utils/dateUtils.js';
+
 export function processEmailEvent(email, processedEvents) {
     if (email.timestamp) {
         processedEvents.push({
             type: 'email',
-            timestamp: Number(email.timestamp),
+            timestamp: normalizeTimestamp(email.timestamp),
             title: email.type === 'sent' ? 'Email Sent' : 'Email Received',
             description: email.type === 'sent' ? 
                 `To: ${email.to || 'No recipient'}` : 

@@ -4,6 +4,8 @@ import { processHistoryEvent } from './timelineBrowserRenderer.js';
 import { processDriveEvent } from './timelineDriveRenderer.js';
 import { processEmailEvent } from './timelineEmailRenderer.js';
 import { processCalendarEvent } from './timelineCalendarRenderer.js';
+import { normalizeTimestamp } from '../../utils/dateUtils.js';
+
 
 // Constants
 export const SESSION_TIMEOUT = 60 * 60 * 1000;
@@ -31,7 +33,7 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
         sortedHistory.forEach(item => {
             if (!item.lastVisitTime || !item.url || shouldFilterUrl(item.url)) return;
             const pattern = extractPattern(item.url);
-            const currentTime = item.lastVisitTime;
+            const currentTime = normalizeTimestamp(item.lastVisitTime);
             processHistoryEvent(item, currentTime, pattern, sessions, processedEvents);
         });
     }
@@ -39,7 +41,7 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
     //-----------------------  Process Downloads -----------------------
     if (downloads?.length > 0) {
         downloads.forEach(download => {
-            const downloadTime = new Date(download.startTime).getTime();
+            const downloadTime = normalizeTimestamp(download.startTime);
             
             // Clean the URL to remove download parameters
             const sourceUrl = cleanDownloadUrl(download.sourceUrl || download.referrer || download.url);

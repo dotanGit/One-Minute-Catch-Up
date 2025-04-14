@@ -1,4 +1,4 @@
-import { safeGetTimestamp } from '../../utils/dateUtils.js';
+import { normalizeTimestamp } from '../../utils/dateUtils.js';
 
 export function processCalendarEvent(event, processedEvents) {
     // Add full-day event detection
@@ -12,7 +12,7 @@ export function processCalendarEvent(event, processedEvents) {
 
     const eventTime = event.start?.dateTime || event.start?.date;
     if (eventTime) {
-        const timestamp = safeGetTimestamp(eventTime);
+        const timestamp = normalizeTimestamp(eventTime);
         if (timestamp > 0) {
             processedEvents.push({
                 type: 'calendar',

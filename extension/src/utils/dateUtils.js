@@ -66,3 +66,29 @@ export function areDatesEqual(date1, date2) {
   const localDate2 = normalizeDateToStartOfDay(date2);
   return localDate1.getTime() === localDate2.getTime();
 }
+
+
+// Normalize any date/time to a UTC timestamp (milliseconds)
+export function normalizeTimestamp(input) {
+  if (!input) return 0;
+
+  try {
+    let date;
+
+    if (typeof input === 'number') {
+      // Already timestamp? Ensure it's milliseconds
+      date = input > 1e12 ? new Date(input) : new Date(input * 1000);
+    } else if (typeof input === 'string') {
+      date = new Date(input);
+    } else if (input instanceof Date) {
+      date = input;
+    } else {
+      return 0;
+    }
+
+    return date.getTime(); // Always UTC milliseconds
+  } catch (error) {
+    console.error('Error normalizing timestamp:', input, error);
+    return 0;
+  }
+}

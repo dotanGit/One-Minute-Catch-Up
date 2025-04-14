@@ -3,6 +3,7 @@ import { normalizeDateToStartOfDay, safeParseDate, safeGetTimestamp } from '../.
 import { buildTimeline, prependTimeline } from './timelineRenderer.js';
 import { getDownloadsService } from '../../services/downloadService.js';
 import { processAllEvents } from './timelineEventProcessor.js';
+import { normalizeTimestamp } from '../../utils/dateUtils.js';
 
 // ===== Global Variables =====
 const loadingSection = document.getElementById('loading');
@@ -168,6 +169,29 @@ export async function initTimeline() {
         window.globalStartTime = Math.min(...allTimestamps);
 
         if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
+
+        console.log('=== Initial Load Events ===');
+
+        const initialEvents = [
+            ...mergedData.history.map(item => ['Browser', item.title, normalizeTimestamp(item.lastVisitTime)]),
+            ...mergedData.drive.files.map(file => ['Drive', file.name, normalizeTimestamp(file.modifiedTime)]),
+            ...(mergedData.emails.all || []).map(email => ['Email', email.subject, normalizeTimestamp(email.timestamp)]),
+            ...(mergedData.calendar.today || []).map(event => ['Calendar', event.summary, normalizeTimestamp(event.start?.dateTime || event.start?.date)]),
+            ...mergedData.downloads.map(download => ['Download', download.filename, normalizeTimestamp(download.startTime)]),
+        ];
+        
+        initialEvents
+            .sort((a, b) => a[2] - b[2])
+            .forEach(([type, title, timestamp]) => {
+                const date = new Date(timestamp);
+                const dateString = date.toISOString().split('T')[0];
+                const timeString = date.toISOString().split('T')[1].split('.')[0]; // hh:mm:ss
+                console.log(`${dateString} | ${timeString} | ${type}`);
+            });
+        
+        
+        
+
         buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar, mergedData.downloads);
 
         const container = document.querySelector('.timeline-container');
@@ -187,6 +211,10 @@ export async function initTimeline() {
 }
 
 async function loadAndPrependTimelineData(date) {
+
+    date = new Date(date); 
+    date.setUTCHours(0, 0, 0, 0); 
+
     const dateKey = getDateKey(date);
     try {
         // Log the date we're trying to fetch
@@ -231,12 +259,14 @@ async function loadAndPrependTimelineData(date) {
         const { history, drive, emails, calendar, downloads } = cachedData.data;
 
         const startOfDay = new Date(date);
-        startOfDay.setHours(0, 0, 0, 0);
+        startOfDay.setUTCHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
-        endOfDay.setHours(23, 59, 59, 999);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+        
         
         function isInRange(timestamp) {
-            return timestamp >= startOfDay.getTime() && timestamp <= endOfDay.getTime();
+            const normalized = normalizeTimestamp(timestamp);
+            return normalized >= startOfDay.getTime() && normalized <= endOfDay.getTime();
         }
         
         function isCalendarEventValid(event) {
@@ -247,7 +277,7 @@ async function loadAndPrependTimelineData(date) {
             const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getUTCHours() === 0 && new Date(event.start.dateTime).getUTCMinutes() === 0);
             if (isFullDayEvent) return false;
 
-            const eventTime = new Date(event.start.dateTime || event.start.date).getTime();
+            const eventTime = normalizeTimestamp(event.start?.dateTime || event.start?.date);
             return isInRange(eventTime);
         }
         
@@ -282,10 +312,35 @@ async function loadAndPrependTimelineData(date) {
             (calendar?.today?.length > 0) ||
             (downloads?.length > 0);
 
+            console.log('=== Prepend Events ===');
+
+            const prependEvents = [
+                ...filteredHistory.map(item => ['Browser', item.title, normalizeTimestamp(item.lastVisitTime)]),
+                ...filteredDrive.map(file => ['Drive', file.name, normalizeTimestamp(file.modifiedTime)]),
+                ...filteredEmails.map(email => ['Email', email.subject, normalizeTimestamp(email.timestamp)]),
+                ...filteredCalendar.today.map(event => ['Calendar', event.summary, normalizeTimestamp(event.start?.dateTime || event.start?.date)]),
+                ...filteredDownloads.map(download => ['Download', download.filename, normalizeTimestamp(download.startTime)]),
+            ];
+            
+            prependEvents
+                .sort((a, b) => a[2] - b[2])
+                .forEach(([type, title, timestamp]) => {
+                    const date = new Date(timestamp);
+                    const dateString = date.toISOString().split('T')[0];
+                    const timeString = date.toISOString().split('T')[1].split('.')[0]; // hh:mm:ss
+                    console.log(`${dateString} | ${timeString} | ${type}`);
+                });
+            
+            
+            
+
         if (hasData) {
             prependTimeline(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar, filteredDownloads);
-            oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
-            console.log('Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
+            const newOldestLoadedDate = new Date(startOfDay);
+            newOldestLoadedDate.setUTCDate(newOldestLoadedDate.getUTCDate() - 1);
+            oldestLoadedDate = newOldestLoadedDate;
+
+            console.log('✅ Clean Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
         } else {
             console.log('No data found for date:', dateKey);
         }
@@ -343,8 +398,8 @@ container.addEventListener('scroll', () => {
 
         console.log('Oldest loaded date BEFORE subtracting:', oldestLoadedDate.toISOString());
         const previousDate = new Date(oldestLoadedDate);
-        previousDate.setDate(previousDate.getDate() - 1);
-        previousDate.setHours(0, 0, 0, 0);
+        previousDate.setUTCHours(0, 0, 0, 0); // ✅ force UTC midnight
+        previousDate.setUTCDate(previousDate.getUTCDate() - 1); // ✅ subtract day properly in UTC
         console.log('Fetching data for:', previousDate.toISOString());
 
         loadAndPrependTimelineData(previousDate)
