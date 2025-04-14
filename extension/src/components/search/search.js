@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
         } else if (currentEngine === 'chatgpt') {
             window.location.href = `https://chat.openai.com/?q=${encodeURIComponent(query)}`;
+        } else if (currentEngine === 'reddit') {
+            window.location.href = `https://www.reddit.com/search?q=${encodeURIComponent(query)}`;
+        } else if (currentEngine === 'youtube') {
+            window.location.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
         }
     }
     
@@ -139,7 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSearchEngineIcon() {
         const iconMap = {
             google: '../assets/icons/google.png',
-            chatgpt: '../assets/icons/chatgpt.png'
+            chatgpt: '../assets/icons/chatgpt.png',
+            reddit: '../assets/icons/reddit.png',
+            youtube: '../assets/icons/youtube.png'
         };
         searchEngineIcon.src = iconMap[currentEngine];
     
@@ -148,6 +154,10 @@ document.addEventListener('DOMContentLoaded', function() {
             searchInput.placeholder = 'Search Google or type a URL';
         } else if (currentEngine === 'chatgpt') {
             searchInput.placeholder = 'Ask ChatGPT anything...';
+        } else if (currentEngine === 'reddit') {
+            searchInput.placeholder = 'Search Reddit...';
+        } else if (currentEngine === 'youtube') {
+            searchInput.placeholder = 'Search Youtube...';
         }
     }
 
