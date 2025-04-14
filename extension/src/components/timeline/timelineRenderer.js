@@ -44,9 +44,6 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         }
         const isLeftmostAbove = !newBatchLastPosition;
 
-        console.log('🧭 New batch last position:', newBatchLastPosition ? 'above' : 'below');
-        console.log('🧭 Decided isLeftmostAbove for prepend:', isLeftmostAbove ? 'above' : 'below');
-
         const fragment = createEventElements(processedEvents, 'prepend', newWidth, isLeftmostAbove);
         timelineEvents.prepend(fragment);
 
