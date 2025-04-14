@@ -351,12 +351,29 @@ async function loadAndPrependTimelineData(date) {
 
 // ===== Scroll Control =====
 const container = document.querySelector('.timeline-container');
-const scrollSpeed = 10;
-let scrollInterval = null;
-document.getElementById('scroll-left').addEventListener('mouseenter', () => startScroll(-1));
-document.getElementById('scroll-left').addEventListener('mouseleave', stopScroll);
-document.getElementById('scroll-right').addEventListener('mouseenter', () => startScroll(1));
-document.getElementById('scroll-right').addEventListener('mouseleave', stopScroll);
+const scrollSpeed = 1;
+let isHoveringLeft = false;
+let isHoveringRight = false;
+
+
+document.getElementById('scroll-left').addEventListener('mouseenter', () => {
+    isHoveringLeft = true;
+    startScroll(-1);
+});
+document.getElementById('scroll-left').addEventListener('mouseleave', () => {
+    isHoveringLeft = false;
+    stopScroll();
+});
+
+document.getElementById('scroll-right').addEventListener('mouseenter', () => {
+    isHoveringRight = true;
+    startScroll(1);
+});
+document.getElementById('scroll-right').addEventListener('mouseleave', () => {
+    isHoveringRight = false;
+    stopScroll();
+});
+
 
 // Add Latest button functionality with smooth scroll
 document.getElementById('scroll-latest').addEventListener('click', () => {
@@ -375,25 +392,55 @@ document.getElementById('scroll-latest').addEventListener('click', () => {
     }
 });
 
+let scrollAnimationFrame = null;
+
 function startScroll(direction) {
-    stopScroll();
-    scrollInterval = setInterval(() => {
-        const isRTL = getComputedStyle(container).direction === 'rtl';
-        const scrollAmount = scrollSpeed * (isRTL ? -1 : 1) * direction;
+    stopScroll(); // clear existing animation
+    const isRTL = getComputedStyle(container).direction === 'rtl';
+    const scrollAmount = scrollSpeed * (isRTL ? -1 : 1) * direction;
+
+    function scrollStep() {
         container.scrollLeft += scrollAmount;
-    }, 16);
+        scrollAnimationFrame = requestAnimationFrame(scrollStep);
+    }
+
+    scrollStep();
 }
 
 function stopScroll() {
-    if (scrollInterval !== null) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-        container.scrollLeft = container.scrollLeft;
+    if (scrollAnimationFrame !== null) {
+        cancelAnimationFrame(scrollAnimationFrame);
+        scrollAnimationFrame = null;
     }
 }
 
+
+const scrollAmountOnClick = 1000; // or any amount you like
+
+document.getElementById('scroll-left').addEventListener('click', () => {
+    stopScroll();
+    container.scrollBy({ left: -scrollAmountOnClick, behavior: 'smooth' });
+    setTimeout(() => {
+        if (isHoveringLeft) {
+            startScroll(-1);
+        }
+    }, 400); // give it time to finish
+});
+
+document.getElementById('scroll-right').addEventListener('click', () => {
+    stopScroll();
+    container.scrollBy({ left: scrollAmountOnClick, behavior: 'smooth' });
+    setTimeout(() => {
+        if (isHoveringRight) {
+            startScroll(1);
+        }
+    }, 400);
+});
+;
+
+
 container.addEventListener('scroll', () => {
-    if (container.scrollLeft < 600 && !isLoadingMorePastDays) {
+    if (container.scrollLeft < 1500 && !isLoadingMorePastDays) {
         isLoadingMorePastDays = true;
 
         console.log('Oldest loaded date BEFORE subtracting:', oldestLoadedDate.toISOString());
