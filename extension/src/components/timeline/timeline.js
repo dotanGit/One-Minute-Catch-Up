@@ -2,6 +2,7 @@
 import { normalizeDateToStartOfDay, safeParseDate, safeGetTimestamp } from '../../utils/dateUtils.js';
 import { buildTimeline, prependTimeline } from './timelineRenderer.js';
 import { getDownloadsService } from '../../services/downloadService.js';
+import { processAllEvents } from './timelineEventProcessor.js';
 
 // ===== Global Variables =====
 const loadingSection = document.getElementById('loading');
@@ -211,6 +212,18 @@ async function loadAndPrependTimelineData(date) {
                 getDownloadsService(normalizedDate)
             ]);
 
+            console.log('RAW data counts:', {
+                history: history.length,
+                drive: drive.files.length,
+                emailsAll: emails.all?.length || 0,
+                emailsSent: emails.sent?.length || 0,
+                emailsReceived: emails.received?.length || 0,
+                calendarToday: calendar.today.length,
+                calendarTomorrow: calendar.tomorrow.length,
+                downloads: downloads.length
+            });
+            
+
             cachedData = { data: { history, drive, emails, calendar, downloads } };
             timelineCache.set(dateKey, cachedData.data);
         }
@@ -270,8 +283,7 @@ async function loadAndPrependTimelineData(date) {
             (downloads?.length > 0);
 
         if (hasData) {
-            const events = processAllEvents(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar, filteredDownloads);
-            prependTimeline(events);
+            prependTimeline(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar, filteredDownloads);
             oldestLoadedDate.setDate(oldestLoadedDate.getDate() - 1);
             console.log('Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
         } else {
@@ -329,9 +341,10 @@ container.addEventListener('scroll', () => {
     if (container.scrollLeft < 600 && !isLoadingMorePastDays) {
         isLoadingMorePastDays = true;
 
+        console.log('Oldest loaded date BEFORE subtracting:', oldestLoadedDate.toISOString());
         const previousDate = new Date(oldestLoadedDate);
         previousDate.setDate(previousDate.getDate() - 1);
-
+        previousDate.setHours(0, 0, 0, 0);
         console.log('Fetching data for:', previousDate.toISOString());
 
         loadAndPrependTimelineData(previousDate)

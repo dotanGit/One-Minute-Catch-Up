@@ -9,6 +9,18 @@ import { processCalendarEvent } from './timelineCalendarRenderer.js';
 export const SESSION_TIMEOUT = 60 * 60 * 1000;
 
 export function processAllEvents(history, drive, emails, calendar, downloads) {
+    console.log('processAllEvents input:', {
+        history: history?.length ?? 'undefined',
+        drive: drive?.files?.length ?? 'undefined',
+        emailsAll: emails?.all?.length ?? 'undefined',
+        emailsSent: emails?.sent?.length ?? 'undefined',
+        emailsReceived: emails?.received?.length ?? 'undefined',
+        calendarToday: calendar?.today?.length ?? 'undefined',
+        calendarTomorrow: calendar?.tomorrow?.length ?? 'undefined',
+        downloads: downloads?.length ?? 'undefined'
+    });
+    
+    
     const processedEvents = [];
 
     //-----------------------  Process History -----------------------
@@ -77,6 +89,8 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
     if (calendar?.today?.length > 0) {
         calendar.today.forEach(event => processCalendarEvent(event, processedEvents));
     }
+
+    console.log('processAllEvents output processedEvents.length:', processedEvents.length);
 
     return processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 }
