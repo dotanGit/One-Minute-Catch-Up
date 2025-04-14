@@ -7,7 +7,6 @@ export function processCalendarEvent(event, processedEvents) {
     const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getUTCHours() === 0 && new Date(event.start.dateTime).getUTCMinutes() === 0);
     
     if (isFullDayEvent) {
-        console.log('Skipping full-day calendar event in processor:', event);
         return; //  Skip this event
     }
 

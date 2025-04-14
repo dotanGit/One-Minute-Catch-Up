@@ -38,24 +38,12 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
 
     //-----------------------  Process Downloads -----------------------
     if (downloads?.length > 0) {
-        console.log('Processing downloads:', downloads);
         downloads.forEach(download => {
             const downloadTime = new Date(download.startTime).getTime();
-            console.log('Processing download:', {
-                originalUrl: download.url,
-                sourceUrl: download.sourceUrl,
-                finalUrl: download.finalUrl,
-                referrer: download.referrer
-            });
             
             // Clean the URL to remove download parameters
             const sourceUrl = cleanDownloadUrl(download.sourceUrl || download.referrer || download.url);
             const pattern = extractPattern(sourceUrl);
-            
-            console.log('Using URL:', {
-                sourceUrl,
-                pattern
-            });
             
             processedEvents.push({
                 type: 'download',

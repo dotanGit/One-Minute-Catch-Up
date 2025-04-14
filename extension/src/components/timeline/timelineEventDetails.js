@@ -25,17 +25,6 @@ export function getEventDetails(event) {
                 actions: []
             };
         case 'download':
-            console.log('Creating download event details:', {
-                type: event.type,
-                title: event.title,
-                actualTitle: event.actualTitle,
-                description: event.description,
-                url: event.url,
-                downloadUrl: event.downloadUrl,
-                filename: event.filename,
-                downloadId: event.downloadId,
-                sourceUrl: event.sourceUrl
-            });
             return {
                 title: 'Download',
                 details: [

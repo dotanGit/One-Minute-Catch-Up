@@ -67,7 +67,6 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
 }
 
 export function createEventPopupContent(eventDetails, timeText) {
-    console.log('Creating event popup content:', eventDetails);
     // Use the timestamp from the original event object
     const eventDate = timeText.split(',')[0]; // Extract just the date part
     return `
@@ -106,7 +105,6 @@ export function addNowMarker(timelineEvents) {
 }
 
 export function attachEventListeners(eventDiv, eventDetails) {
-    console.log('Attaching event listeners:', { eventDiv, eventDetails });
     // Handle action buttons
     const actionButtons = eventDiv.querySelectorAll('.action-button');
     actionButtons.forEach((button, index) => {
@@ -126,9 +124,7 @@ export function attachEventListeners(eventDiv, eventDetails) {
         if (detail.isLink && detail.onClick) {
             console.log('Looking for link with click handler:', index);
             const link = eventDiv.querySelector(`.detail-value.link[data-detail-index="${index}"]`);
-            console.log('Found link element:', link);
             if (link) {
-                console.log('Attaching click handler to link');
                 link.addEventListener('click', detail.onClick);
             }
         }
