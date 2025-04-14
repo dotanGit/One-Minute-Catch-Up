@@ -5,6 +5,7 @@ import { initializeGreeting } from './userGreeting.js';
 import { initializeShortcuts } from './searchShortcuts.js';
 
 document.addEventListener('DOMContentLoaded', function() {
+    let currentEngine = 'google';
     // Get DOM elements
     const searchInput = document.querySelector('.search-input');
     const searchButton = document.querySelector('.search-button');
@@ -18,18 +19,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function handleSearch(query) {
         if (!query || query.trim() === '') return;
-        
+    
         saveSearchToHistory(query);
-            suggestionsContainer.style.display = 'none';
+        suggestionsContainer.style.display = 'none';
         searchBarContainer.classList.remove('showing-suggestions');
-        
+    
         if (isValidUrl(query)) {
             window.location.href = query;
             return;
         }
-
-        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    
+        if (currentEngine === 'google') {
+            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+        } else if (currentEngine === 'chatgpt') {
+            window.location.href = `https://chat.openai.com/?q=${encodeURIComponent(query)}`;
+        }
     }
+    
+    
 
     // Event Listeners for search functionality
     searchInput.addEventListener('keypress', (e) => {
@@ -106,6 +113,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Focus search input on page load
     searchInput.focus();
+
+    const searchEngineIcon = document.getElementById('search-engine-icon');
+    const engineDropdown = document.getElementById('engine-dropdown');
+
+    searchEngineIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        engineDropdown.style.display = engineDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-engine-selector')) {
+            engineDropdown.style.display = 'none';
+        }
+    });
+
+    document.querySelectorAll('.engine-option').forEach(option => {
+        option.addEventListener('click', (event) => {
+            currentEngine = event.currentTarget.getAttribute('data-engine');
+            updateSearchEngineIcon();
+            engineDropdown.style.display = 'none';
+        });
+    });
+
+    function updateSearchEngineIcon() {
+        const iconMap = {
+            google: '../assets/icons/google.png',
+            chatgpt: '../assets/icons/chatgpt.png'
+        };
+        searchEngineIcon.src = iconMap[currentEngine];
+    
+        // ✅ Update placeholder text based on selected engine
+        if (currentEngine === 'google') {
+            searchInput.placeholder = 'Search Google or type a URL';
+        } else if (currentEngine === 'chatgpt') {
+            searchInput.placeholder = 'Ask ChatGPT anything...';
+        }
+    }
+
 
     // Add this after getting DOM elements
     function updateSuggestionsPosition() {

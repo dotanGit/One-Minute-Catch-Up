@@ -35,7 +35,6 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         timelineEvents.style.width = `${newWidth}px`;
         timelineLine.style.width = `${newWidth}px`;
 
-        // ✅ Step 1: Check the position of the last event in the new batch
         // ✅ Step 1: Decide based on total number of events (clean and stable)
         const existingEventsCount = timelineEvents.querySelectorAll('.timeline-event').length;
         const newEventsCount = processedEvents.length;
