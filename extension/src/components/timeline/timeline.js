@@ -127,7 +127,7 @@ export async function initTimeline() {
     try {
         const datesToLoad = [];
         const today = new Date(currentDate);
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 1; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() - i);
             datesToLoad.push(safeParseDate(date));
@@ -399,7 +399,6 @@ container.addEventListener('scroll', () => {
         console.log('Oldest loaded date BEFORE subtracting:', oldestLoadedDate.toISOString());
         const previousDate = new Date(oldestLoadedDate);
         previousDate.setUTCHours(0, 0, 0, 0); // ✅ force UTC midnight
-        previousDate.setUTCDate(previousDate.getUTCDate() - 1); // ✅ subtract day properly in UTC
         console.log('Fetching data for:', previousDate.toISOString());
 
         loadAndPrependTimelineData(previousDate)
