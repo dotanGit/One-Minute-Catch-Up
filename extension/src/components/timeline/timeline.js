@@ -90,29 +90,71 @@ function getCalendarEvents(date) {
 
 // ===== Cache Logic =====
 const timelineCache = {
-    data: new Map(),
     maxEntries: 7,
     
-    get(dateKey) {
-        return this.data.get(dateKey);
+    async get(dateKey) {
+        try {
+            const result = await chrome.storage.local.get(dateKey);
+            return result[dateKey];
+        } catch (error) {
+            console.error('Cache read error:', error);
+            return null;
+        }
     },
     
-    set(dateKey, data) {
-        if (this.data.size >= this.maxEntries) {
-            const oldestKey = this.data.keys().next().value;
-            this.data.delete(oldestKey);
+    async set(dateKey, data) {
+        try {
+            // Get all keys to manage maxEntries
+            const allKeys = await chrome.storage.local.get(null);
+            const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
+            
+            // Remove oldest entries if we exceed maxEntries
+            if (cacheKeys.length >= this.maxEntries) {
+                const oldestKeys = cacheKeys
+                    .sort()
+                    .slice(0, cacheKeys.length - this.maxEntries + 1);
+                await chrome.storage.local.remove(oldestKeys);
+            }
+
+            // Save new data
+            await chrome.storage.local.set({
+                [dateKey]: {
+                    timestamp: Date.now(),
+                    data: data,
+                    date: dateKey.split('_')[1] // Store the date for comparison
+                }
+            });
+        } catch (error) {
+            console.error('Cache write error:', error);
         }
-        this.data.set(dateKey, {
-            timestamp: Date.now(),
-            data: data
-        });
     },
 
-    isValid(dateKey) {
-        const entry = this.data.get(dateKey);
-        if (!entry) return false;
-        const age = Date.now() - entry.timestamp;
-        return age < 30 * 60 * 1000;
+    async isValid(dateKey) {
+        try {
+            const entry = await this.get(dateKey);
+            if (!entry) return false;
+
+            // Get the date from the cache key
+            const cacheDate = new Date(entry.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // If it's a previous day, cache is always valid
+            if (cacheDate < today) {
+                console.log('📦 Previous day - using permanent cache');
+                return true;
+            }
+
+            // For today, use 30-minute cache
+            const age = Date.now() - entry.timestamp;
+            const isValid = age < 30 * 60 * 1000;
+            console.log(`📅 Today's data - cache ${isValid ? 'valid' : 'expired'} (age: ${Math.round(age/1000/60)} minutes)`);
+            return isValid;
+
+        } catch (error) {
+            console.error('Cache validation error:', error);
+            return false;
+        }
     }
 };
 
@@ -136,22 +178,48 @@ export async function initTimeline() {
             datesToLoad.push(safeParseDate(date));
         }
 
-        const allData = await Promise.all(datesToLoad.map(date => 
-            Promise.all([
+        const allData = await Promise.all(datesToLoad.map(async date => {
+            const dateKey = `timeline_${getDateKey(date)}`;
+            const isToday = date.toDateString() === new Date().toDateString();
+            
+            // For today, always fetch fresh data on initial load
+            if (isToday) {
+                console.log('📅 Today - fetching fresh data');
+                const [history, drive, emails, calendar, downloads] = await Promise.all([
+                    getBrowserHistory(date),
+                    getGoogleDriveActivity(date),
+                    getGmailActivity(date),
+                    getCalendarEvents(date),
+                    getDownloadsService(date)
+                ]);
+
+                const data = { history, drive, emails, calendar, downloads };
+                // Cache today's data for subsequent visits
+                await timelineCache.set(dateKey, data);
+                return { date, ...data };
+            }
+
+            // For non-today, check cache first
+            const isValidCache = await timelineCache.isValid(dateKey);
+            if (isValidCache) {
+                console.log('📦 Using cached data for:', dateKey);
+                const cachedData = await timelineCache.get(dateKey);
+                return { date, ...cachedData.data };
+            }
+
+            // If no valid cache, fetch fresh
+            const [history, drive, emails, calendar, downloads] = await Promise.all([
                 getBrowserHistory(date),
                 getGoogleDriveActivity(date),
                 getGmailActivity(date),
                 getCalendarEvents(date),
                 getDownloadsService(date)
-            ]).then(([history, drive, emails, calendar, downloads]) => ({
-                date,
-                history,
-                drive,
-                emails,
-                calendar,
-                downloads
-            }))
-        ));
+            ]);
+
+            const data = { history, drive, emails, calendar, downloads };
+            await timelineCache.set(dateKey, data);
+            return { date, ...data };
+        }));
 
         const mergedData = {
             history: allData.flatMap(data => data.history),
@@ -214,58 +282,70 @@ export async function initTimeline() {
 }
 
 async function loadAndPrependTimelineData(date) {
-
     date = new Date(date); 
     date.setUTCHours(0, 0, 0, 0); 
 
-    const dateKey = getDateKey(date);
+    const dateKey = `timeline_${getDateKey(date)}`;
     try {
-        // Log the date we're trying to fetch
-        console.log('Fetching events for date:', date.toISOString());
+        console.log('🔍 Checking data for date:', date.toISOString());
         
-        // Get current leftmost event timestamp for comparison
-        const timelineEvents = document.getElementById('timeline-events');
-        const existingEvents = timelineEvents.querySelectorAll('.timeline-event');
-        const leftmostEvent = existingEvents[0];
+        // Check cache first for previous days
+        let data;
+        const isValidCache = await timelineCache.isValid(dateKey);
         
-        let cachedData;
-        if (timelineCache.isValid(dateKey)) {
-            console.log('Using cached data for:', dateKey);
-            cachedData = timelineCache.get(dateKey);
+        console.log('====== DATA SOURCE CHECK ======');
+        console.log('Date:', date.toISOString());
+        console.log('Cache exists?:', isValidCache);
+        
+        if (isValidCache) {
+            console.log('✅ USING CACHED DATA');
+            console.log('Cache key:', dateKey);
+            const cachedData = await timelineCache.get(dateKey);
+            data = cachedData.data;
+            
+            // Log cache contents
+            console.log('Cache contents summary:', {
+                history: data.history?.length || 0,
+                drive: data.drive?.files?.length || 0,
+                emails: data.emails?.all?.length || 0,
+                calendar: data.calendar?.today?.length || 0,
+                downloads: data.downloads?.length || 0
+            });
         } else {
-            console.log('Fetching new data for:', dateKey);
-            const normalizedDate = safeParseDate(date);
+            console.log('❌ NO VALID CACHE - FETCHING FROM APIs');
+            console.time('API Calls Duration');
+            
             const [history, drive, emails, calendar, downloads] = await Promise.all([
-                getBrowserHistory(normalizedDate),
-                getGoogleDriveActivity(normalizedDate),
-                getGmailActivity(normalizedDate),
-                getCalendarEvents(normalizedDate),
-                getDownloadsService(normalizedDate)
+                getBrowserHistory(date),
+                getGoogleDriveActivity(date),
+                getGmailActivity(date),
+                getCalendarEvents(date),
+                getDownloadsService(date)
             ]);
 
-            console.log('RAW data counts:', {
-                history: history.length,
-                drive: drive.files.length,
-                emailsAll: emails.all?.length || 0,
-                emailsSent: emails.sent?.length || 0,
-                emailsReceived: emails.received?.length || 0,
-                calendarToday: calendar.today.length,
-                calendarTomorrow: calendar.tomorrow.length,
-                downloads: downloads.length
+            console.timeEnd('API Calls Duration');
+
+            data = { history, drive, emails, calendar, downloads };
+            
+            // Log API response summary
+            console.log('API response summary:', {
+                history: history?.length || 0,
+                drive: drive?.files?.length || 0,
+                emails: emails?.all?.length || 0,
+                calendar: calendar?.today?.length || 0,
+                downloads: downloads?.length || 0
             });
             
-
-            cachedData = { data: { history, drive, emails, calendar, downloads } };
-            timelineCache.set(dateKey, cachedData.data);
+            // Save to cache
+            await timelineCache.set(dateKey, data);
+            console.log('💾 Saved to cache with key:', dateKey);
         }
-
-        const { history, drive, emails, calendar, downloads } = cachedData.data;
+        console.log('==============================');
 
         const startOfDay = new Date(date);
         startOfDay.setUTCHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
         endOfDay.setUTCHours(23, 59, 59, 999);
-        
         
         function isInRange(timestamp) {
             const normalized = normalizeTimestamp(timestamp);
@@ -284,13 +364,13 @@ async function loadAndPrependTimelineData(date) {
             return isInRange(eventTime);
         }
         
-        // Apply filters
-        const filteredHistory = history.filter(item => isInRange(item.lastVisitTime));
-        const filteredDrive = drive.files.filter(file => isInRange(new Date(file.modifiedTime).getTime()));
-        const filteredEmails = emails.all?.filter(email => isInRange(Number(email.timestamp))) || [];
-        const filteredCalendarToday = calendar.today?.filter(isCalendarEventValid) || [];
-        const filteredCalendarTomorrow = calendar.tomorrow?.filter(isCalendarEventValid) || [];
-        const filteredDownloads = downloads?.filter(download => isInRange(download.startTime)) || [];
+        // Apply filters using data from cache or fresh fetch
+        const filteredHistory = data.history.filter(item => isInRange(item.lastVisitTime));
+        const filteredDrive = data.drive.files.filter(file => isInRange(new Date(file.modifiedTime).getTime()));
+        const filteredEmails = data.emails.all?.filter(email => isInRange(Number(email.timestamp))) || [];
+        const filteredCalendarToday = data.calendar.today?.filter(isCalendarEventValid) || [];
+        const filteredCalendarTomorrow = data.calendar.tomorrow?.filter(isCalendarEventValid) || [];
+        const filteredDownloads = data.downloads?.filter(download => isInRange(download.startTime)) || [];
         
         // Prepare final filtered calendar object
         const filteredCalendar = {
@@ -309,11 +389,11 @@ async function loadAndPrependTimelineData(date) {
         });
         
         const hasData = 
-            (history?.length > 0) ||
-            (drive?.files?.length > 0) ||
-            (emails?.all?.length > 0) ||
-            (calendar?.today?.length > 0) ||
-            (downloads?.length > 0);
+            (data.history?.length > 0) ||
+            (data.drive?.files?.length > 0) ||
+            (data.emails?.all?.length > 0) ||
+            (data.calendar?.today?.length > 0) ||
+            (data.downloads?.length > 0);
 
             console.log('=== Prepend Events ===');
 
@@ -338,12 +418,19 @@ async function loadAndPrependTimelineData(date) {
             
 
         if (hasData) {
-            prependTimeline(filteredHistory, { files: filteredDrive }, { all: filteredEmails }, filteredCalendar, filteredDownloads);
+            prependTimeline(
+                filteredHistory, 
+                { files: filteredDrive }, 
+                { all: filteredEmails }, 
+                { today: filteredCalendarToday, tomorrow: filteredCalendarTomorrow }, 
+                filteredDownloads
+            );
+            
             const newOldestLoadedDate = new Date(startOfDay);
             newOldestLoadedDate.setUTCDate(newOldestLoadedDate.getUTCDate() - 1);
             oldestLoadedDate = newOldestLoadedDate;
 
-            console.log('✅ Clean Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
+            console.log('✅ Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
         } else {
             console.log('No data found for date:', dateKey);
         }
