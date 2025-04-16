@@ -1,9 +1,20 @@
 export function getBrowserHistoryService(date) {
     return new Promise((resolve) => {
+        // Create a copy of the date to avoid modifying the input
         const startTime = new Date(date);
-        startTime.setHours(0, 0, 0, 0);
         const endTime = new Date(date);
-        endTime.setHours(23, 59, 59, 999);
+        
+        // Set to UTC midnight and end of day
+        startTime.setUTCHours(0, 0, 0, 0);
+        endTime.setUTCHours(23, 59, 59, 999);
+        
+        console.log('🔍 Browser History Date Range:', {
+            requestedDate: date.toISOString(),
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            startTimestamp: startTime.getTime(),
+            endTimestamp: endTime.getTime()
+        });
         
         chrome.history.search({
             text: '',
@@ -11,7 +22,34 @@ export function getBrowserHistoryService(date) {
             endTime: endTime.getTime(),
             maxResults: 100
         }, function(historyItems) {
-            resolve(historyItems || []);
+            // Log the timestamps of returned items
+            if (historyItems?.length > 0) {
+                console.log('📊 Browser History Items:', historyItems.map(item => ({
+                    title: item.title,
+                    timestamp: item.lastVisitTime,
+                    date: new Date(item.lastVisitTime).toISOString()
+                })));
+            }
+            
+            // Filter items to only include those from the requested date
+            const filteredItems = historyItems.filter(item => {
+                const itemDate = new Date(item.lastVisitTime);
+                return itemDate.getUTCFullYear() === date.getUTCFullYear() &&
+                       itemDate.getUTCMonth() === date.getUTCMonth() &&
+                       itemDate.getUTCDate() === date.getUTCDate();
+            });
+            
+            console.log('📊 Filtered Browser History Items:', {
+                totalItems: historyItems.length,
+                filteredItems: filteredItems.length,
+                items: filteredItems.map(item => ({
+                    title: item.title,
+                    timestamp: item.lastVisitTime,
+                    date: new Date(item.lastVisitTime).toISOString()
+                }))
+            });
+            
+            resolve(filteredItems);
         });
     });
 }

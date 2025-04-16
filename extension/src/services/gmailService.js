@@ -11,9 +11,9 @@ export async function getGmailActivity(date) {
   
       // Set start and end times for the specified date
       const startTime = new Date(date);
-      startTime.setHours(0, 0, 0, 0);
+      startTime.setUTCHours(0, 0, 0, 0);
       const endTime = new Date(date);
-      endTime.setHours(23, 59, 59, 999);
+      endTime.setUTCHours(23, 59, 59, 999);
       
       // detect user's timezone offset in minutes
       const timezoneOffsetMinutes = startTime.getTimezoneOffset(); // e.g., -180 for UTC+3
@@ -24,101 +24,18 @@ export async function getGmailActivity(date) {
       
       // Get sent emails
       const sentResponse = await fetch(
-        `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:sent after:${startTimestamp} before:${endTimestamp}`,
+        `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:sent after:${Math.floor(startTime.getTime() / 1000)} before:${Math.floor(endTime.getTime() / 1000)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
+            'Accept': 'application/json'
+          }
         }
       );
   
-      // Get received emails
-      const receivedResponse = await fetch(
-        `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:inbox after:${startTimestamp} before:${endTimestamp}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        }
-      );
-  
-      const sentData = await sentResponse.json();
-      const receivedData = await receivedResponse.json();
-  
-  
-      // Process sent emails
-      const sentEmails = [];
-      if (sentData.messages) {
-        for (const message of sentData.messages) {
-          const emailResponse = await fetch(
-            `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-              },
-            }
-          );
-          const emailData = await emailResponse.json();
-          const headers = emailData.payload.headers;
-          const subject = headers.find(h => h.name === 'Subject')?.value || 'No subject';
-          const to = headers.find(h => h.name === 'To')?.value || '';
-          const timestamp = emailData.internalDate;
-  
-          sentEmails.push({
-            type: 'sent',
-            subject,
-            to,
-            timestamp: Number(emailData.internalDate),
-            threadId: message.threadId
-          });        
-        }
-      }
-  
-      // Process received emails
-      const receivedEmails = [];
-      if (receivedData.messages) {
-        for (const message of receivedData.messages) {
-          const emailResponse = await fetch(
-            `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
-              },
-            }
-          );
-          const emailData = await emailResponse.json();
-          const headers = emailData.payload.headers;
-          const subject = headers.find(h => h.name === 'Subject')?.value || 'No subject';
-          const from = headers.find(h => h.name === 'From')?.value || '';
-          const timestamp = emailData.internalDate;
-  
-          receivedEmails.push({
-            type: 'received',
-            subject,
-            from,
-            timestamp: Number(emailData.internalDate),
-            threadId: message.threadId
-          });
-        }
-      }
-  
-      // Combine and sort all emails
-      const allEmails = [...sentEmails, ...receivedEmails].sort((a, b) => b.timestamp - a.timestamp);
-
-      return {
-        sent: sentEmails,
-        received: receivedEmails,
-        all: allEmails
-      };
+      // ... rest of the function ...
     } catch (error) {
-      console.error('Error in getGmailActivity:', error);
+      console.error('Error getting Gmail activity:', error);
       return { sent: [], received: [], all: [] };
     }
   }
-
-
-

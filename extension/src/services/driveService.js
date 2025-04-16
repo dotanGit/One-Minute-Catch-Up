@@ -6,9 +6,9 @@ export async function getDriveActivity(date) {
     if (!token) throw new Error('Not authenticated');
 
     const startTime = new Date(date);
-    startTime.setHours(0, 0, 0, 0);
+    startTime.setUTCHours(0, 0, 0, 0);
     const endTime = new Date(date);
-    endTime.setHours(23, 59, 59, 999);
+    endTime.setUTCHours(23, 59, 59, 999);
 
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files?fields=files(id,name,modifiedTime,webViewLink)&orderBy=modifiedTime desc&q=modifiedTime >= '${startTime.toISOString()}' and modifiedTime <= '${endTime.toISOString()}'`,

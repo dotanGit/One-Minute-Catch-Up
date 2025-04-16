@@ -17,9 +17,9 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
 export function getDownloadsService(date) {
     return new Promise((resolve) => {
         const startTime = new Date(date);
-        startTime.setHours(0, 0, 0, 0);
+        startTime.setUTCHours(0, 0, 0, 0);
         const endTime = new Date(date);
-        endTime.setHours(23, 59, 59, 999);
+        endTime.setUTCHours(23, 59, 59, 999);
         
         chrome.downloads.search({
             startedAfter: startTime.toISOString(),
