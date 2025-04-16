@@ -61,10 +61,14 @@ import {
   }
   
 
-  function isEventAlreadyLoaded(key) {
+  function isEventAlreadyLoaded(key, event) {
     const exists = window.loadedEventKeys.has(key);
     if (exists) {
-      console.warn('⚠️ Duplicate key blocked:', key);
+      console.warn('⚠️ Duplicate key blocked:', key, '📌 Event details:', {
+        type: event?.type,
+        title: event?.title || event?.subject || event?.name,
+        timestamp: event?.timestamp || event?.lastVisitTime || event?.modifiedTime || event?.startTime,
+      });
     }
     return exists;
   }
@@ -78,7 +82,7 @@ import {
   function filterNewEvents(events, getKey) {
     return events.filter(e => {
       const key = getKey(e);
-      if (isEventAlreadyLoaded(key)) return false;
+      if (isEventAlreadyLoaded(key, e)) return false;
       markEventAsLoaded(key);
       return true;
     });
