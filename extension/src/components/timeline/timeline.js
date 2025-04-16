@@ -180,7 +180,7 @@ export function showTimeline(isFirstLogin = false) {
             if (container) {
                 container.scrollLeft = container.scrollWidth;
             }
-        }, 6000);
+        }, 10000);
     } else {
         // For regular loads, just show timeline immediately
         if (loadingSection) loadingSection.style.display = 'none';
