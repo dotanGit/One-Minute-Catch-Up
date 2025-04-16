@@ -1,94 +1,52 @@
 // Delay helper (used by AI service too)
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// Normalize date to start of the day
+// Normalize date to start of UTC day (00:00:00 UTC)
 export function normalizeDateToStartOfDay(date) {
-  if (!(date instanceof Date)) {
-    date = new Date(date);
-  }
-  const localDate = new Date(date);
-  localDate.setHours(0, 0, 0, 0);
-  return localDate;
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
 }
 
-// Safely parse date
-export function safeParseDate(date) {
+
+// Safely parse any date-like input
+export function safeParseDate(input) {
   try {
-    if (typeof date === 'string' || typeof date === 'number') {
-      return new Date(date);
-    } else if (date instanceof Date) {
-      return new Date(date);
-    }
-    return new Date();
-  } catch (error) {
-    console.error('Error parsing date:', error);
+    if (!input) return new Date();
+    const date = new Date(input);
+    return isNaN(date.getTime()) ? new Date() : date;
+  } catch {
     return new Date();
   }
 }
 
-// Safely get timestamp
-export function safeGetTimestamp(date) {
-  try {
-    if (!date) return 0;
-    if (typeof date === 'string' || typeof date === 'number') {
-      date = new Date(date);
-    }
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-      return 0;
-    }
-    return date.getTime();
-  } catch (error) {
-    console.error('Error getting timestamp:', error);
-    return 0;
-  }
+// Convert to UTC timestamp in ms
+export function safeGetTimestamp(input) {
+  const d = safeParseDate(input);
+  return d.getTime();
 }
 
-// Safely convert date to ISO string
-export function safeToISOString(date) {
-  try {
-    if (!date) return '';
-    if (typeof date === 'string' || typeof date === 'number') {
-      date = new Date(date);
-    }
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-      return '';
-    }
-    return date.toISOString();
-  } catch (error) {
-    console.error('Error converting date to ISO string:', error);
-    return '';
-  }
+// Safely convert to ISO (UTC)
+export function safeToISOString(input) {
+  return safeParseDate(input).toISOString();
 }
 
-// Compare dates (local timezone)
+// Compare two dates by UTC day only
 export function areDatesEqual(date1, date2) {
-  const localDate1 = normalizeDateToStartOfDay(date1);
-  const localDate2 = normalizeDateToStartOfDay(date2);
-  return localDate1.getTime() === localDate2.getTime();
+  const d1 = normalizeDateToStartOfDay(date1).getTime();
+  const d2 = normalizeDateToStartOfDay(date2).getTime();
+  return d1 === d2;
 }
 
 
-// Normalize any date/time to a UTC timestamp (milliseconds)
+// Normalize timestamp to UTC millis
 export function normalizeTimestamp(input) {
   if (!input) return 0;
 
-  try {
-    let date;
+  if (typeof input === 'number') return Math.floor(input); // 🔒 force integer
 
-    if (typeof input === 'number') {
-      // Already timestamp? Ensure it's milliseconds
-      date = input > 1e12 ? new Date(input) : new Date(input * 1000);
-    } else if (typeof input === 'string') {
-      date = new Date(input);
-    } else if (input instanceof Date) {
-      date = input;
-    } else {
-      return 0;
-    }
-
-    return date.getTime(); // Always UTC milliseconds
-  } catch (error) {
-    console.error('Error normalizing timestamp:', input, error);
-    return 0;
-  }
+  const parsed = Date.parse(input);
+  return isNaN(parsed) ? 0 : parsed;
 }
+
+

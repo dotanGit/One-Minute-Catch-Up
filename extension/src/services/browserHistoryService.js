@@ -1,58 +1,27 @@
+import { normalizeDateToStartOfDay, safeGetTimestamp } from '../utils/dateUtils.js';
+
 export function getBrowserHistoryService(date) {
     return new Promise((resolve) => {
-        // Create a copy of the date to avoid modifying the input
-        const startTime = new Date(date);
-        const endTime = new Date(date);
-        
-        // Set to UTC midnight and end of day
-        startTime.setUTCHours(0, 0, 0, 0);
+        const startTime = normalizeDateToStartOfDay(date);
+        const endTime = new Date(startTime);
         endTime.setUTCHours(23, 59, 59, 999);
-        
-        console.log('🔍 Browser History Date Range:', {
-            requestedDate: date.toISOString(),
-            startTime: startTime.toISOString(),
-            endTime: endTime.toISOString(),
-            startTimestamp: startTime.getTime(),
-            endTimestamp: endTime.getTime()
-        });
-        
+
         chrome.history.search({
             text: '',
             startTime: startTime.getTime(),
             endTime: endTime.getTime(),
             maxResults: 100
         }, function(historyItems) {
-            // Log the timestamps of returned items
-            if (historyItems?.length > 0) {
-                console.log('📊 Browser History Items:', historyItems.map(item => ({
-                    title: item.title,
-                    timestamp: item.lastVisitTime,
-                    date: new Date(item.lastVisitTime).toISOString()
-                })));
-            }
-            
-            // Filter items to only include those from the requested date
             const filteredItems = historyItems.filter(item => {
-                const itemDate = new Date(item.lastVisitTime);
-                return itemDate.getUTCFullYear() === date.getUTCFullYear() &&
-                       itemDate.getUTCMonth() === date.getUTCMonth() &&
-                       itemDate.getUTCDate() === date.getUTCDate();
+                const ts = safeGetTimestamp(item.lastVisitTime);
+                return ts >= startTime.getTime() && ts <= endTime.getTime();
             });
-            
-            console.log('📊 Filtered Browser History Items:', {
-                totalItems: historyItems.length,
-                filteredItems: filteredItems.length,
-                items: filteredItems.map(item => ({
-                    title: item.title,
-                    timestamp: item.lastVisitTime,
-                    date: new Date(item.lastVisitTime).toISOString()
-                }))
-            });
-            
+
             resolve(filteredItems);
         });
     });
 }
+
 
 export function shouldFilterUrl(url) {
   try {

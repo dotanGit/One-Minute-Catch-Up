@@ -1,4 +1,6 @@
 import { getAuthToken } from '../utils/auth.js';
+import { normalizeDateToStartOfDay, safeToISOString } from '../utils/dateUtils.js';
+
 
 // Get Gmail activity
 export async function getGmailActivity(date) {
@@ -9,14 +11,9 @@ export async function getGmailActivity(date) {
         return { sent: [], received: [], all: [] };
       }
   
-      // Set start and end times for the specified date
-      const startTime = new Date(date);
-      startTime.setUTCHours(0, 0, 0, 0);
-      const endTime = new Date(date);
+      const startTime = normalizeDateToStartOfDay(date);
+      const endTime = new Date(startTime);
       endTime.setUTCHours(23, 59, 59, 999);
-      
-      // detect user's timezone offset in minutes
-      const timezoneOffsetMinutes = startTime.getTimezoneOffset(); // e.g., -180 for UTC+3
       
       // apply offset to get correct UTC timestamps
       const startTimestamp = Math.floor(startTime.getTime() / 1000);

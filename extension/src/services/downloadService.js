@@ -1,3 +1,5 @@
+import { normalizeDateToStartOfDay, safeToISOString } from '../utils/dateUtils.js';
+
 // Keep track of download source URLs
 const downloadSources = new Map();
 
@@ -14,24 +16,19 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
     }
 });
 
+
 export function getDownloadsService(date) {
     return new Promise((resolve) => {
-        const startTime = new Date(date);
-        startTime.setUTCHours(0, 0, 0, 0);
-        const endTime = new Date(date);
+        const startTime = normalizeDateToStartOfDay(date);
+        const endTime = new Date(startTime);
         endTime.setUTCHours(23, 59, 59, 999);
-        
+
         chrome.downloads.search({
-            startedAfter: startTime.toISOString(),
-            startedBefore: endTime.toISOString(),
+            startedAfter: safeToISOString(startTime),
+            startedBefore: safeToISOString(endTime),
             orderBy: ['-startTime']
         }, function(downloads) {
-            // Add the source URL to each download
-            downloads = downloads.map(download => ({
-                ...download,
-                sourceUrl: downloadSources.has(download.id) ? downloadSources.get(download.id) : null
-            }));
             resolve(downloads || []);
         });
     });
-} 
+}

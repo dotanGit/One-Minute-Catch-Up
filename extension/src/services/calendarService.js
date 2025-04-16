@@ -1,4 +1,6 @@
 import { getAuthToken } from '../utils/auth.js';
+import { normalizeDateToStartOfDay, safeToISOString } from '../utils/dateUtils.js';
+
 
 export async function getCalendarEvents(date) {
   try {
@@ -26,16 +28,15 @@ export async function getCalendarEvents(date) {
     const calendarList = await calListResponse.json();
     const calendars = calendarList.items || [];
 
-    const targetDate = new Date(date);
-    const startTime = new Date(targetDate);
-    startTime.setHours(0, 0, 0, 0);
-    const endTime = new Date(targetDate);
-    endTime.setHours(23, 59, 59, 999);
+    const startTime = normalizeDateToStartOfDay(date);
+    const endTime = new Date(startTime);
+    endTime.setUTCHours(23, 59, 59, 999);
+    
 
     const allEvents = await Promise.all(
       calendars.filter(cal => cal.selected !== false).map(async calendar => {
         const response = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events?timeMin=${startTime.toISOString()}&timeMax=${endTime.toISOString()}&orderBy=startTime&singleEvents=true`,
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendar.id)}/events?timeMin=${safeToISOString(startTime)}&timeMax=${safeToISOString(endTime)}&orderBy=startTime&singleEvents=true`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
