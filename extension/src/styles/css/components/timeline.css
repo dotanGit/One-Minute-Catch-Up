@@ -53,8 +53,7 @@
 .timeline-line {
     position: absolute;
     top: 50%;
-    left: 60px;
-    right: 60px;
+    left: 175px;
     height: 0px;
     transform: translateY(-50%);
     border-top: 2px dashed #c4d2e2;
@@ -632,15 +631,18 @@
 }
 
 #scroll-right {
-    right: 110px; /* adjust as you like */
+    right: 75px; /* adjust as you like */
 }
 
 #scroll-latest {
-    right: 60px;
+    right: 130px;
+    top: calc(50% + 143px);
 }
 
 #scroll-latest img {
     transform: scale(2);
+    width: 20px;
+    height: 20px;
 }
 
 #scroll-latest:hover img {

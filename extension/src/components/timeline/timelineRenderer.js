@@ -17,7 +17,7 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
 
     if (mode === 'rebuild') {
         timelineEvents.innerHTML = '';
-        const totalWidth = processedEvents.length * FIXED_SPACE;
+        const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE + 300);
         timelineEvents.style.width = `${totalWidth}px`;
         timelineLine.style.width = `${totalWidth}px`;
         
