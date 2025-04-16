@@ -141,14 +141,12 @@ const timelineCache = {
 
             // If it's a previous day, cache is always valid
             if (cacheDate < today) {
-                console.log('📦 Previous day - using permanent cache');
                 return true;
             }
 
             // For today, use 30-minute cache
             const age = Date.now() - entry.timestamp;
             const isValid = age < 30 * 60 * 1000;
-            console.log(`📅 Today's data - cache ${isValid ? 'valid' : 'expired'} (age: ${Math.round(age/1000/60)} minutes)`);
             return isValid;
 
         } catch (error) {
@@ -184,7 +182,6 @@ export async function initTimeline() {
             
             // For today, always fetch fresh data on initial load
             if (isToday) {
-                console.log('📅 Today - fetching fresh data');
                 const [history, drive, emails, calendar, downloads] = await Promise.all([
                     getBrowserHistory(date),
                     getGoogleDriveActivity(date),
@@ -202,7 +199,6 @@ export async function initTimeline() {
             // For non-today, check cache first
             const isValidCache = await timelineCache.isValid(dateKey);
             if (isValidCache) {
-                console.log('📦 Using cached data for:', dateKey);
                 const cachedData = await timelineCache.get(dateKey);
                 return { date, ...cachedData.data };
             }
@@ -250,18 +246,7 @@ export async function initTimeline() {
             ...(mergedData.calendar.today || []).map(event => ['Calendar', event.summary, normalizeTimestamp(event.start?.dateTime || event.start?.date)]),
             ...mergedData.downloads.map(download => ['Download', download.filename, normalizeTimestamp(download.startTime)]),
         ];
-        
-        initialEvents
-            .sort((a, b) => a[2] - b[2])
-            .forEach(([type, title, timestamp]) => {
-                const date = new Date(timestamp);
-                const dateString = date.toISOString().split('T')[0];
-                const timeString = date.toISOString().split('T')[1].split('.')[0]; // hh:mm:ss
-                console.log(`${dateString} | ${timeString} | ${type} | ${title}`);
-            });
-        
-        
-        
+                
 
         buildTimeline(mergedData.history, mergedData.drive, mergedData.emails, mergedData.calendar, mergedData.downloads);
 
@@ -293,28 +278,11 @@ async function loadAndPrependTimelineData(date) {
         let data;
         const isValidCache = await timelineCache.isValid(dateKey);
         
-        console.log('====== DATA SOURCE CHECK ======');
-        console.log('Date:', date.toISOString());
-        console.log('Cache exists?:', isValidCache);
         
         if (isValidCache) {
-            console.log('✅ USING CACHED DATA');
-            console.log('Cache key:', dateKey);
             const cachedData = await timelineCache.get(dateKey);
             data = cachedData.data;
-            
-            // Log cache contents
-            console.log('Cache contents summary:', {
-                history: data.history?.length || 0,
-                drive: data.drive?.files?.length || 0,
-                emails: data.emails?.all?.length || 0,
-                calendar: data.calendar?.today?.length || 0,
-                downloads: data.downloads?.length || 0
-            });
-        } else {
-            console.log('❌ NO VALID CACHE - FETCHING FROM APIs');
-            console.time('API Calls Duration');
-            
+        } else { 
             const [history, drive, emails, calendar, downloads] = await Promise.all([
                 getBrowserHistory(date),
                 getGoogleDriveActivity(date),
@@ -323,7 +291,6 @@ async function loadAndPrependTimelineData(date) {
                 getDownloadsService(date)
             ]);
 
-            console.timeEnd('API Calls Duration');
 
             data = { history, drive, emails, calendar, downloads };
             
@@ -338,10 +305,7 @@ async function loadAndPrependTimelineData(date) {
             
             // Save to cache
             await timelineCache.set(dateKey, data);
-            console.log('💾 Saved to cache with key:', dateKey);
         }
-        console.log('==============================');
-
         const startOfDay = new Date(date);
         startOfDay.setUTCHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
