@@ -137,16 +137,16 @@ const timelineCache = {
             // Get the date from the cache key
             const cacheDate = new Date(entry.date);
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            today.setUTCHours(0, 0, 0, 0);
 
             // If it's a previous day, cache is always valid
             if (cacheDate < today) {
                 return true;
             }
 
-            // For today, use 30-minute cache
+            // For today, use 5-minute cache
             const age = Date.now() - entry.timestamp;
-            const isValid = age < 30 * 60 * 1000;
+            const isValid = age < 5 * 60 * 1000; // 5 minutes
             return isValid;
 
         } catch (error) {
@@ -169,12 +169,16 @@ export async function initTimeline() {
     updateTimelineDate();
     try {
         const datesToLoad = [];
-        const today = new Date(currentDate);
-        for (let i = 0; i < 1; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - i);
-            datesToLoad.push(safeParseDate(date));
-        }
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0); // Set to UTC midnight
+        
+        // Load today's data
+        datesToLoad.push(today);
+        
+        // Also load yesterday's data
+        const yesterday = new Date(today);
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+        datesToLoad.push(yesterday);
 
         const allData = await Promise.all(datesToLoad.map(async date => {
             const dateKey = `timeline_${getDateKey(date)}`;
