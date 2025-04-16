@@ -105,3 +105,55 @@ body {
 .wallpaper-thumbnail:hover {
     transform: scale(1.05);
 }
+
+
+/* Loading Animation Styles */
+.loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px); /* optional */
+    max-width: none !important;
+    margin: 0px !important;
+}
+
+
+.loading-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.loading-logo {
+    margin-bottom: 30px;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+}
+
+.loading-progress {
+    width: 200px;
+    height: 4px;
+    background: #f3f3f3;
+    border-radius: 2px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0;
+    background: #3498db;
+    animation: progress 5s ease-in-out forwards;
+}
+
+@keyframes progress {
+    0% { width: 0; }
+    100% { width: 100%; }
+}

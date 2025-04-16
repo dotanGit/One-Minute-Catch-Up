@@ -158,11 +158,40 @@ const timelineCache = {
 
 
 // ===== Timeline Functions =====
-export function showTimeline() {
+export function showTimeline(isFirstLogin = false) {
     const loginSection = document.getElementById('login-section');
+    const loadingSection = document.getElementById('loading');
+    const timelineWrapper = document.querySelector('.timeline-wrapper');
+    const container = document.querySelector('.timeline-container');
+    
     if (loginSection) loginSection.style.display = 'none';
-    if (loadingSection) loadingSection.style.display = 'none';
-    if (timelineWrapper) timelineWrapper.style.display = 'block';
+    
+    if (isFirstLogin) {
+        // Show loading animation only during first login
+        if (loadingSection) loadingSection.style.display = 'flex';
+        
+        // After 6 seconds, hide loading and show timeline
+        setTimeout(() => {
+            if (loadingSection) loadingSection.style.display = 'none';
+            if (timelineWrapper) {
+                timelineWrapper.style.display = 'block';
+                timelineWrapper.style.visibility = 'visible';
+            }
+            if (container) {
+                container.scrollLeft = container.scrollWidth;
+            }
+        }, 6000);
+    } else {
+        // For regular loads, just show timeline immediately
+        if (loadingSection) loadingSection.style.display = 'none';
+        if (timelineWrapper) {
+            timelineWrapper.style.display = 'block';
+            timelineWrapper.style.visibility = 'visible';
+        }
+        if (container) {
+            container.scrollLeft = container.scrollWidth;
+        }
+    }
 }
 
 export async function initTimeline() {
