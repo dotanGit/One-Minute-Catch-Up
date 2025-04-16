@@ -144,9 +144,9 @@ const timelineCache = {
                 return true;
             }
 
-            // For today, use 5-minute cache
+            // For today, use 30-minute cache
             const age = Date.now() - entry.timestamp;
-            const isValid = age < 5 * 60 * 1000; // 5 minutes
+            const isValid = age < 30 * 60 * 1000; // 30 minutes
             return isValid;
 
         } catch (error) {
@@ -184,30 +184,16 @@ export async function initTimeline() {
             const dateKey = `timeline_${getDateKey(date)}`;
             const isToday = date.toDateString() === new Date().toDateString();
             
-            // For today, always fetch fresh data on initial load
-            if (isToday) {
-                const [history, drive, emails, calendar, downloads] = await Promise.all([
-                    getBrowserHistory(date),
-                    getGoogleDriveActivity(date),
-                    getGmailActivity(date),
-                    getCalendarEvents(date),
-                    getDownloadsService(date)
-                ]);
-
-                const data = { history, drive, emails, calendar, downloads };
-                // Cache today's data for subsequent visits
-                await timelineCache.set(dateKey, data);
-                return { date, ...data };
-            }
-
-            // For non-today, check cache first
+            // Check cache first for both today and yesterday
             const isValidCache = await timelineCache.isValid(dateKey);
             if (isValidCache) {
+                console.log(`Using cached data for ${dateKey}`);
                 const cachedData = await timelineCache.get(dateKey);
                 return { date, ...cachedData.data };
             }
 
-            // If no valid cache, fetch fresh
+            // If no valid cache, fetch fresh data
+            console.log(`Fetching fresh data for ${dateKey}`);
             const [history, drive, emails, calendar, downloads] = await Promise.all([
                 getBrowserHistory(date),
                 getGoogleDriveActivity(date),
@@ -217,6 +203,7 @@ export async function initTimeline() {
             ]);
 
             const data = { history, drive, emails, calendar, downloads };
+            // Cache the data for subsequent visits
             await timelineCache.set(dateKey, data);
             return { date, ...data };
         }));
