@@ -147,6 +147,7 @@ const timelineCache = {
             // For today, use 30-minute cache
             const age = Date.now() - entry.timestamp;
             const isValid = age < 30 * 60 * 1000; // 30 minutes
+            console.log(`Cache age for today: ${Math.round(age / 1000 / 60)} minutes`);
             return isValid;
 
         } catch (error) {
@@ -211,7 +212,6 @@ export async function initTimeline() {
 
         const allData = await Promise.all(datesToLoad.map(async date => {
             const dateKey = `timeline_${getDateKey(date)}`;
-            const isToday = date.toDateString() === new Date().toDateString();
             
             // Check cache first for both today and yesterday
             const isValidCache = await timelineCache.isValid(dateKey);
@@ -232,6 +232,7 @@ export async function initTimeline() {
             ]);
 
             const data = { history, drive, emails, calendar, downloads };
+            
             // Cache the data for subsequent visits
             await timelineCache.set(dateKey, data);
             return { date, ...data };
