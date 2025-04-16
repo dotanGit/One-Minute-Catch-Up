@@ -237,6 +237,20 @@ export async function initTimeline() {
             return { date, ...data };
         }));
 
+        allData.forEach(data => {
+            const startOfDay = new Date(data.date);
+            startOfDay.setUTCHours(0, 0, 0, 0);
+            const endOfDay = new Date(data.date);
+            endOfDay.setUTCHours(23, 59, 59, 999);
+        
+            if (data.emails?.all) {
+            data.emails.all = data.emails.all.filter(email => {
+                const ts = Number(email.timestamp);
+                return ts >= startOfDay.getTime() && ts <= endOfDay.getTime();
+            });
+            }
+        });
+
         const mergedData = {
             history: allData.flatMap(data => data.history),
             drive: { files: allData.flatMap(data => data.drive.files) },
@@ -244,6 +258,7 @@ export async function initTimeline() {
             calendar: { today: allData.flatMap(data => data.calendar.today || []) },
             downloads: allData.flatMap(data => data.downloads || [])
         };
+
 
         const allTimestamps = [
             ...mergedData.history.map(item => item.lastVisitTime),
