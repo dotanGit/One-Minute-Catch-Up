@@ -14,7 +14,7 @@ export function processEmailEvent(email, processedEvents) {
             to: email.to,
             emailUrl: email.threadId ? 
                 `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null,
-            id: email.threadId
+            id: email.id
         });
     }
 }

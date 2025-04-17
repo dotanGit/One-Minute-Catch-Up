@@ -145,7 +145,7 @@ export function attachEventListeners(eventDiv, eventDetails) {
             const eventId = eventDiv.getAttribute('data-event-id');
             chrome.storage.local.get(['hiddenEventIds'], (result) => {
                 const hiddenIds = new Set(result.hiddenEventIds || []);
-                hiddenIds.add(eventId);
+                hiddenIds.add(String(eventId));
                 chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, () => {
                     console.log('Hidden IDs in cache:', Array.from(hiddenIds));
                     // Remove the event from the DOM

@@ -32,12 +32,6 @@ import {
     return date.toISOString().split('T')[0];
   }
   
-  function updateTimelineDate() {
-    const timelineDate = document.querySelector('.timeline-date');
-    if (timelineDate) {
-      timelineDate.textContent = formatDate(currentDate);
-    }
-  }
   
   function filterByUTCDate(events, getTs, targetDate) {
     const start = normalizeDateToStartOfDay(targetDate);
@@ -84,16 +78,16 @@ import {
   function markAllEventKeys(filteredData) {
     const mark = (arr, getKey) => {
       arr.forEach(e => {
-        const key = getKey(e);
+        const key = String(getKey(e));
         if (key) window.loadedEventKeys.add(key);
       });
     };
   
     mark(filteredData.history, e => e.id);
     mark(filteredData.drive.files, f => f.id);
-    mark(filteredData.emails.all, e => e.threadId);
+    mark(filteredData.emails.all, e => e.id);
     mark(filteredData.calendar.today, e => e.id);
-    mark(filteredData.downloads, d => d.downloadId);
+    mark(filteredData.downloads, d => d.id);
   }
   
 
@@ -139,7 +133,7 @@ function filterHiddenEvents(data, hiddenIds) {
       today: (data.calendar?.today || []).filter(e => !hiddenIds.has(e.id)),
       tomorrow: (data.calendar?.tomorrow || []).filter(e => !hiddenIds.has(e.id))
     },
-    downloads: (data.downloads || []).filter(d => !hiddenIds.has(d.downloadId))
+    downloads: (data.downloads || []).filter(d => !hiddenIds.has(String(d.id)))
   };
 }
 
@@ -329,8 +323,6 @@ export async function loadAndPrependTimelineData(date) {
       const cleaned = filterHiddenEvents(raw, hiddenIds);
 
       filteredData = filterAllByDate(cleaned, startOfDay);
-
-
       await timelineCache.set(dateKey, filteredData);
     } else {
       const [history, drive, emails, calendar, downloads] = await Promise.all([

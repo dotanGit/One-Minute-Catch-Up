@@ -1,5 +1,5 @@
 import { getAuthToken } from '../utils/auth.js';
-import { normalizeDateToStartOfDay, safeToISOString } from '../utils/dateUtils.js';
+import { normalizeDateToStartOfDay } from '../utils/dateUtils.js';
 
 
 // Get Gmail activity
@@ -69,6 +69,7 @@ export async function getGmailActivity(date) {
             subject,
             to,
             timestamp: Number(emailData.internalDate),
+            id: message.id,
             threadId: message.threadId
           });        
         }
@@ -98,6 +99,7 @@ export async function getGmailActivity(date) {
             subject,
             from,
             timestamp: Number(emailData.internalDate),
+            id: message.id,
             threadId: message.threadId
           });
         }
