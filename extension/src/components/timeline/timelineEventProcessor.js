@@ -28,15 +28,14 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
     //-----------------------  Process History -----------------------
     if (history?.length > 0) {
         const sortedHistory = history.sort((a, b) => a.lastVisitTime - b.lastVisitTime);
-        const sessions = {};
-
+      
         sortedHistory.forEach(item => {
-            if (!item.lastVisitTime || !item.url || shouldFilterUrl(item.url)) return;
-            const pattern = extractPattern(item.url);
-            const currentTime = normalizeTimestamp(item.lastVisitTime);
-            processHistoryEvent(item, currentTime, pattern, sessions, processedEvents);
+          if (!item.lastVisitTime || !item.url || shouldFilterUrl(item.url)) return;
+          const currentTime = normalizeTimestamp(item.lastVisitTime);
+          processHistoryEvent(item, currentTime, processedEvents);
         });
-    }
+      }
+      
 
     //-----------------------  Process Downloads -----------------------
     if (downloads?.length > 0) {
