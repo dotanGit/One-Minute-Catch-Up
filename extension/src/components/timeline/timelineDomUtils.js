@@ -1,5 +1,6 @@
 import { getEventDetails } from './timelineEventDetails.js';
 import { getEventCategory } from './timelineEventProcessor.js';
+import { initTimeline } from './timeline.js';
 
 export function createEventElements(events, mode = 'append', currentTimelineWidth = 0, invertPosition = false) {
     const fragment = document.createDocumentFragment();
@@ -26,6 +27,7 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
             : (invertPosition ? 'above' : 'below');
 
         eventDiv.className = `timeline-event ${positionClass}`;
+        eventDiv.setAttribute('data-event-id', event.id);
 
         let position;
         if (mode === 'prepend') {
@@ -48,7 +50,33 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
             .replace(',', ',&nbsp;');
 
         const eventDetails = getEventDetails(event);
-        eventDiv.innerHTML = createEventPopupContent(eventDetails, timeText);
+        eventDiv.innerHTML = `
+            <div class="timeline-dot">
+                <button class="close-button" title="Hide this event">×</button>
+            </div>
+            <div class="event-popup">
+                <div class="date">
+                    ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
+                </div>
+                ${eventDetails.details.map((detail, index) => {
+                    const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
+                    const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
+                    return `
+                        <div class="detail-item">
+                            <span class="detail-label ${labelClass}">${detail.label}:</span>
+                            ${detail.isLink 
+                                ? detail.onClick
+                                    ? `<a href="#" class="detail-value link ${valueClass}" data-has-click-handler="true" data-detail-index="${index}">${detail.value}</a>`
+                                    : `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
+                                : detail.role === 'heading'
+                                    ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
+                                    : `<span class="detail-value ${valueClass}">${detail.value}</span>`
+                            }
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
         if (getEventCategory(event) === 'browser') {
             const timelineDot = eventDiv.querySelector('.timeline-dot');
             const eventDetailsWebsite = eventDetails.details.find(d => d.label.toLowerCase() === 'website');
@@ -70,7 +98,9 @@ export function createEventPopupContent(eventDetails, timeText) {
     // Use the timestamp from the original event object
     const eventDate = timeText.split(',')[0]; // Extract just the date part
     return `
-        <div class="timeline-dot"></div>
+        <div class="timeline-dot">
+            <button class="close-button" title="Hide this event">×</button>
+        </div>
         <div class="event-popup">
             <div class="date">
                 ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
@@ -105,6 +135,26 @@ export function addNowMarker(timelineEvents) {
 }
 
 export function attachEventListeners(eventDiv, eventDetails) {
+    // Handle close button click
+    const closeButton = eventDiv.querySelector('.close-button');
+    if (closeButton) {
+        closeButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const eventId = eventDiv.getAttribute('data-event-id');
+            chrome.storage.local.get(['hiddenEventIds'], (result) => {
+                const hiddenIds = new Set(result.hiddenEventIds || []);
+                hiddenIds.add(eventId);
+                chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, () => {
+                    console.log('Hidden IDs in cache:', Array.from(hiddenIds));
+                    // Remove the event from the DOM
+                    eventDiv.remove();
+                    // Rebuild the timeline
+                    initTimeline();
+                });
+            });
+        });
+    }
+
     // Handle action buttons
     const actionButtons = eventDiv.querySelectorAll('.action-button');
     actionButtons.forEach((button, index) => {

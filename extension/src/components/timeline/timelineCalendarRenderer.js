@@ -25,7 +25,8 @@ export function processCalendarEvent(event, processedEvents) {
                 duration: event.end ? 
                     `${new Date(event.start.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.end.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 
                     'All day',
-                eventUrl: event.htmlLink
+                eventUrl: event.htmlLink,
+                id: event.id
             });
         }
     }

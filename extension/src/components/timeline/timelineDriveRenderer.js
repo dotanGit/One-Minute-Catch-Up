@@ -12,6 +12,7 @@ export function processDriveEvent(file, processedEvents) {
                 title: 'Drive File Edit',
                 description: file.name,
                 webViewLink: file.webViewLink,
+                id: file.id
             });
         }
     }

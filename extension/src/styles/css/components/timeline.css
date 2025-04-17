@@ -124,6 +124,36 @@
     justify-content: center;
 }
 
+.timeline-dot .close-button {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #333;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.timeline-dot:hover .close-button {
+    display: flex;
+}
+
+.timeline-dot .close-button:hover {
+    background: #ff4444;
+    color: white;
+    transform: scale(1.1);
+}
+
 /* Update category-specific colors to only affect borders */
 .timeline-event[data-category="gmail"] .timeline-dot {
     background: rgba(234, 67, 53, 0.4); 

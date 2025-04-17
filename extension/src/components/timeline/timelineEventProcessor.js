@@ -59,7 +59,8 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
                 filename: download.filename,
                 icon: '📥',
                 duration: 0,
-                downloadId: download.id
+                downloadId: download.id,
+                id: download.id
             });
         });
     }

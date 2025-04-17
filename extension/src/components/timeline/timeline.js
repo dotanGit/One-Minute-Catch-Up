@@ -212,7 +212,32 @@ export async function initTimeline() {
   
         if (isValidCache) {
           const cachedData = await timelineCache.get(dateKey);
-          return { date, ...cachedData.data };
+          const raw = cachedData.data;
+          
+          // Get hidden IDs from storage
+          const hiddenIds = await new Promise(resolve => {
+            chrome.storage.local.get(['hiddenEventIds'], (result) => {
+              resolve(new Set(result.hiddenEventIds || []));
+            });
+          });
+
+          // Filter out hidden events
+          const filteredData = {
+            history: (raw.history || []).filter(e => !hiddenIds.has(e.id)),
+            drive: { 
+              files: (raw.drive?.files || []).filter(f => !hiddenIds.has(f.id))
+            },
+            emails: { 
+              all: (raw.emails?.all || []).filter(e => !hiddenIds.has(e.threadId))
+            },
+            calendar: {
+              today: (raw.calendar?.today || []).filter(e => !hiddenIds.has(e.id)),
+              tomorrow: (raw.calendar?.tomorrow || []).filter(e => !hiddenIds.has(e.id))
+            },
+            downloads: (raw.downloads || []).filter(d => !hiddenIds.has(d.downloadId))
+          };
+
+          return { date, ...filteredData };
         }
   
         const [history, drive, emails, calendar, downloads] = await Promise.all([
@@ -292,16 +317,25 @@ export async function initTimeline() {
         const cachedData = await timelineCache.get(dateKey);
         const raw = cachedData.data;
 
+        // Get hidden IDs from storage
+        const hiddenIds = await new Promise(resolve => {
+          chrome.storage.local.get(['hiddenEventIds'], (result) => {
+            resolve(new Set(result.hiddenEventIds || []));
+          });
+        });
+
         filteredData = {
-            history: filterByUTCDate(raw.history || [], e => e.lastVisitTime, startOfDay),
-            drive: { files: filterByUTCDate(raw.drive?.files || [], f => f.modifiedTime, startOfDay) },
-            emails: { all: filterByUTCDate(raw.emails?.all || [], e => e.timestamp, startOfDay) },
-            calendar: {
-              today: filterByUTCDate(raw.calendar?.today || [], e => e.start?.dateTime || e.start?.date, startOfDay),
-              tomorrow: filterByUTCDate(raw.calendar?.tomorrow || [], e => e.start?.dateTime || e.start?.date, startOfDay)
-            },
-            downloads: filterByUTCDate(raw.downloads || [], d => d.startTime, startOfDay)
-          };          
+          history: filterByUTCDate((raw.history || []).filter(e => !hiddenIds.has(e.id)), e => e.lastVisitTime, startOfDay),
+          drive: { files: filterByUTCDate((raw.drive?.files || []).filter(f => !hiddenIds.has(f.id)), f => f.modifiedTime, startOfDay) },
+          emails: { all: filterByUTCDate((raw.emails?.all || []).filter(e => !hiddenIds.has(e.threadId)), e => e.timestamp, startOfDay) },
+          calendar: {
+            today: filterByUTCDate((raw.calendar?.today || []).filter(e => !hiddenIds.has(e.id)), e => e.start?.dateTime || e.start?.date, startOfDay),
+            tomorrow: filterByUTCDate((raw.calendar?.tomorrow || []).filter(e => !hiddenIds.has(e.id)), e => e.start?.dateTime || e.start?.date, startOfDay)
+          },
+          downloads: filterByUTCDate((raw.downloads || []).filter(d => !hiddenIds.has(d.downloadId)), d => d.startTime, startOfDay)
+        };
+  
+        await timelineCache.set(dateKey, filteredData);
       } else {
         const [history, drive, emails, calendar, downloads] = await Promise.all([
           getBrowserHistoryService(startOfDay),

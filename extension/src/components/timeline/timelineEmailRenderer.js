@@ -13,7 +13,8 @@ export function processEmailEvent(email, processedEvents) {
             from: email.from,
             to: email.to,
             emailUrl: email.threadId ? 
-                `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null
+                `https://mail.google.com/mail/u/0/#inbox/${email.threadId}` : null,
+            id: email.threadId
         });
     }
 }

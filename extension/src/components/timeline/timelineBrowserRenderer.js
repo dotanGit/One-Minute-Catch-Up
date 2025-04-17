@@ -17,7 +17,8 @@ export function processHistoryEvent(item, currentTime, pattern, sessions, proces
             actualTitle: item.title,
             description: item.url,
             url: item.url,
-            duration: 0
+            duration: 0,
+            id: item.id
         });
         return;
     }
@@ -34,6 +35,7 @@ export function processHistoryEvent(item, currentTime, pattern, sessions, proces
         );
         if (lastEvent) {
             lastEvent.duration = duration;
+            lastEvent.timestamp = currentTime; // Update timestamp to latest visit
         }
     } else {
         // Start new session
@@ -41,14 +43,23 @@ export function processHistoryEvent(item, currentTime, pattern, sessions, proces
             start: currentTime, 
             end: currentTime 
         };
-        processedEvents.push({
-            type: 'browser',
-            timestamp: currentTime,
-            title: 'Browser Visit',
-            actualTitle: item.title,
-            description: item.url,
-            url: item.url,
-            duration: 0
-        });
+        const existingEvent = processedEvents.find(e => 
+            e.type === 'browser' && e.url === item.url
+        );
+        if (existingEvent) {
+            existingEvent.duration = 0;
+            existingEvent.timestamp = currentTime;
+        } else {
+            processedEvents.push({
+                type: 'browser',
+                timestamp: currentTime,
+                title: 'Browser Visit',
+                actualTitle: item.title,
+                description: item.url,
+                url: item.url,
+                duration: 0,
+                id: item.id
+            });
+        }
     }
 }
