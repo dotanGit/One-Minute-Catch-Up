@@ -32,16 +32,6 @@ import {
     return date.toISOString().split('T')[0];
   }
   
-  function formatDate(date) {
-    const today = normalizeDateToStartOfDay(new Date());
-    const yesterday = new Date(today);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  
-    if (date.toUTCString() === today.toUTCString()) return 'Today';
-    if (date.toUTCString() === yesterday.toUTCString()) return 'Yesterday';
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  }
-  
   function updateTimelineDate() {
     const timelineDate = document.querySelector('.timeline-date');
     if (timelineDate) {
@@ -263,7 +253,6 @@ export function showTimeline(isFirstLogin = false) {
 
 
 export async function initTimeline() {
-  updateTimelineDate();
   try {
     const today = normalizeDateToStartOfDay(new Date());
     window.loadedEventKeys = new Set();

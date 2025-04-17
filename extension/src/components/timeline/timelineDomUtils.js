@@ -53,6 +53,7 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
         eventDiv.innerHTML = `
             <div class="timeline-dot">
                 <button class="close-button" title="Hide this event">×</button>
+                <button class="mark-button" title="Mark this event">✓</button>
             </div>
             <div class="event-popup">
                 <div class="date">
@@ -100,6 +101,7 @@ export function createEventPopupContent(eventDetails, timeText) {
     return `
         <div class="timeline-dot">
             <button class="close-button" title="Hide this event">×</button>
+            <button class="mark-button" title="Mark this event">✓</button>
         </div>
         <div class="event-popup">
             <div class="date">
@@ -155,6 +157,16 @@ export function attachEventListeners(eventDiv, eventDetails) {
         });
     }
 
+    // Handle mark button click
+    const markButton = eventDiv.querySelector('.mark-button');
+    if (markButton) {
+        markButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            eventDiv.classList.toggle('marked');
+            updateDeleteMarkedButtonVisibility();
+        });
+    }
+
     // Handle action buttons
     const actionButtons = eventDiv.querySelectorAll('.action-button');
     actionButtons.forEach((button, index) => {
@@ -179,4 +191,75 @@ export function attachEventListeners(eventDiv, eventDetails) {
             }
         }
     });
+}
+
+export function deleteMarkedEvents() {
+    const markedEvents = document.querySelectorAll('.timeline-event.marked');
+    const eventIds = Array.from(markedEvents).map(event => event.getAttribute('data-event-id'));
+    
+    if (eventIds.length > 0) {
+        chrome.storage.local.get(['hiddenEventIds'], (result) => {
+            const hiddenIds = new Set(result.hiddenEventIds || []);
+            eventIds.forEach(id => hiddenIds.add(id));
+            chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, () => {
+                console.log('Hidden IDs in cache:', Array.from(hiddenIds));
+                // Remove all marked events from the DOM
+                markedEvents.forEach(event => event.remove());
+                // Rebuild the timeline
+                initTimeline();
+            });
+        });
+    }
+}
+
+function updateDeleteMarkedButtonVisibility() {
+    const deleteMarkedButton = document.querySelector('.delete-marked-button');
+    if (!deleteMarkedButton) {
+        // Create the button if it doesn't exist
+        const button = document.createElement('button');
+        button.className = 'delete-marked-button';
+        button.textContent = 'Delete Marked';
+        button.addEventListener('click', async () => {
+            const markedEvents = document.querySelectorAll('.timeline-event.marked');
+            const markedEventIds = Array.from(markedEvents).map(event => event.getAttribute('data-event-id'));
+            
+            if (markedEventIds.length > 0) {
+                // Get current hidden IDs
+                const result = await chrome.storage.local.get(['hiddenEventIds']);
+                const hiddenIds = new Set(result.hiddenEventIds || []);
+                
+                // Add all marked event IDs
+                markedEventIds.forEach(id => hiddenIds.add(id));
+                
+                // Save updated hidden IDs
+                await chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) });
+                
+                // Remove all marked events from DOM
+                markedEvents.forEach(event => event.remove());
+                
+                // Rebuild timeline once after all deletions
+                initTimeline();
+            }
+        });
+        document.body.appendChild(button);
+    }
+
+    // Update visibility based on marked events
+    const markedEvents = document.querySelectorAll('.timeline-event.marked');
+    const deleteButton = document.querySelector('.delete-marked-button');
+    if (markedEvents.length > 0) {
+        deleteButton.classList.add('visible');
+    } else {
+        deleteButton.classList.remove('visible');
+    }
+}
+
+// Initialize the delete marked button
+export function initDeleteMarkedButton() {
+    updateDeleteMarkedButtonVisibility();
+}
+
+// Call this function after initTimeline is called
+export function onTimelineInitialized() {
+    initDeleteMarkedButton();
 }
