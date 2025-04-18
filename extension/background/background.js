@@ -45,9 +45,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'getBrowserHistory':
       getBrowserHistoryService(new Date(request.date)).then(sendResponse);
       return true;
-    case 'triggerSync':
-      syncGmailDriveCalendar().then(() => sendResponse({ success: true }));
-      return true;
   }
 });
 
@@ -65,7 +62,6 @@ async function handleGoogleLogin() {
     });
 
     if (token) {
-      // Get user info immediately after login
       const profileResponse = await fetch(
         'https://www.googleapis.com/oauth2/v3/userinfo',
         {
@@ -78,8 +74,7 @@ async function handleGoogleLogin() {
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-      
-        // Save user info to storage
+
         await chrome.storage.local.set({ 
           isLoggedIn: true,
           userInfo: {
@@ -89,18 +84,19 @@ async function handleGoogleLogin() {
             email: profileData.email
           }
         });
-      
-        syncGmailDriveCalendar();
-      }
 
-      return { success: true, token };
+        // ✅ No sync here — let popup control it
+        return { success: true, token };
+      }
     }
+
     return { success: false, error: 'Failed to get auth token' };
   } catch (error) {
     console.error('Login error:', error);
     return { success: false, error: error.message };
   }
 }
+
 
 // Get user info
 async function getUserInfo() {
@@ -159,6 +155,15 @@ async function getUserInfo() {
 
 // Fetch Gmail/Drive/Calendar every 30 minutes in the background
 const THIRTY_MIN = 30 * 60 * 1000;
+let allowBackgroundSync = false;
+let firstSyncBlocked = true;
+
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.action === 'enableBackgroundSync') {
+    allowBackgroundSync = true;
+    console.log('[BG] ✅ Background sync now allowed');
+  }
+});
 
 async function syncGmailDriveCalendar() {
   const { isLoggedIn } = await chrome.storage.local.get('isLoggedIn');
@@ -228,13 +233,27 @@ async function syncGmailDriveCalendar() {
 }
 
 // ✅ Only run every 30 min if logged in
+// Delay releasing first sync block until after login
+setTimeout(() => {
+  firstSyncBlocked = false;
+}, 3000); // Or however long you think is safe
+
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.action === 'enableBackgroundSync') {
+    allowBackgroundSync = true;
+    console.log('[BG] ✅ Background sync now allowed');
+  }
+});
+
 setInterval(() => {
+  if (firstSyncBlocked || !allowBackgroundSync) {
+    console.log('[BG] ⏳ Skipping sync — waiting for initTimeline');
+    return;
+  }
+
   chrome.storage.local.get('isLoggedIn', ({ isLoggedIn }) => {
-    if (isLoggedIn) {
-      syncGmailDriveCalendar();
-    } else {
-      console.log('[BG] ⏳ Skipping interval sync — not logged in');
-    }
+    if (isLoggedIn) syncGmailDriveCalendar();
+    else console.log('[BG] ⏳ Skipping sync — not logged in');
   });
 }, THIRTY_MIN);
 

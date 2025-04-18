@@ -10,9 +10,9 @@ export function initLogin() {
 
   chrome.storage.local.get(['isLoggedIn'], function(result) {
     if (result.isLoggedIn) {
-      loadTimeline(false); // user already logged in
+      loadTimeline(false); 
     } else {
-      showLogin(); // show login screen
+      showLogin(); 
     }
   });
 
@@ -21,27 +21,23 @@ export function initLogin() {
       if (loadingSection) loadingSection.style.display = 'block';
       loginButton.disabled = true;
 
-      // Ask background to login
       chrome.runtime.sendMessage({ action: 'login' }, async function (response) {
         if (response && response.success) {
           console.log('[LOGIN] ✅ Google login approved, now clearing cache...');
           
-          // Clear all cached data
           chrome.storage.local.clear(async function () {
             console.log('[LOGIN] 🧹 Cache cleared');
 
-            // Explicitly mark user as logged in again after clearing
             await chrome.storage.local.set({ isLoggedIn: true });
 
-            // Hide login screen immediately
             const loginSection = document.getElementById('login-section');
             if (loginSection) loginSection.style.display = 'none';
 
-            // Start syncing background data
-            chrome.runtime.sendMessage({ action: 'triggerSync' });
-
-            // Show timeline and init
-            loadTimeline(true);
+            // ✅ First build the timeline
+            await loadTimeline(true);
+            
+            // ✅ Then allow background sync (and trigger it)
+            chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
 
           });
         } else {
