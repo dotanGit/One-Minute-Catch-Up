@@ -1,34 +1,48 @@
 import { showTimeline } from '../timeline/timeline.js';
+import { initTimeline } from '../timeline/timeline.js';
+import { onTimelineInitialized } from '../timeline/timelineDomUtils.js';
 
 export function initLogin() {
   console.log('Login initialized');
 
   const loginButton = document.getElementById('login-button');
-  const loginSection = document.getElementById('login-section');
   const loadingSection = document.getElementById('loading');
-  const timelineWrapper = document.querySelector('.timeline-wrapper');
 
-  // Check if user is already logged in
   chrome.storage.local.get(['isLoggedIn'], function(result) {
     if (result.isLoggedIn) {
-      showTimeline(false); // Regular load, no loading animation
-      console.log('User is logged in- SHOED TIMELINE FROM THE LOGIN');
+      loadTimeline(false); // user already logged in
     } else {
-      showLogin(); // Otherwise, show the login screen
+      showLogin(); // show login screen
     }
   });
 
-
   if (loginButton) {
-    loginButton.addEventListener('click', function() {
+    loginButton.addEventListener('click', function () {
       if (loadingSection) loadingSection.style.display = 'block';
       loginButton.disabled = true;
 
-      chrome.runtime.sendMessage({ action: 'login' }, function(response) {
+      // Ask background to login
+      chrome.runtime.sendMessage({ action: 'login' }, async function (response) {
         if (response && response.success) {
-          // Save login status
-          chrome.storage.local.set({ isLoggedIn: true }, function() {
-            showTimeline(true); // First login, show loading animation
+          console.log('[LOGIN] ✅ Google login approved, now clearing cache...');
+          
+          // Clear all cached data
+          chrome.storage.local.clear(async function () {
+            console.log('[LOGIN] 🧹 Cache cleared');
+
+            // Explicitly mark user as logged in again after clearing
+            await chrome.storage.local.set({ isLoggedIn: true });
+
+            // Hide login screen immediately
+            const loginSection = document.getElementById('login-section');
+            if (loginSection) loginSection.style.display = 'none';
+
+            // Start syncing background data
+            chrome.runtime.sendMessage({ action: 'triggerSync' });
+
+            // Show timeline and init
+            loadTimeline(true);
+
           });
         } else {
           if (loadingSection) loadingSection.style.display = 'none';
@@ -44,3 +58,11 @@ function showLogin() {
   const loginSection = document.getElementById('login-section');
   if (loginSection) loginSection.style.display = 'block';
 }
+
+async function loadTimeline(withAnimation) {
+  await initTimeline();
+  onTimelineInitialized();
+  showTimeline(withAnimation);
+}
+
+

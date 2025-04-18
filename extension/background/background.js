@@ -41,6 +41,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case 'getBrowserHistory':
       getBrowserHistoryService(new Date(request.date)).then(sendResponse);
       return true;
+    case 'triggerSync':
+      syncGmailDriveCalendar().then(() => sendResponse({ success: true }));
+      return true;
   }
 });
 
@@ -71,6 +74,7 @@ async function handleGoogleLogin() {
 
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
+      
         // Save user info to storage
         await chrome.storage.local.set({ 
           isLoggedIn: true,
@@ -81,6 +85,8 @@ async function handleGoogleLogin() {
             email: profileData.email
           }
         });
+      
+        syncGmailDriveCalendar();
       }
 
       return { success: true, token };
@@ -151,6 +157,12 @@ async function getUserInfo() {
 const THIRTY_MIN = 30 * 60 * 1000;
 
 async function syncGmailDriveCalendar() {
+  const { isLoggedIn } = await chrome.storage.local.get('isLoggedIn');
+  if (!isLoggedIn) {
+    console.log('[BG] 🚫 Not logged in — skipping sync');
+    return;
+  }
+
   console.log('[BG] ⏳ Background sync triggered');
   const now = Date.now();
   const { lastGmailCheck } = await chrome.storage.local.get('lastGmailCheck');
@@ -211,8 +223,13 @@ async function syncGmailDriveCalendar() {
   }
 }
 
-// Run immediately on extension start
-syncGmailDriveCalendar();
-
-// Continue running every 30 minutes
-setInterval(syncGmailDriveCalendar, THIRTY_MIN);
+// ✅ Only run every 30 min if logged in
+setInterval(() => {
+  chrome.storage.local.get('isLoggedIn', ({ isLoggedIn }) => {
+    if (isLoggedIn) {
+      syncGmailDriveCalendar();
+    } else {
+      console.log('[BG] ⏳ Skipping interval sync — not logged in');
+    }
+  });
+}, THIRTY_MIN);

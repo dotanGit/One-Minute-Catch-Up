@@ -94,10 +94,7 @@ export function showTimeline(isFirstLogin = false) {
     
     if (loginSection) loginSection.style.display = 'none';
     
-    if (isFirstLogin) {
-        // Show loading animation only during first login
-        if (loadingSection) loadingSection.style.display = 'flex';
-        
+    if (isFirstLogin) {        
         // After 10 seconds, hide loading and show timeline
         setTimeout(() => {
             if (loadingSection) loadingSection.style.display = 'none';
@@ -208,8 +205,6 @@ export async function initTimeline() {
     buildTimeline(combined.history, combined.drive, combined.emails, combined.calendar, combined.downloads);
     markAllEventKeys(combined);
 
-    const container = document.querySelector('.timeline-container');
-    if (container) container.scrollLeft = container.scrollWidth;
     if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
 
     initTimelineScroll();

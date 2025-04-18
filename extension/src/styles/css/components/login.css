@@ -144,15 +144,117 @@
     }
 }
 
-.loading {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    padding: 20px;
-    font-style: italic;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    margin: 20px auto;
-    max-width: 300px;
-} 
 
+/* Loading Animation Styles */
+.loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 26, 26, 0.5);
+    backdrop-filter: blur(20px);
+    min-height: 100vh;
+    width: 100vw;
+    z-index: 100000;
+}
+
+.loading-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loading-logo {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px;
+}
+
+.loading-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.pulse-logo {
+    animation: pulse 2s infinite;
+}
+
+.loading-text {
+    margin-bottom: 30px;
+}
+
+.logo-text {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.loading-message {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeInUp 0.5s forwards 0.5s;
+}
+
+.loading-submessage {
+    font-size: 14px;
+    color: #d4d4d4;
+    opacity: 0;
+    animation: fadeInUp 0.5s forwards 1s;
+}
+
+.loading-progress {
+    width: 240px;
+    height: 4px;
+    background: #f3f3f3;
+    border-radius: 4px;
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e53);
+    animation: progress 8s ease-in-out forwards;
+    border-radius: 4px;
+}
+
+@keyframes progress {
+    0% { width: 0; }
+    100% { width: 100%; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

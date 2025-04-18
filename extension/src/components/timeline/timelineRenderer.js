@@ -20,17 +20,16 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE);
         timelineEvents.style.width = `${totalWidth}px`;
         timelineLine.style.width = `${totalWidth}px`;
-        
+
         const fragment = createEventElements(processedEvents);
         timelineEvents.appendChild(fragment);
         addNowMarker(timelineEvents);
-        
-        container.scrollLeft = container.scrollWidth;
+
+        // 👇 scroll removed from here
     } else if (mode === 'prepend') {
-        // Get existing events count first
         const existingEvents = timelineEvents.querySelectorAll('.timeline-event');
         const existingEventsCount = existingEvents.length;
-        
+
         const currentWidth = existingEventsCount * FIXED_SPACE;
         const additionalWidth = processedEvents.length * FIXED_SPACE;
         const newWidth = currentWidth + additionalWidth;
@@ -38,7 +37,6 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
         timelineEvents.style.width = `${newWidth}px`;
         timelineLine.style.width = `${newWidth}px`;
 
-        // ✅ Step 1: Decide based on total number of events (clean and stable)
         const newEventsCount = processedEvents.length;
         const totalEvents = existingEventsCount + newEventsCount;
 
@@ -57,9 +55,17 @@ function updateTimeline(history, drive, emails, calendar, downloads, mode = 'reb
 
 export function buildTimeline(history, drive, emails, calendar, downloads) {
     updateTimeline(history, drive, emails, calendar, downloads, 'rebuild');
-}
+  
+    // ✅ Double frame delay to ensure layout is ready
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const container = document.querySelector('.timeline-container');
+        if (container) container.scrollLeft = container.scrollWidth;
+      });
+    });
+  }
+  
 
 export function prependTimeline(history, drive, emails, calendar, downloads) {
     updateTimeline(history, drive, emails, calendar, downloads, 'prepend');
-    }
-
+}
