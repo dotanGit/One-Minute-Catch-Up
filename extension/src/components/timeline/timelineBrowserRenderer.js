@@ -1,6 +1,5 @@
 export function processHistoryEvent(item, currentTime, processedEvents) {
     if (item.url.startsWith('chrome://downloads')) return;
-    console.log('item.url:', item.url);
     processedEvents.push({
       type: 'browser',
       timestamp: currentTime,

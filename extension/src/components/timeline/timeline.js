@@ -90,6 +90,55 @@ import {
     mark(filteredData.downloads, d => d.id);
   }
   
+  function mergeUniqueById(baseArray, deltaArray, getId) {
+    const seen = new Set(baseArray.map(getId));
+    const merged = [...baseArray];
+    for (const item of deltaArray) {
+      if (!seen.has(getId(item))) {
+        seen.add(getId(item));
+        merged.push(item);
+      }
+    }
+    return merged;
+  }
+  
+
+  function mergeTimelineData(base, delta) {
+    base.history = mergeUniqueById(base.history, delta.history, e => e.id);
+    base.drive.files = mergeUniqueById(base.drive.files, delta.drive.files, f => f.id);
+    base.emails.all = mergeUniqueById(base.emails.all, delta.emails.all, e => e.id);
+    base.calendar.today = mergeUniqueById(base.calendar.today, delta.calendar.today, e => e.id);
+    base.calendar.tomorrow = mergeUniqueById(base.calendar.tomorrow, delta.calendar.tomorrow, e => e.id);
+    base.downloads = mergeUniqueById(base.downloads, delta.downloads, d => d.id);
+  }
+
+  
+  async function getIncrementalDataSince(timestamp) {
+    const since = new Date(timestamp);
+    const start = performance.now();
+    console.log(`🕒 Fetching incremental data since ${since.toISOString()}`);
+
+    const logApiTime = async (label, fn) => {
+      const s = performance.now();
+      const res = await fn;
+      console.log(`⏱️ ${label} took ${Math.round(performance.now() - s)}ms`);
+      return res;
+    };
+
+    const [history, drive, emails, calendar, downloads] = await Promise.all([
+      logApiTime('History', getBrowserHistoryService(since)),
+      logApiTime('Drive', getDriveActivity(since)),
+      logApiTime('Gmail', getGmailActivity(since)),
+      logApiTime('Calendar', getCalendarEvents(since)),
+      logApiTime('Downloads', getDownloadsService(since)),
+    ]);
+
+    console.log(`✅ Total delta fetch took ${Math.round(performance.now() - start)}ms`);
+
+    return { history, drive, emails, calendar, downloads };
+  }
+
+  
 
   // Variable to store the last visit timestamp for each brand for the browser history 
   const brandSessionMap = new Map(); 
@@ -130,7 +179,6 @@ import {
   }
   
 
-
   // Helper to get hidden IDs
 async function getHiddenIdsSet() {
   return new Promise(resolve => {
@@ -157,72 +205,44 @@ function filterHiddenEvents(data, hiddenIds) {
 
 // ===== Cache Logic =====
 const timelineCache = {
-    maxEntries: 7,
-    
-    async get(dateKey) {
-        try {
-            const result = await chrome.storage.local.get(dateKey);
-            return result[dateKey];
-        } catch (error) {
-            console.error('Cache read error:', error);
-            return null;
-        }
-    },
-    
-    async set(dateKey, data) {
-        try {
-            // Get all keys to manage maxEntries
-            const allKeys = await chrome.storage.local.get(null);
-            const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
-            
-            // Remove oldest entries if we exceed maxEntries
-            if (cacheKeys.length >= this.maxEntries) {
-                const oldestKeys = cacheKeys
-                    .sort()
-                    .slice(0, cacheKeys.length - this.maxEntries + 1);
-                await chrome.storage.local.remove(oldestKeys);
-            }
+  maxEntries: 7,
 
-            // Save new data
-            await chrome.storage.local.set({
-                [dateKey]: {
-                    timestamp: Date.now(),
-                    data: data,
-                    date: dateKey.split('_')[1] // Store the date for comparison
-                }
-            });
-        } catch (error) {
-            console.error('Cache write error:', error);
-        }
-    },
-
-    async isValid(dateKey) {
-        try {
-            const entry = await this.get(dateKey);
-            if (!entry) return false;
-
-            // Get the date from the cache key
-            const cacheDate = new Date(entry.date);
-            const today = new Date();
-            today.setUTCHours(0, 0, 0, 0);
-
-            // If it's a previous day, cache is always valid
-            if (cacheDate < today) {
-                return true;
-            }
-
-            // For today, use 30-minute cache
-            const age = Date.now() - entry.timestamp;
-            const isValid = age < 30 * 60 * 1000; // 30 minutes
-            console.log(`Cache age for today: ${Math.round(age / 1000 / 60)} minutes`);
-            return isValid;
-
-        } catch (error) {
-            console.error('Cache validation error:', error);
-            return false;
-        }
+  async get(dateKey) {
+    try {
+      const result = await chrome.storage.local.get(dateKey);
+      return result[dateKey];
+    } catch (error) {
+      console.error('Cache read error:', error);
+      return null;
     }
+  },
+
+  async set(dateKey, data) {
+    try {
+      const allKeys = await chrome.storage.local.get(null);
+      const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
+
+      if (cacheKeys.length >= this.maxEntries) {
+        const oldestKeys = cacheKeys
+          .sort()
+          .slice(0, cacheKeys.length - this.maxEntries + 1);
+        await chrome.storage.local.remove(oldestKeys);
+      }
+
+      await chrome.storage.local.set({
+        [dateKey]: {
+          timestamp: Date.now(),
+          lastFetchedAt: Date.now(), // 🔁 for delta logic
+          data: data,
+          date: dateKey.split('_')[1]
+        }
+      });
+    } catch (error) {
+      console.error('Cache write error:', error);
+    }
+  }
 };
+
 
 
 // ===== Timeline Functions =====
@@ -270,15 +290,15 @@ export async function initTimeline() {
     oldestLoadedDate = new Date(today);
     const dateKey = `timeline_${getDateKey(today)}`;
     const hiddenIds = await getHiddenIdsSet();
+    const MIN_DELTA_INTERVAL = 1 * 1000; // 10 minutes
+    const now = Date.now();
 
     let filteredData;
-    const isValidCache = await timelineCache.isValid(dateKey);
-    if (isValidCache) {
-      const cachedData = await timelineCache.get(dateKey);
-      const raw = cachedData.data;
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-      filteredData = filterAllByDate(cleaned, today);
-    } else {
+    let cachedData = await timelineCache.get(dateKey);
+
+    if (!cachedData) {
+      console.log('🔄 No cache found - performing full data fetch');
+      // Full fetch (no cache at all)
       const [history, drive, emails, calendar, downloads] = await Promise.all([
         getBrowserHistoryService(today),
         getDriveActivity(today),
@@ -291,7 +311,33 @@ export async function initTimeline() {
       filteredData = filterAllByDate(cleaned, today);
       filteredData.history = filterBrowserBySession(filteredData.history);
       await timelineCache.set(dateKey, filteredData);
+      await chrome.storage.local.set({ lastFetchedAtGlobal: now });
+      console.log('✅ Full data fetch completed and cached');
+    } else {
+      console.log('📦 Using cached data for date:', dateKey);
+      // Cached → maybe fetch delta
+      const raw = cachedData.data;
+      const cleaned = filterHiddenEvents(raw, hiddenIds);
+      filteredData = filterAllByDate(cleaned, today);
+
+      const { lastFetchedAtGlobal } = await chrome.storage.local.get('lastFetchedAtGlobal');
+      const last = lastFetchedAtGlobal || 0;
+
+      if (now - last > MIN_DELTA_INTERVAL && cachedData.lastFetchedAt) {
+        console.log('🔄 Fetching data from cache using the Interval, Cache is stale - fetching delta updates');
+        const delta = await getIncrementalDataSince(cachedData.lastFetchedAt);
+        const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
+        const deltaFiltered = filterAllByDate(deltaCleaned, today);
+
+        mergeTimelineData(filteredData, deltaFiltered);
+        await timelineCache.set(dateKey, filteredData);
+        await chrome.storage.local.set({ lastFetchedAtGlobal: now });
+        console.log('✅ Delta updates applied and cached');
+      } else {
+        console.log('✅ Using fresh cached data - no updates needed');
+      }
     }
+
     const allTimestamps = [
       ...filteredData.history.map(e => normalizeTimestamp(e.lastVisitTime)),
       ...filteredData.drive.files.map(f => normalizeTimestamp(f.modifiedTime)),
@@ -303,8 +349,7 @@ export async function initTimeline() {
     window.globalStartTime = Math.min(...allTimestamps);
     if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
 
-    buildTimeline(filteredData.history, filteredData.drive,filteredData.emails,filteredData.calendar,filteredData.downloads);
-
+    buildTimeline(filteredData.history, filteredData.drive, filteredData.emails, filteredData.calendar, filteredData.downloads);
     markAllEventKeys(filteredData);
 
     const container = document.querySelector('.timeline-container');
@@ -315,6 +360,7 @@ export async function initTimeline() {
       oldestLoadedDateRef: { value: oldestLoadedDate },
       isLoadingMorePastDays
     });
+
   } catch (error) {
     console.error('Error initializing timeline:', error);
     if (timelineEvents) {
@@ -322,6 +368,7 @@ export async function initTimeline() {
     }
   }
 }
+
 
 
 export async function loadAndPrependTimelineData(date) {
@@ -332,10 +379,12 @@ export async function loadAndPrependTimelineData(date) {
     const hiddenIds = await getHiddenIdsSet();
     let raw;
 
-    if (await timelineCache.isValid(dateKey)) {
+    if (await timelineCache.get(dateKey)) {
+      console.log('📦 Using cached data for past date:', dateKey);
       const cached = await timelineCache.get(dateKey);
       raw = cached.data;
     } else {
+      console.log('🔄 No cache found for past date - fetching data for:', dateKey);
       const [history, drive, emails, calendar, downloads] = await Promise.all([
         getBrowserHistoryService(startOfDay),
         getDriveActivity(startOfDay),
@@ -344,6 +393,7 @@ export async function loadAndPrependTimelineData(date) {
         getDownloadsService(startOfDay)
       ]);
       raw = { history, drive, emails, calendar, downloads };
+      console.log('✅ Fetched and cached data for past date:', dateKey);
     }
 
     const cleaned = filterHiddenEvents(raw, hiddenIds);
@@ -371,10 +421,10 @@ export async function loadAndPrependTimelineData(date) {
       oldestLoadedDate = newOldestLoadedDate;
       console.log('✅ Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
     } else {
-      console.log('No data found for date:', dateKey);
+      console.log('❌ No data found for past date:', dateKey);
     }
   } catch (error) {
-    console.error('Error loading timeline data:', error);
+    console.error('❌ Error loading timeline data:', error);
   }
 }
 
