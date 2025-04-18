@@ -91,28 +91,45 @@ import {
   }
   
 
+  // Variable to store the last visit timestamp for each brand for the browser history 
+  const brandSessionMap = new Map(); 
+
+  function extractBrandKey(url) {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    const parts = hostname.split('.');
+    return parts.length >= 2 ? parts[parts.length - 2] : hostname;
+  }
+
   function filterBrowserBySession(events, sessionMs = 15 * 60 * 1000) {
-    const lastSeen = new Map(); // domain → timestamp
+    const now = Date.now();
     const result = [];
   
     for (const event of events) {
       try {
-        const domain = new URL(event.url).hostname;
-        const time = normalizeTimestamp(event.lastVisitTime);
-        const last = lastSeen.get(domain);
+        const eventTime = normalizeTimestamp(event.lastVisitTime);
+        const brand = extractBrandKey(event.url);
+        const lastSeen = brandSessionMap.get(brand);
   
-        if (last === undefined || time - last > sessionMs) {
-          lastSeen.set(domain, time);
-          result.push(event); // keep this event
+        if (!lastSeen || eventTime - lastSeen > sessionMs) {
+          brandSessionMap.set(brand, eventTime);
+          result.push(event);
         }
       } catch {
-        // skip invalid URLs
+        // skip bad URLs
+      }
+    }
+  
+    // Cleanup: remove brands not seen for a while
+    for (const [brand, timestamp] of brandSessionMap.entries()) {
+      if (now - timestamp > sessionMs) {
+        brandSessionMap.delete(brand);
       }
     }
   
     return result;
   }
   
+
 
   // Helper to get hidden IDs
 async function getHiddenIdsSet() {
@@ -275,7 +292,6 @@ export async function initTimeline() {
       filteredData.history = filterBrowserBySession(filteredData.history);
       await timelineCache.set(dateKey, filteredData);
     }
-
     const allTimestamps = [
       ...filteredData.history.map(e => normalizeTimestamp(e.lastVisitTime)),
       ...filteredData.drive.files.map(f => normalizeTimestamp(f.modifiedTime)),
@@ -314,16 +330,11 @@ export async function loadAndPrependTimelineData(date) {
 
   try {
     const hiddenIds = await getHiddenIdsSet();
-    let filteredData;
+    let raw;
 
-    const isValidCache = await timelineCache.isValid(dateKey);
-    if (isValidCache) {
-      const cachedData = await timelineCache.get(dateKey);
-      const raw = cachedData.data;
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-
-      filteredData = filterAllByDate(cleaned, startOfDay);
-      await timelineCache.set(dateKey, filteredData);
+    if (await timelineCache.isValid(dateKey)) {
+      const cached = await timelineCache.get(dateKey);
+      raw = cached.data;
     } else {
       const [history, drive, emails, calendar, downloads] = await Promise.all([
         getBrowserHistoryService(startOfDay),
@@ -332,15 +343,13 @@ export async function loadAndPrependTimelineData(date) {
         getCalendarEvents(startOfDay),
         getDownloadsService(startOfDay)
       ]);
-
-      const raw = { history, drive, emails, calendar, downloads };
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-
-      filteredData = filterAllByDate(cleaned, startOfDay);
-
-
-      await timelineCache.set(dateKey, filteredData);
+      raw = { history, drive, emails, calendar, downloads };
     }
+
+    const cleaned = filterHiddenEvents(raw, hiddenIds);
+    const filteredData = filterAllByDate(cleaned, startOfDay);
+    filteredData.history = filterBrowserBySession(filteredData.history);
+    await timelineCache.set(dateKey, filteredData);
 
     const { history, drive, emails, calendar, downloads } = filteredData;
     const hasData = history.length || drive.files.length || emails.all.length || calendar.today.length || downloads.length;
@@ -352,7 +361,7 @@ export async function loadAndPrependTimelineData(date) {
         { all: filterNewEvents(emails.all, e => e.id) },
         {
           today: filterNewEvents(calendar.today, e => e.id),
-          tomorrow: filterNewEvents(calendar.tomorrow, e => e.id )
+          tomorrow: filterNewEvents(calendar.tomorrow, e => e.id)
         },
         filterNewEvents(downloads, d => d.id)
       );
@@ -368,6 +377,7 @@ export async function loadAndPrependTimelineData(date) {
     console.error('Error loading timeline data:', error);
   }
 }
+
   
 
 
