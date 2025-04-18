@@ -11,8 +11,8 @@ import {
   import { getCalendarEvents } from '../../services/calendarService.js';
   import { getDriveActivity } from '../../services/driveService.js';
   import { initTimelineScroll } from './timelineScroll.js';
-  import { mergeUniqueById,filterHiddenEvents,filterAllByDate,getHiddenIdsSet,getIncrementalDataSince,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
-
+  import { filterHiddenEvents,filterAllByDate,getHiddenIdsSet,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
+  import { timelineCache } from './cache.js';
   
   // ===== Global Variables =====
   const loadingSection = document.getElementById('loading');
@@ -44,46 +44,6 @@ import {
     mark(filteredData.downloads, d => d.id);
   }
   
-// ===== Cache Logic =====
-const timelineCache = {
-  maxEntries: 7,
-
-  async get(dateKey) {
-    try {
-      const result = await chrome.storage.local.get(dateKey);
-      return result[dateKey];
-    } catch (error) {
-      console.error('Cache read error:', error);
-      return null;
-    }
-  },
-
-  async set(dateKey, data) {
-    try {
-      const allKeys = await chrome.storage.local.get(null);
-      const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
-
-      if (cacheKeys.length >= this.maxEntries) {
-        const oldestKeys = cacheKeys
-          .sort()
-          .slice(0, cacheKeys.length - this.maxEntries + 1);
-        await chrome.storage.local.remove(oldestKeys);
-      }
-
-      await chrome.storage.local.set({
-        [dateKey]: {
-          timestamp: Date.now(),
-          lastFetchedAt: Date.now(), // 🔁 for delta logic
-          data: data,
-          date: dateKey.split('_')[1]
-        }
-      });
-    } catch (error) {
-      console.error('Cache write error:', error);
-    }
-  }
-};
-
 
 // ===== Timeline Functions =====
 export function showTimeline(isFirstLogin = false) {
@@ -122,28 +82,30 @@ export function showTimeline(isFirstLogin = false) {
 
 export async function initTimeline() {
   try {
+    console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
     const hiddenIds = await getHiddenIdsSet();
     const today = normalizeDateToStartOfDay(new Date());
+    const now = Date.now();
 
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setUTCDate(today.getUTCDate() - i);
+      const key = getDateKey(d);
+      console.log(`[UI] 📅 Adding day: ${d.toISOString()} → dateKey: timeline_${key}`);
       days.push(d);
     }
 
     const allFiltered = [];
-    const MIN_DELTA_INTERVAL = 10 * 1000;
-    const now = Date.now();
 
     for (const date of days) {
       const dateKey = `timeline_${getDateKey(date)}`;
-      const isToday = getDateKey(date) === getDateKey(today);
       let cached = await timelineCache.get(dateKey);
+      console.log(`[UI] 🔍 Loading cache for: ${dateKey}, exists: ${!!cached}`);
 
       if (!cached) {
-        // Full fetch if no cache
+        console.log(`[UI] 🚨 No cache for ${dateKey}, doing full fetch`);
         const [history, drive, emails, calendar, downloads] = await Promise.all([
           getBrowserHistoryService(date),
           getDriveActivity(date),
@@ -157,40 +119,29 @@ export async function initTimeline() {
         const filtered = filterAllByDate(cleaned, date);
         filtered.history = filterBrowserBySession(filtered.history);
 
-        await timelineCache.set(dateKey, filtered);
-        cached = { data: filtered };
-        console.log(`✅ Fetched & cached: ${dateKey}`);
-      } else {
-        // Delta fetch only for today
-        if (isToday && now - cached.lastFetchedAt > MIN_DELTA_INTERVAL) {
-          console.log(`🔄 Delta fetch for today: ${dateKey}`);
-          const delta = await getIncrementalDataSince(cached.lastFetchedAt);
-          const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
-          deltaCleaned.history = filterBrowserBySession(deltaCleaned.history);
-        
-          // 🔥 Merge only what was actually fetched
-          cached.data.history = mergeUniqueById(cached.data.history, deltaCleaned.history, e => e.id);
-          cached.data.downloads = mergeUniqueById(cached.data.downloads, deltaCleaned.downloads, d => d.id);
-        
-          await timelineCache.set(dateKey, cached.data);
-          console.log(`✅ Delta merged and updated cache: ${dateKey}`);
-        }
+        const newCache = { data: filtered, lastFetchedAt: now };
+        await timelineCache.set(dateKey, newCache);
+        cached = newCache;
+
+        console.log(`[UI] ✅ Fetched & cached: ${dateKey}`);
       }
 
       allFiltered.push(cached.data);
+      console.log(`[UI] 📦 Cached data → ${dateKey} → history: ${cached?.data?.history?.length || 0}, downloads: ${cached?.data?.downloads?.length || 0}`);
     }
 
-    // Combine all days
     const combined = {
-      history: allFiltered.flatMap(d => d.history),
-      drive: { files: allFiltered.flatMap(d => d.drive.files) },
-      emails: { all: allFiltered.flatMap(d => d.emails.all) },
+      history: allFiltered.flatMap(d => d.history || []),
+      drive: { files: allFiltered.flatMap(d => d.drive?.files || []) },
+      emails: { all: allFiltered.flatMap(d => d.emails?.all || []) },
       calendar: {
-        today: allFiltered.flatMap(d => d.calendar.today),
-        tomorrow: allFiltered.flatMap(d => d.calendar.tomorrow)
+        today: allFiltered.flatMap(d => d.calendar?.today || []),
+        tomorrow: allFiltered.flatMap(d => d.calendar?.tomorrow || [])
       },
-      downloads: allFiltered.flatMap(d => d.downloads)
+      downloads: allFiltered.flatMap(d => d.downloads || [])
     };
+
+    console.log(`[UI] 📊 Combined totals → history: ${combined.history.length}, downloads: ${combined.downloads.length}`);
 
     window.globalStartTime = Math.min(
       ...combined.history.map(e => normalizeTimestamp(e.lastVisitTime)),
@@ -209,13 +160,17 @@ export async function initTimeline() {
 
     initTimelineScroll();
 
+    console.log('[UI] ✅ Timeline built');
+
   } catch (error) {
-    console.error('Error initializing timeline:', error);
+    console.error('❌ Error initializing timeline:', error);
     if (timelineEvents) {
       timelineEvents.innerHTML = '<div class="error">Error loading timeline data</div>';
     }
   }
 }
+
+
 
 
 

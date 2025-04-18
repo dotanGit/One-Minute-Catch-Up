@@ -15,24 +15,26 @@ export const timelineCache = {
       try {
         const allKeys = await chrome.storage.local.get(null);
         const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
-  
+    
         if (cacheKeys.length >= this.maxEntries) {
-          const oldestKeys = cacheKeys
-            .sort()
-            .slice(0, cacheKeys.length - this.maxEntries + 1);
+          const oldestKeys = cacheKeys.sort().slice(0, cacheKeys.length - this.maxEntries + 1);
+          console.log(`[CACHE] 🧹 Removing oldest keys: ${oldestKeys.join(', ')}`);
           await chrome.storage.local.remove(oldestKeys);
         }
-  
-        await chrome.storage.local.set({
-          [dateKey]: {
-            timestamp: Date.now(),
-            lastFetchedAt: Date.now(), // 🔁 for delta logic
-            data: data,
-            date: dateKey.split('_')[1]
-          }
-        });
+    
+        const payload = {
+          timestamp: Date.now(),
+          lastFetchedAt: Date.now(),
+          data: data,
+          date: dateKey.split('_')[1]
+        };
+    
+        console.log(`[CACHE] 💾 Saving cache for ${dateKey} → history: ${data?.history?.length ?? 'null'}, downloads: ${data?.downloads?.length ?? 'null'}`);
+    
+        await chrome.storage.local.set({ [dateKey]: payload });
       } catch (error) {
-        console.error('Cache write error:', error);
+        console.error('[CACHE] ❌ Write error:', error);
       }
     }
+    
   };

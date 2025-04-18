@@ -4,7 +4,11 @@ import { getDriveActivity } from '../src/services/driveService.js';
 import { getCalendarEvents } from '../src/services/calendarService.js';
 import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
-import { mergeTimelineData,filterHiddenEvents,filterAllByDate,getHiddenIdsSet } from '../src/components/timeline/timelineDataUtils.js';
+import { getHiddenIdsSet,filterHiddenEvents,filterAllByDate,getIncrementalDataSince,mergeTimelineData,mergeUniqueById,filterBrowserBySession } from '../src/components/timeline/timelineDataUtils.js';
+import { timelineCache } from '../src/components/timeline/cache.js';
+import { getDateKey } from '../src/components/timeline/timelineDataUtils.js';
+
+
 
 // Google API configuration
 const GOOGLE_API_KEY = 'AIzaSyC8e48p_XFSAUvX285wkk_tOJ3vCPRQPxk';
@@ -233,3 +237,59 @@ setInterval(() => {
     }
   });
 }, THIRTY_MIN);
+
+
+
+export async function runDeltaFetchForToday() {
+  const today = new Date();
+  const dateKey = `timeline_${getDateKey(today)}`;
+  const now = Date.now();
+
+  console.log(`[BG] 🔄 Starting delta fetch → now: ${today.toISOString()}, dateKey: ${dateKey}`);
+
+  const cached = await timelineCache.get(dateKey);
+  console.log(`[BG] 📦 Cached found? ${!!cached}`);
+  console.log(`[BG] Cached data → history: ${cached?.data?.history?.length ?? 'null'}, downloads: ${cached?.data?.downloads?.length ?? 'null'}`);
+
+  const lastFetchedAt = cached?.lastFetchedAt || 0;
+  console.log(`[BG] ⏱ Last fetched at: ${new Date(lastFetchedAt).toISOString()}`);
+
+  const delta = await getIncrementalDataSince(lastFetchedAt);
+  console.log(`[BG] 🔄 Delta fetched → history: ${delta.history?.length ?? 0}, downloads: ${delta.downloads?.length ?? 0}`);
+
+  const hiddenIds = await getHiddenIdsSet();
+  const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
+  deltaCleaned.history = filterBrowserBySession(deltaCleaned.history);
+
+  const baseData = cached?.data || {
+    history: [],
+    drive: { files: [] },
+    emails: { all: [] },
+    calendar: { today: [], tomorrow: [] },
+    downloads: []
+  };
+
+  console.log(`[BG] 🔧 Before merge → history: ${baseData.history.length}, downloads: ${baseData.downloads.length}`);
+
+  baseData.history = mergeUniqueById(baseData.history, deltaCleaned.history || [], e => e.id);
+  baseData.downloads = mergeUniqueById(baseData.downloads, deltaCleaned.downloads || [], d => d.id);
+
+  console.log(`[BG] ✅ After merge → history: ${baseData.history.length}, downloads: ${baseData.downloads.length}`);
+
+  await timelineCache.set(dateKey, baseData);
+
+  const verify = await timelineCache.get(dateKey);
+  console.log(`[BG] 🧪 VERIFY after save → history: ${verify?.data?.history?.length ?? 'null'}, downloads: ${verify?.data?.downloads?.length ?? 'null'}`);
+}
+
+
+chrome.history.onVisited.addListener(() => {
+  console.log('[BG] 📥 chrome.history.onVisited triggered');
+  runDeltaFetchForToday();
+});
+
+chrome.downloads.onCreated.addListener(() => {
+  console.log('[BG] 📥 chrome.downloads.onCreated triggered');
+  runDeltaFetchForToday();
+});
+
