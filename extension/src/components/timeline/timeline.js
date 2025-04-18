@@ -103,6 +103,7 @@ export async function initTimeline() {
       const dateKey = `timeline_${getDateKey(date)}`;
       let cached = await timelineCache.get(dateKey);
       console.log(`[UI] 🔍 Loading cache for: ${dateKey}, exists: ${!!cached}`);
+      console.log(`[UI] 🧩 Cache object for ${dateKey}:`, cached);
 
       if (!cached) {
         console.log(`[UI] 🚨 No cache for ${dateKey}, doing full fetch`);
@@ -121,14 +122,32 @@ export async function initTimeline() {
 
         const newCache = { data: filtered, lastFetchedAt: now };
         await timelineCache.set(dateKey, newCache);
-        cached = newCache;
+        console.log(`[DEBUG] 🧪 Filtered data before saving to cache (${dateKey}):`, {
+          history: filtered.history?.length,
+          downloads: filtered.downloads?.length,
+          emails: filtered.emails?.all?.length,
+          drive: filtered.drive?.files?.length,
+          calendarToday: filtered.calendar?.today?.length,
+          calendarTomorrow: filtered.calendar?.tomorrow?.length
+        });
 
+        const verify = await timelineCache.get(dateKey);
+        console.log(`[UI] 🔎 Verify saved cache → ${dateKey}:`, {
+          history: verify?.data?.history?.length,
+          downloads: verify?.data?.downloads?.length
+        });
+
+        cached = newCache;
         console.log(`[UI] ✅ Fetched & cached: ${dateKey}`);
       }
 
       allFiltered.push(cached.data);
       console.log(`[UI] 📦 Cached data → ${dateKey} → history: ${cached?.data?.history?.length || 0}, downloads: ${cached?.data?.downloads?.length || 0}`);
     }
+
+    allFiltered.forEach((d, i) => {
+      console.log(`[UI] 🧪 allFiltered[${i}] → history: ${d?.history?.length}, downloads: ${d?.downloads?.length}`);
+    });
 
     const combined = {
       history: allFiltered.flatMap(d => d.history || []),
@@ -140,6 +159,15 @@ export async function initTimeline() {
       },
       downloads: allFiltered.flatMap(d => d.downloads || [])
     };
+
+    console.log('[UI] 🧪 Final combined object before render:', {
+      history: combined.history.length,
+      drive: combined.drive.files.length,
+      emails: combined.emails.all.length,
+      calendarToday: combined.calendar.today.length,
+      calendarTomorrow: combined.calendar.tomorrow.length,
+      downloads: combined.downloads.length
+    });
 
     console.log(`[UI] 📊 Combined totals → history: ${combined.history.length}, downloads: ${combined.downloads.length}`);
 
@@ -169,6 +197,7 @@ export async function initTimeline() {
     }
   }
 }
+
 
 
 

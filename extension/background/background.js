@@ -295,7 +295,29 @@ export async function runDeltaFetchForToday() {
 
   console.log(`[BG] ✅ After merge → history: ${baseData.history.length}, downloads: ${baseData.downloads.length}`);
 
-  await timelineCache.set(dateKey, baseData);
+  const finalPayload = {
+    data: {
+      history: baseData.history,
+      drive: baseData.drive,
+      emails: baseData.emails,
+      calendar: baseData.calendar,
+      downloads: baseData.downloads
+    },
+    lastFetchedAt: now,
+    timestamp: now,
+    date: dateKey.split('_')[1]
+  };
+
+  console.log('[DEBUG] 🔍 Final merged object before saving to cache:', {
+    history: finalPayload.history?.length,
+    downloads: finalPayload.downloads?.length,
+    drive: finalPayload.drive?.files?.length,
+    emails: finalPayload.emails?.all?.length,
+    calendarToday: finalPayload.calendar?.today?.length,
+    calendarTomorrow: finalPayload.calendar?.tomorrow?.length
+  });
+
+  await timelineCache.set(dateKey, finalPayload);
 
   const verify = await timelineCache.get(dateKey);
   console.log(`[BG] 🧪 VERIFY after save → history: ${verify?.data?.history?.length ?? 'null'}, downloads: ${verify?.data?.downloads?.length ?? 'null'}`);
