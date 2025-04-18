@@ -11,7 +11,7 @@ import {
   import { getCalendarEvents } from '../../services/calendarService.js';
   import { getDriveActivity } from '../../services/driveService.js';
   import { initTimelineScroll } from './timelineScroll.js';
-
+  import { mergeTimelineData,filterHiddenEvents,filterAllByDate,getHiddenIdsSet,getIncrementalDataSince,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
 
   
   // ===== Global Variables =====
@@ -28,41 +28,7 @@ import {
 
 
 // ===== Helper Functions =====
-  function getDateKey(date) {
-    return date.toISOString().split('T')[0];
-  }
-  
-  
-  function filterByUTCDate(events, getTs, targetDate) {
-    const start = normalizeDateToStartOfDay(targetDate);
-    const startMs = start.getTime();
-    const endMs = startMs + 86400000; // 24 hours later (exclusive upper bound)
-  
-    return events.filter(e => {
-      const ts = Math.floor(normalizeTimestamp(getTs(e)));
-      return ts >= startMs && ts < endMs; // ✅ use exclusive end
-    });
-  }
 
-
-  function filterAllByDate(data, date) {
-    return {
-      history: filterByUTCDate(data.history || [], e => e.lastVisitTime, date),
-      drive: {
-        files: filterByUTCDate(data.drive?.files || [], f => f.modifiedTime, date)
-      },
-      emails: {
-        all: filterByUTCDate(data.emails?.all || [], e => e.timestamp, date)
-      },
-      calendar: {
-        today: filterByUTCDate(data.calendar?.today || [], e => e.start?.dateTime || e.start?.date, date),
-        tomorrow: filterByUTCDate(data.calendar?.tomorrow || [], e => e.start?.dateTime || e.start?.date, date)
-      },
-      downloads: filterByUTCDate(data.downloads || [], d => d.startTime, date)
-    };
-  }
-  
-    
   function filterNewEvents(events, getKey) {
     return events.filter(e => {
       const key = getKey(e);
@@ -90,119 +56,6 @@ import {
     mark(filteredData.downloads, d => d.id);
   }
   
-  function mergeUniqueById(baseArray, deltaArray, getId) {
-    const seen = new Set(baseArray.map(getId));
-    const merged = [...baseArray];
-    for (const item of deltaArray) {
-      if (!seen.has(getId(item))) {
-        seen.add(getId(item));
-        merged.push(item);
-      }
-    }
-    return merged;
-  }
-  
-
-  function mergeTimelineData(base, delta) {
-    base.history = mergeUniqueById(base.history, delta.history, e => e.id);
-    base.drive.files = mergeUniqueById(base.drive.files, delta.drive.files, f => f.id);
-    base.emails.all = mergeUniqueById(base.emails.all, delta.emails.all, e => e.id);
-    base.calendar.today = mergeUniqueById(base.calendar.today, delta.calendar.today, e => e.id);
-    base.calendar.tomorrow = mergeUniqueById(base.calendar.tomorrow, delta.calendar.tomorrow, e => e.id);
-    base.downloads = mergeUniqueById(base.downloads, delta.downloads, d => d.id);
-  }
-
-  
-  async function getIncrementalDataSince(timestamp) {
-    const since = new Date(timestamp);
-    const start = performance.now();
-    console.log(`🕒 Fetching incremental data since ${since.toISOString()}`);
-
-    const logApiTime = async (label, fn) => {
-      const s = performance.now();
-      const res = await fn;
-      console.log(`⏱️ ${label} took ${Math.round(performance.now() - s)}ms`);
-      return res;
-    };
-
-    const [history, drive, emails, calendar, downloads] = await Promise.all([
-      logApiTime('History', getBrowserHistoryService(since)),
-      logApiTime('Drive', getDriveActivity(since)),
-      logApiTime('Gmail', getGmailActivity(since)),
-      logApiTime('Calendar', getCalendarEvents(since)),
-      logApiTime('Downloads', getDownloadsService(since)),
-    ]);
-
-    console.log(`✅ Total delta fetch took ${Math.round(performance.now() - start)}ms`);
-
-    return { history, drive, emails, calendar, downloads };
-  }
-
-  
-
-  // Variable to store the last visit timestamp for each brand for the browser history 
-  const brandSessionMap = new Map(); 
-
-  function extractBrandKey(url) {
-    const hostname = new URL(url).hostname.replace(/^www\./, '');
-    const parts = hostname.split('.');
-    return parts.length >= 2 ? parts[parts.length - 2] : hostname;
-  }
-
-  function filterBrowserBySession(events, sessionMs = 15 * 60 * 1000) {
-    const now = Date.now();
-    const result = [];
-  
-    for (const event of events) {
-      try {
-        const eventTime = normalizeTimestamp(event.lastVisitTime);
-        const brand = extractBrandKey(event.url);
-        const lastSeen = brandSessionMap.get(brand);
-  
-        if (!lastSeen || eventTime - lastSeen > sessionMs) {
-          brandSessionMap.set(brand, eventTime);
-          result.push(event);
-        }
-      } catch {
-        // skip bad URLs
-      }
-    }
-  
-    // Cleanup: remove brands not seen for a while
-    for (const [brand, timestamp] of brandSessionMap.entries()) {
-      if (now - timestamp > sessionMs) {
-        brandSessionMap.delete(brand);
-      }
-    }
-  
-    return result;
-  }
-  
-
-  // Helper to get hidden IDs
-async function getHiddenIdsSet() {
-  return new Promise(resolve => {
-    chrome.storage.local.get(['hiddenEventIds'], result => {
-      resolve(new Set(result.hiddenEventIds || []));
-    });
-  });
-}
-
-// Helper to filter hidden events by type
-function filterHiddenEvents(data, hiddenIds) {
-  return {
-    history: (data.history || []).filter(e => !hiddenIds.has(e.id)),
-    drive: { files: (data.drive?.files || []).filter(f => !hiddenIds.has(f.id)) },
-    emails: { all: (data.emails?.all || []).filter(e => !hiddenIds.has(e.threadId)) },
-    calendar: {
-      today: (data.calendar?.today || []).filter(e => !hiddenIds.has(e.id)),
-      tomorrow: (data.calendar?.tomorrow || []).filter(e => !hiddenIds.has(e.id))
-    },
-    downloads: (data.downloads || []).filter(d => !hiddenIds.has(String(d.id)))
-  };
-}
-
-
 // ===== Cache Logic =====
 const timelineCache = {
   maxEntries: 7,
@@ -299,14 +152,12 @@ export async function initTimeline() {
     if (!cachedData) {
       console.log('🔄 No cache found - performing full data fetch');
       // Full fetch (no cache at all)
-      const [history, drive, emails, calendar, downloads] = await Promise.all([
+      const [history, downloads] = await Promise.all([
         getBrowserHistoryService(today),
-        getDriveActivity(today),
-        getGmailActivity(today),
-        getCalendarEvents(today),
         getDownloadsService(today)
       ]);
-      const raw = { history, drive, emails, calendar, downloads };
+      const raw = { history, drive: { files: [] }, emails: { all: [] }, calendar: { today: [], tomorrow: [] }, downloads };
+      
       const cleaned = filterHiddenEvents(raw, hiddenIds);
       filteredData = filterAllByDate(cleaned, today);
       filteredData.history = filterBrowserBySession(filteredData.history);

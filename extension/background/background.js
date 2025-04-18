@@ -4,6 +4,7 @@ import { getDriveActivity } from '../src/services/driveService.js';
 import { getCalendarEvents } from '../src/services/calendarService.js';
 import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
+import { mergeTimelineData,filterHiddenEvents,filterAllByDate,getHiddenIdsSet } from '../src/components/timeline/timelineDataUtils.js';
 
 
 // Google API configuration
@@ -15,7 +16,6 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/drive.readonly'
 ];
-
 
 
 // Handle messages from popup
@@ -146,3 +146,76 @@ async function getUserInfo() {
     return { success: false, error: error.message };
   }
 }
+
+
+// Fetch Gmail/Drive/Calendar every 30 minutes in the background
+const THIRTY_MIN = 30 * 60 * 1000;
+
+async function syncGmailDriveCalendar() {
+  console.log('[BG] ⏳ Background sync triggered');
+  const now = Date.now();
+  const { lastGmailCheck } = await chrome.storage.local.get('lastGmailCheck');
+
+  if (!lastGmailCheck || now - lastGmailCheck > THIRTY_MIN) {
+    const date = new Date();
+    const dateKey = `timeline_${date.toISOString().split('T')[0]}`;
+    const startOfDay = new Date(date);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    console.log('📧 [BG] Fetching Gmail/Drive/Calendar (30 min interval passed)');
+    const start = performance.now();
+
+    const logApiTime = async (label, fn) => {
+      const s = performance.now();
+      const res = await fn;
+      console.log(`⏱️ [BG] ${label} took ${Math.round(performance.now() - s)}ms`);
+      return res;
+    };
+
+    const [emails, drive, calendar] = await Promise.all([
+      logApiTime('Gmail', getGmailActivity(startOfDay)),
+      logApiTime('Drive', getDriveActivity(startOfDay)),
+      logApiTime('Calendar', getCalendarEvents(startOfDay))
+    ]);
+
+    console.log(`✅ [BG] Total Gmail/Drive/Calendar fetch took ${Math.round(performance.now() - start)}ms`);
+
+    const existing = await chrome.storage.local.get(dateKey);
+    const currentData = existing?.[dateKey]?.data || {
+      history: [],
+      drive: { files: [] },
+      emails: { all: [] },
+      calendar: { today: [], tomorrow: [] },
+      downloads: []
+    };
+
+    const hiddenIds = await getHiddenIdsSet();
+    const raw = { emails, drive, calendar };
+    const cleaned = filterHiddenEvents(raw, hiddenIds);
+    const filtered = filterAllByDate(cleaned, startOfDay);
+    
+    mergeTimelineData(currentData, filtered);
+
+    await chrome.storage.local.set({
+      [dateKey]: {
+        timestamp: now,
+        lastFetchedAt: now,
+        data: currentData,
+        date: dateKey.split('_')[1]
+      },
+      lastGmailCheck: now
+    });
+
+    console.log('[BG] ✅ Sync complete. Cache updated');
+  } else {
+    console.log('⏱️ [BG] Skipping Gmail/Drive/Calendar — within 30 min window');
+  }
+}
+
+// Run immediately on extension start
+syncGmailDriveCalendar();
+
+// Continue running every 30 minutes
+setInterval(syncGmailDriveCalendar, THIRTY_MIN);
+
+
