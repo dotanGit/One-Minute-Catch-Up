@@ -6,7 +6,6 @@ import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
 import { mergeTimelineData,filterHiddenEvents,filterAllByDate,getHiddenIdsSet } from '../src/components/timeline/timelineDataUtils.js';
 
-
 // Google API configuration
 const GOOGLE_API_KEY = 'AIzaSyC8e48p_XFSAUvX285wkk_tOJ3vCPRQPxk';
 const OPENAI_API_KEY = 'XXXXXXXXXXXXXXXXXXXXsk-proj-8Y5Toe_sBnrdYSOCIYxtJ7druGPPKveiQyeF_hzE7VpMO-bZB7OkFttvoYMFA1J4Pb160WW_3CT3BlbkFJSgBlMNxiEb1Y5_hF4oi6yvfmXm3qtPtkWgNmUHaSf_mNqRCEUbhpwYwdoGxSEnr0FgTfIS5M4A';
@@ -217,4 +216,3 @@ syncGmailDriveCalendar();
 
 // Continue running every 30 minutes
 setInterval(syncGmailDriveCalendar, THIRTY_MIN);
-

@@ -1,20 +1,12 @@
-// timelineScroll.js
-import { loadAndPrependTimelineData } from './timeline.js';
-
 let container;
 let scrollAnimationFrame = null;
 let isHoveringLeft = false;
 let isHoveringRight = false;
 const scrollSpeed = 1;
 const scrollAmountOnClick = 1000;
-let oldestLoadedDate;
-let isLoadingMorePastDays;
 
-export function initTimelineScroll(refs) {
+export function initTimelineScroll() {
     container = document.querySelector('.timeline-container');
-    oldestLoadedDate = refs.oldestLoadedDateRef;
-    isLoadingMorePastDays = refs.isLoadingMorePastDays;
-
     if (!container) return;
 
     // Hover scroll
@@ -58,20 +50,6 @@ export function initTimelineScroll(refs) {
         container.style.scrollBehavior = 'smooth';
         container.scrollLeft = container.scrollWidth;
         setTimeout(() => container.style.scrollBehavior = 'auto', 500);
-    });
-
-    // Infinite scroll (prepend)
-    container.addEventListener('scroll', () => {
-        if (container.scrollLeft < 1500 && !isLoadingMorePastDays.value) {
-            isLoadingMorePastDays.value = true;
-            oldestLoadedDate.value.setUTCDate(oldestLoadedDate.value.getUTCDate() - 1);
-            const previousDate = new Date(oldestLoadedDate.value); // already updated
-            previousDate.setUTCHours(0, 0, 0, 0);            
-            console.log('Fetching data for:', previousDate.toISOString());
-            loadAndPrependTimelineData(previousDate).finally(() => {
-                isLoadingMorePastDays.value = false;
-            });
-        }
     });
 }
 

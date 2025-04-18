@@ -11,7 +11,7 @@ import {
   import { getCalendarEvents } from '../../services/calendarService.js';
   import { getDriveActivity } from '../../services/driveService.js';
   import { initTimelineScroll } from './timelineScroll.js';
-  import { mergeTimelineData,filterHiddenEvents,filterAllByDate,getHiddenIdsSet,getIncrementalDataSince,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
+  import { mergeUniqueById,filterHiddenEvents,filterAllByDate,getHiddenIdsSet,getIncrementalDataSince,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
 
   
   // ===== Global Variables =====
@@ -28,18 +28,6 @@ import {
 
 
 // ===== Helper Functions =====
-
-  function filterNewEvents(events, getKey) {
-    return events.filter(e => {
-      const key = getKey(e);
-      if (window.loadedEventKeys.has(key)) {
-        return false;
-      }
-      window.loadedEventKeys.add(key);
-      return true;
-    });
-  }
-  
 
   function markAllEventKeys(filteredData) {
     const mark = (arr, getKey) => {
@@ -137,79 +125,94 @@ export function showTimeline(isFirstLogin = false) {
 
 export async function initTimeline() {
   try {
-    const today = normalizeDateToStartOfDay(new Date());
     window.loadedEventKeys = new Set();
-    oldestLoadedDate = new Date(today);
-    const dateKey = `timeline_${getDateKey(today)}`;
     const hiddenIds = await getHiddenIdsSet();
-    const MIN_DELTA_INTERVAL = 15 * 60 * 1000; // 5 seconds
-    const now = Date.now();
+    const today = normalizeDateToStartOfDay(new Date());
 
-    let filteredData;
-    let cachedData = await timelineCache.get(dateKey);
-
-    if (!cachedData) {
-      console.log('🔄 No cache found - performing full data fetch');
-      // Full fetch (no cache at all)
-      const [history, downloads] = await Promise.all([
-        getBrowserHistoryService(today),
-        getDownloadsService(today)
-      ]);
-      const raw = { history, drive: { files: [] }, emails: { all: [] }, calendar: { today: [], tomorrow: [] }, downloads };
-      
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-      filteredData = filterAllByDate(cleaned, today);
-      filteredData.history = filterBrowserBySession(filteredData.history);
-      await timelineCache.set(dateKey, filteredData);
-      await chrome.storage.local.set({ lastFetchedAtGlobal: now });
-      console.log('✅ Full data fetch completed and cached');
-    } else {
-      console.log('📦 Using cached data for date:', dateKey);
-      // Cached → maybe fetch delta
-      const raw = cachedData.data;
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-      filteredData = filterAllByDate(cleaned, today);
-
-      const { lastFetchedAtGlobal } = await chrome.storage.local.get('lastFetchedAtGlobal');
-      const last = lastFetchedAtGlobal || 0;
-
-      if (now - last > MIN_DELTA_INTERVAL && cachedData.lastFetchedAt) {
-        console.log('🔄 Fetching data from cache using the Interval, Cache is stale - fetching delta updates');
-        const delta = await getIncrementalDataSince(cachedData.lastFetchedAt);
-        const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
-        const deltaFiltered = filterAllByDate(deltaCleaned, today);
-
-        mergeTimelineData(filteredData, deltaFiltered);
-        await timelineCache.set(dateKey, filteredData);
-        await chrome.storage.local.set({ lastFetchedAtGlobal: now });
-        console.log('✅ Delta updates applied and cached');
-      } else {
-        console.log('✅ Using fresh cached data - no updates needed');
-      }
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setUTCDate(today.getUTCDate() - i);
+      days.push(d);
     }
 
-    const allTimestamps = [
-      ...filteredData.history.map(e => normalizeTimestamp(e.lastVisitTime)),
-      ...filteredData.drive.files.map(f => normalizeTimestamp(f.modifiedTime)),
-      ...filteredData.emails.all.map(e => normalizeTimestamp(e.timestamp)),
-      ...filteredData.calendar.today.map(e => safeGetTimestamp(e.start?.dateTime || e.start?.date)),
-      ...filteredData.downloads.map(d => normalizeTimestamp(d.startTime))
-    ].filter(Boolean);
+    const allFiltered = [];
+    const MIN_DELTA_INTERVAL = 10 * 1000;
+    const now = Date.now();
 
-    window.globalStartTime = Math.min(...allTimestamps);
+    for (const date of days) {
+      const dateKey = `timeline_${getDateKey(date)}`;
+      const isToday = getDateKey(date) === getDateKey(today);
+      let cached = await timelineCache.get(dateKey);
+
+      if (!cached) {
+        // Full fetch if no cache
+        const [history, drive, emails, calendar, downloads] = await Promise.all([
+          getBrowserHistoryService(date),
+          getDriveActivity(date),
+          getGmailActivity(date),
+          getCalendarEvents(date),
+          getDownloadsService(date)
+        ]);
+
+        const raw = { history, drive, emails, calendar, downloads };
+        const cleaned = filterHiddenEvents(raw, hiddenIds);
+        const filtered = filterAllByDate(cleaned, date);
+        filtered.history = filterBrowserBySession(filtered.history);
+
+        await timelineCache.set(dateKey, filtered);
+        cached = { data: filtered };
+        console.log(`✅ Fetched & cached: ${dateKey}`);
+      } else {
+        // Delta fetch only for today
+        if (isToday && now - cached.lastFetchedAt > MIN_DELTA_INTERVAL) {
+          console.log(`🔄 Delta fetch for today: ${dateKey}`);
+          const delta = await getIncrementalDataSince(cached.lastFetchedAt);
+          const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
+          deltaCleaned.history = filterBrowserBySession(deltaCleaned.history);
+        
+          // 🔥 Merge only what was actually fetched
+          cached.data.history = mergeUniqueById(cached.data.history, deltaCleaned.history, e => e.id);
+          cached.data.downloads = mergeUniqueById(cached.data.downloads, deltaCleaned.downloads, d => d.id);
+        
+          await timelineCache.set(dateKey, cached.data);
+          console.log(`✅ Delta merged and updated cache: ${dateKey}`);
+        }
+      }
+
+      allFiltered.push(cached.data);
+    }
+
+    // Combine all days
+    const combined = {
+      history: allFiltered.flatMap(d => d.history),
+      drive: { files: allFiltered.flatMap(d => d.drive.files) },
+      emails: { all: allFiltered.flatMap(d => d.emails.all) },
+      calendar: {
+        today: allFiltered.flatMap(d => d.calendar.today),
+        tomorrow: allFiltered.flatMap(d => d.calendar.tomorrow)
+      },
+      downloads: allFiltered.flatMap(d => d.downloads)
+    };
+
+    window.globalStartTime = Math.min(
+      ...combined.history.map(e => normalizeTimestamp(e.lastVisitTime)),
+      ...combined.drive.files.map(f => normalizeTimestamp(f.modifiedTime)),
+      ...combined.emails.all.map(e => normalizeTimestamp(e.timestamp)),
+      ...combined.calendar.today.map(e => safeGetTimestamp(e.start?.dateTime || e.start?.date)),
+      ...combined.downloads.map(d => normalizeTimestamp(d.startTime))
+    );
+
     if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
 
-    buildTimeline(filteredData.history, filteredData.drive, filteredData.emails, filteredData.calendar, filteredData.downloads);
-    markAllEventKeys(filteredData);
+    buildTimeline(combined.history, combined.drive, combined.emails, combined.calendar, combined.downloads);
+    markAllEventKeys(combined);
 
     const container = document.querySelector('.timeline-container');
     if (container) container.scrollLeft = container.scrollWidth;
     if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
 
-    initTimelineScroll({
-      oldestLoadedDateRef: { value: oldestLoadedDate },
-      isLoadingMorePastDays
-    });
+    initTimelineScroll();
 
   } catch (error) {
     console.error('Error initializing timeline:', error);
@@ -219,66 +222,6 @@ export async function initTimeline() {
   }
 }
 
-
-
-export async function loadAndPrependTimelineData(date) {
-  const startOfDay = normalizeDateToStartOfDay(date);
-  const dateKey = `timeline_${getDateKey(startOfDay)}`;
-
-  try {
-    const hiddenIds = await getHiddenIdsSet();
-    let raw;
-
-    if (await timelineCache.get(dateKey)) {
-      console.log('📦 Using cached data for past date:', dateKey);
-      const cached = await timelineCache.get(dateKey);
-      raw = cached.data;
-    } else {
-      console.log('🔄 No cache found for past date - fetching data for:', dateKey);
-      const [history, drive, emails, calendar, downloads] = await Promise.all([
-        getBrowserHistoryService(startOfDay),
-        getDriveActivity(startOfDay),
-        getGmailActivity(startOfDay),
-        getCalendarEvents(startOfDay),
-        getDownloadsService(startOfDay)
-      ]);
-      raw = { history, drive, emails, calendar, downloads };
-      console.log('✅ Fetched and cached data for past date:', dateKey);
-    }
-
-    const cleaned = filterHiddenEvents(raw, hiddenIds);
-    const filteredData = filterAllByDate(cleaned, startOfDay);
-    filteredData.history = filterBrowserBySession(filteredData.history);
-    await timelineCache.set(dateKey, filteredData);
-
-    const { history, drive, emails, calendar, downloads } = filteredData;
-    const hasData = history.length || drive.files.length || emails.all.length || calendar.today.length || downloads.length;
-
-    if (hasData) {
-      prependTimeline(
-        filterNewEvents(history, e => e.id),
-        { files: filterNewEvents(drive.files, f => f.id) },
-        { all: filterNewEvents(emails.all, e => e.id) },
-        {
-          today: filterNewEvents(calendar.today, e => e.id),
-          tomorrow: filterNewEvents(calendar.tomorrow, e => e.id)
-        },
-        filterNewEvents(downloads, d => d.id)
-      );
-
-      const newOldestLoadedDate = new Date(startOfDay);
-      newOldestLoadedDate.setUTCDate(newOldestLoadedDate.getUTCDate() - 1);
-      oldestLoadedDate = newOldestLoadedDate;
-      console.log('✅ Updated oldestLoadedDate to:', oldestLoadedDate.toISOString());
-    } else {
-      console.log('❌ No data found for past date:', dateKey);
-    }
-  } catch (error) {
-    console.error('❌ Error loading timeline data:', error);
-  }
-}
-
-  
 
 
 
