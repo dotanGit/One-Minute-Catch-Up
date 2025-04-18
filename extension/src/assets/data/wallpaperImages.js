@@ -19,17 +19,28 @@ export const wallpaperImages = {
             'https://dotangit.github.io/chrome-extension-images/full/animals/1108099.jpg',
             'https://dotangit.github.io/chrome-extension-images/full/animals/7256544.jpg',
             'https://dotangit.github.io/chrome-extension-images/full/animals/27037484.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/animals/111.jpg',
         ]
     },
     city: {
-        name: "City",
+        name: "24Hours",
         images: [
-            'https://dotangit.github.io/chrome-extension-images/full/city/378570.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/city/1148998.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/city/1154198.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/city/3469505.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/city/15506669.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/city/17615498.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/1.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/2.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/3.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/4.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/5.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/6.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/7.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/8.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/9.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/10.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/11.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/12.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/13.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/14.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/15.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/24Hours/16.jpg',       
         ]
     }
 }; 
