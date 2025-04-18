@@ -97,7 +97,6 @@ const timelineCache = {
 };
 
 
-
 // ===== Timeline Functions =====
 export function showTimeline(isFirstLogin = false) {
     const loginSection = document.getElementById('login-section');
@@ -143,7 +142,7 @@ export async function initTimeline() {
     oldestLoadedDate = new Date(today);
     const dateKey = `timeline_${getDateKey(today)}`;
     const hiddenIds = await getHiddenIdsSet();
-    const MIN_DELTA_INTERVAL = 1 * 1000; // 10 minutes
+    const MIN_DELTA_INTERVAL = 15 * 60 * 1000; // 5 seconds
     const now = Date.now();
 
     let filteredData;

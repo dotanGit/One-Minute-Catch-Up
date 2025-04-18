@@ -218,4 +218,3 @@ syncGmailDriveCalendar();
 // Continue running every 30 minutes
 setInterval(syncGmailDriveCalendar, THIRTY_MIN);
 
-
