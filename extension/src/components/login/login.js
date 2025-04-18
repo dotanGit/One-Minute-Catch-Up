@@ -12,6 +12,7 @@ export function initLogin() {
   chrome.storage.local.get(['isLoggedIn'], function(result) {
     if (result.isLoggedIn) {
       showTimeline(false); // Regular load, no loading animation
+      console.log('User is logged in- SHOED TIMELINE FROM THE LOGIN');
     } else {
       showLogin(); // Otherwise, show the login screen
     }

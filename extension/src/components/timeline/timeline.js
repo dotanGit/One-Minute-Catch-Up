@@ -238,7 +238,7 @@ export function showTimeline(isFirstLogin = false) {
         // Show loading animation only during first login
         if (loadingSection) loadingSection.style.display = 'flex';
         
-        // After 6 seconds, hide loading and show timeline
+        // After 10 seconds, hide loading and show timeline
         setTimeout(() => {
             if (loadingSection) loadingSection.style.display = 'none';
             if (timelineWrapper) {

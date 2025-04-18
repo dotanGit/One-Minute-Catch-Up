@@ -1,4 +1,5 @@
 import { normalizeDateToStartOfDay, safeGetTimestamp } from '../utils/dateUtils.js';
+import { badWords } from './badWordsFilter.js';
 
 export function getBrowserHistoryService(date) {
     return new Promise((resolve) => {
@@ -26,48 +27,50 @@ export function getBrowserHistoryService(date) {
 export function shouldFilterUrl(url) {
   try {
     const parsedUrl = new URL(url);
+    const fullUrl = parsedUrl.href.toLowerCase();
+
+    // Filter based on badWords list
+    if (badWords.some(word => fullUrl.includes(word))) {
+      return true;
+    }
     
-    // Filter search queries
-    if (parsedUrl.pathname.includes('/search') || 
-        parsedUrl.pathname.includes('/s') ||
-        parsedUrl.search.includes('?q=') ||
-        parsedUrl.search.includes('?query=')) {
+    // Filter search queries and autocomplete
+    const searchIndicators = ['/search', '/s', '/suggest', '/autocomplete', '/complete/search'];
+    if (searchIndicators.some(part => parsedUrl.pathname.includes(part))) {
       return true;
     }
 
-    // Filter autocomplete and suggestion URLs
-    if (parsedUrl.pathname.includes('/complete/search') ||
-        parsedUrl.pathname.includes('/suggest') ||
-        parsedUrl.pathname.includes('/autocomplete')) {
+    // Filter query parameters
+    const queryIndicators = ['?q=', '?query='];
+    if (queryIndicators.some(part => parsedUrl.search.includes(part))) {
       return true;
     }
 
-    // Filter tracking and ad URLs
-    if (parsedUrl.hostname.includes('ads.') ||
-        parsedUrl.hostname.includes('analytics.') ||
-        parsedUrl.hostname.includes('tracker.') ||
-        parsedUrl.hostname.includes('pixel.') ||
-        parsedUrl.pathname.includes('/ads/') ||
-        parsedUrl.pathname.includes('/tracking/')) {
+    // Filter tracking/ad-related hostnames or paths
+    const adIndicators = ['ads.', 'analytics.', 'tracker.', 'pixel.'];
+    if (adIndicators.some(part => parsedUrl.hostname.includes(part))) {
       return true;
     }
 
-    // Filter specific domains we don't want to track
+    const adPaths = ['/ads/', '/tracking/'];
+    if (adPaths.some(part => parsedUrl.pathname.includes(part))) {
+      return true;
+    }
+
+    // Filter specific known domains
     const filteredDomains = [
       'google.com/search',
       'mail.google.com/mail',
       'google.com/complete',
       'bing.com/search',
       'yahoo.com/search',
-      'google.com/url',  // Google redirect URLs
+      'google.com/url',
       'doubleclick.net',
       'googleadservices.com'
     ];
-
     if (filteredDomains.some(domain => parsedUrl.href.includes(domain))) {
       return true;
     }
-
     return false;
   } catch {
     return true; // Filter invalid URLs
