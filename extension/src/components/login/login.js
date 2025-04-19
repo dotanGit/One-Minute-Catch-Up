@@ -37,6 +37,7 @@ export function initLogin() {
             await loadTimeline(true);
             
             // ✅ Then allow background sync (and trigger it)
+            chrome.runtime.sendMessage({ action: 'startFetchListeners' });
             chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
 
           });
