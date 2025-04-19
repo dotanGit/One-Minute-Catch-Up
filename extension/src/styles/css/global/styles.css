@@ -154,7 +154,7 @@ body {
 
 
 
-/* Common Button Styles */
+/* === FILTER MENU POSITION === */
 .filter-menu {
     position: fixed;
     bottom: 20px;
@@ -162,6 +162,7 @@ body {
     z-index: 1000;
   }
   
+  /* === COMMON BUTTON STYLE === */
   .filter-button {
     background: rgba(255, 255, 255, 0.1);
     border: none;
@@ -173,11 +174,12 @@ body {
     align-items: center;
     justify-content: center;
     color: white;
-    transition: transform 0.3s, opacity 0.2s, bottom 0.3s;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     position: absolute;
     right: 0;
     opacity: 0;
     pointer-events: none;
+    transform: translateY(20px); /* start hidden below */
   }
   
   .filter-button img,
@@ -186,6 +188,7 @@ body {
     height: 24px;
   }
   
+  /* === MAIN FILTER BUTTON === */
   .filter-button.main {
     position: static;
     opacity: 1;
@@ -197,6 +200,7 @@ body {
     transform: rotate(180deg);
   }
   
+  /* === EXPANDED FILTER BUTTONS === */
   .expanded-filter-buttons {
     display: flex;
     flex-direction: column-reverse;
@@ -206,12 +210,45 @@ body {
     right: 0;
   }
   
+  /* === ANIMATE IN WHEN ACTIVE === */
   .filter-menu.active .expanded-filter-buttons .filter-button {
     opacity: 1;
     pointer-events: auto;
+    transform: translateY(0);
     position: relative;
   }
+
+/* Default hidden state with delayed reverse animation */
+.expanded-filter-buttons .filter-button {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(60px);
+    opacity: 0;
+    pointer-events: none;
+  }
   
+  
+  /* Forward animation when opening */
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(1) {
+    transition-delay: 0s;
+  }
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(2) {
+    transition-delay: 0.05s;
+  }
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(3) {
+    transition-delay: 0.1s;
+  }
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(4) {
+    transition-delay: 0.15s;
+  }
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(5) {
+    transition-delay: 0.2s;
+  }
+  .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(6) {
+    transition-delay: 0.25s;
+  }
+  
+
+  /* === DATE PICKER === */
   .date-picker {
     position: absolute;
     bottom: 380px;
@@ -220,14 +257,17 @@ body {
     padding: 8px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: opacity 0.3s ease, transform 0.3s ease;
   }
-
+  
   .date-picker.hidden {
-    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
   }
   
   
-
+  
 /* Wallpaper Dropdown Specific Styles */
 .wallpaper-category {
     margin-bottom: 15px;

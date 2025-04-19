@@ -37,11 +37,12 @@ export async function initTimelineFilterUI(onFilterChange) {
   const datePicker = document.getElementById('date-picker');
   const dateFilter = document.getElementById('date-filter');
 
-  // Toggle expansion
-  mainButton.addEventListener('click', () => {
-    filterMenu.classList.toggle('active');
-    mainButton.classList.toggle('rotated');
-    datePicker.classList.add('hidden');
+  // Toggle expansion when clicking main button
+  mainButton.addEventListener('click', (e) => {
+    e.stopPropagation(); // prevent window click from closing immediately
+    const isActive = filterMenu.classList.toggle('active');
+    mainButton.classList.toggle('rotated', isActive);
+    if (!isActive) datePicker.classList.add('hidden');
   });
 
   // Populate date dropdown
@@ -62,6 +63,7 @@ export async function initTimelineFilterUI(onFilterChange) {
     dateFilter.appendChild(option);
   });
 
+  // Filter on date selection
   dateFilter.addEventListener('change', (e) => {
     const selected = e.target.value;
     if (selected) {
@@ -75,8 +77,10 @@ export async function initTimelineFilterUI(onFilterChange) {
     onFilterChange();
   });
 
+  // Handle category button clicks
   document.querySelectorAll('.expanded-filter-buttons .filter-button').forEach(button => {
-    button.addEventListener('click', () => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation(); // avoid outside click close
       const category = button.dataset.category;
       if (category === 'time') {
         datePicker.classList.toggle('hidden');
@@ -84,16 +88,34 @@ export async function initTimelineFilterUI(onFilterChange) {
         timelineFilters.category = category;
         datePicker.classList.add('hidden');
         onFilterChange();
+        filterMenu.classList.remove('active');
+        mainButton.classList.remove('rotated');
       }
     });
   });
+
+  // Click outside to close everything
+  document.addEventListener('click', (e) => {
+    const filterMenu = document.querySelector('.filter-menu');
+    const mainButton = document.getElementById('filter-button');
+    const datePicker = document.getElementById('date-picker');
+  
+    if (!filterMenu.contains(e.target)) {
+      // Start reverse animation
+      const buttons = document.querySelectorAll('.expanded-filter-buttons .filter-button');
+      buttons.forEach((btn, index) => {
+        btn.style.transitionDelay = `${(buttons.length - index - 1) * 0.05}s`;
+      });
+  
+      filterMenu.classList.remove('active');
+      mainButton.classList.remove('rotated');
+      
+      // Reset instantly, no delay
+      buttons.forEach((btn) => {
+        btn.style.transitionDelay = '0s';
+      });
+  
+      datePicker.classList.add('hidden');
+    }
+  });
 }
-
-
-document.addEventListener('click', (e) => {
-  const datePicker = document.getElementById('date-picker');
-  const timeBtn = document.querySelector('.filter-button[data-category="time"]');
-  if (!datePicker.contains(e.target) && !timeBtn.contains(e.target)) {
-    datePicker.classList.add('hidden');
-  }
-});
