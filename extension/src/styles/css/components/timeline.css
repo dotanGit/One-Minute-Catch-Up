@@ -729,7 +729,7 @@
 
 .delete-marked-button {
     position: fixed;
-    bottom: 20px;
+    bottom: 70px;
     right: 20px;
     background: #ff4444;
     color: white;
@@ -763,7 +763,7 @@
 
 .clear-marked-button {
     position: fixed;
-    bottom: 70px; /* 🠑 Above delete button */
+    bottom: 120px; /* 🠑 Above delete button */
     right: 20px;
     background: #555;
     color: white;

@@ -156,11 +156,43 @@ body {
     font-size: 20px;
 }
 
+
+
+/* Common Button Styles */
+.filter-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    backdrop-filter: blur(8px);
+}
+
+.filter-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.filter-button .material-icons {
+    font-size: 20px;
+}
+
+
 /* Dropdown Styles */
 .filter-dropdown {
     position: absolute;
-    right: 0;
-    top: 50px;
+    right: 20px;
+    bottom: 20px;
     background: rgba(0, 0, 0, 0.75);
     border-radius: 12px;
     padding: 12px;
