@@ -17,11 +17,10 @@ import { timelineCache } from '../src/components/timeline/cache.js';
 
 // === CONFIG ===
 const THIRTY_MIN = 30 * 60 * 1000;
-const DEBOUNCE_DELAY = 5000;
+const DEBOUNCE_DELAY = 30000;
 
 // === STATE ===
 let allowBackgroundSync = false;
-let firstSyncBlocked = true;
 let deltaTimer = null;
 let isLoggedInCache = false;
 let listenersInitialized = false;
@@ -29,6 +28,7 @@ let listenersInitialized = false;
 // === AUTH ===
 async function handleGoogleLogin() {
   try {
+    console.log('[BG] 🔐 handleGoogleLogin triggered');
     const token = await new Promise((resolve, reject) => {
       chrome.identity.getAuthToken({ interactive: true }, (token) => {
         if (chrome.runtime.lastError) reject(chrome.runtime.lastError);
@@ -52,13 +52,14 @@ async function handleGoogleLogin() {
             email: profile.email
           }
         });
+        console.log('[BG] ✅ Login complete & user info stored');
         return { success: true, token };
       }
     }
 
     return { success: false, error: 'Failed to get auth token' };
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('[BG] ❌ Login error:', err);
     return { success: false, error: err.message };
   }
 }
@@ -143,6 +144,7 @@ async function syncGmailDriveCalendar() {
 
 // === Delta Fetch Logic ===
 export async function runDeltaFetchForToday() {
+  console.log('[BG] 🔄 runDeltaFetchForToday started');
   const today = new Date();
   const dateKey = `timeline_${getDateKey(today)}`;
   const now = Date.now();
@@ -156,38 +158,39 @@ export async function runDeltaFetchForToday() {
   deltaCleaned.history = filterBrowserBySession(deltaCleaned.history);
 
   const baseData = cached?.data || {
-    history: [],
-    drive: { files: [] },
-    emails: { all: [] },
-    calendar: { today: [], tomorrow: [] },
-    downloads: []
+    history: [], drive: { files: [] }, emails: { all: [] },
+    calendar: { today: [], tomorrow: [] }, downloads: []
   };
 
   baseData.history = mergeUniqueById(baseData.history, deltaCleaned.history || [], e => e.id);
   baseData.downloads = mergeUniqueById(baseData.downloads, deltaCleaned.downloads || [], d => d.id);
 
   const payload = {
-    data: {
-      history: baseData.history,
-      drive: baseData.drive,
-      emails: baseData.emails,
-      calendar: baseData.calendar,
-      downloads: baseData.downloads
-    },
+    data: baseData,
     lastFetchedAt: now,
     timestamp: now,
     date: dateKey.split('_')[1]
   };
 
   await timelineCache.set(dateKey, payload);
+  console.log('[BG] ✅ Delta fetch finished & cache updated');
 }
+
 
 // === Debounced Fetch Scheduler ===
 function scheduleDeltaFetch() {
-  if (deltaTimer) clearTimeout(deltaTimer);
+  console.log('[BG] 🕓 scheduleDeltaFetch called');
+  if (deltaTimer) {
+    clearTimeout(deltaTimer);
+    console.log('[BG] 🔁 Existing timer cleared');
+  }
   deltaTimer = setTimeout(() => {
+    console.log('[BG] ⏰ Debounced timer expired');
     if (isLoggedInCache) {
+      console.log('[BG] ✅ Logged in → running delta fetch');
       runDeltaFetchForToday();
+    } else {
+      console.log('[BG] ❌ Skipped fetch → user not logged in yet');
     }
     deltaTimer = null;
   }, DEBOUNCE_DELAY);
@@ -229,8 +232,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
     case 'startFetchListeners':
       if (!listenersInitialized) {
-        chrome.history.onVisited.addListener(scheduleDeltaFetch);
-        chrome.downloads.onCreated.addListener(scheduleDeltaFetch);
+        chrome.history.onVisited.addListener(() => {
+          console.log('[BG] 🔍 onVisited event triggered');
+          scheduleDeltaFetch();
+        });
+        chrome.downloads.onCreated.addListener(() => {
+          console.log('[BG] 💾 onCreated event triggered');
+          scheduleDeltaFetch();
+        });
         listenersInitialized = true;
         console.log('[BG] 🟢 Fetch listeners attached after initTimeline');
       }
@@ -239,12 +248,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 // === Periodic Tasks ===
-setTimeout(() => {
-  firstSyncBlocked = false;
-}, 3000);
-
 setInterval(() => {
-  if (!firstSyncBlocked && allowBackgroundSync) {
+  if (allowBackgroundSync) {
+    console.log('[BG] ⏳ Periodic sync triggered');
     chrome.storage.local.get('isLoggedIn', ({ isLoggedIn }) => {
       if (isLoggedIn) syncGmailDriveCalendar();
     });
