@@ -13,6 +13,8 @@ import {
   import { initTimelineScroll } from './timelineScroll.js';
   import { filterHiddenEvents,filterAllByDate,getHiddenIdsSet,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
   import { timelineCache, cleanupHiddenEventIdsFromCache } from './cache.js';
+  import { applyTimelineFilters, initTimelineFilterUI, timelineFilters } from './timelineFilters.js';
+
   
   // ===== Global Variables =====
   const loadingSection = document.getElementById('loading');
@@ -186,7 +188,9 @@ export async function initTimeline() {
 
     if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
 
-    buildTimeline(combined.history, combined.drive, combined.emails, combined.calendar, combined.downloads);
+    const filteredCombined = applyTimelineFilters(combined, timelineFilters);
+    buildTimeline(filteredCombined.history, filteredCombined.drive, filteredCombined.emails, filteredCombined.calendar, filteredCombined.downloads);
+
     markAllEventKeys(combined);
 
     if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
@@ -204,8 +208,9 @@ export async function initTimeline() {
 }
 
 
-
-
-
-
-
+document.addEventListener('DOMContentLoaded', async () => {
+  await initTimeline();
+  initTimelineFilterUI(() => {
+    initTimeline(); // re-render if filter changes
+  });
+});
