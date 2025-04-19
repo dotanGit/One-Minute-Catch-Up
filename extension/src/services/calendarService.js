@@ -1,7 +1,6 @@
 import { getAuthToken } from '../utils/auth.js';
 import { normalizeDateToStartOfDay, safeToISOString } from '../utils/dateUtils.js';
 
-
 export async function getCalendarEvents(date) {
   try {
     const token = await getAuthToken();
@@ -28,10 +27,9 @@ export async function getCalendarEvents(date) {
     const calendarList = await calListResponse.json();
     const calendars = calendarList.items || [];
 
+    // 🔄 Use local time range for query
     const startTime = normalizeDateToStartOfDay(date);
-    const endTime = new Date(startTime);
-    endTime.setUTCHours(23, 59, 59, 999);
-    
+    const endTime = new Date(startTime.getTime() + 86400000); // +1 local day
 
     const allEvents = await Promise.all(
       calendars.filter(cal => cal.selected !== false).map(async calendar => {

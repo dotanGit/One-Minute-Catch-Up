@@ -4,7 +4,8 @@ export function processCalendarEvent(event, processedEvents) {
     // Add full-day event detection
     const hasDate = !!event.start?.date;
     const hasDateTime = !!event.start?.dateTime;
-    const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getUTCHours() === 0 && new Date(event.start.dateTime).getUTCMinutes() === 0);
+    const isFullDayEvent = hasDate && (!hasDateTime || new Date(event.start.dateTime).getHours() === 0 && new Date(event.start.dateTime).getMinutes() === 0);
+
     
     if (isFullDayEvent) {
         return; //  Skip this event

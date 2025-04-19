@@ -82,8 +82,12 @@ export async function initTimelineFilterUI(onFilterChange) {
     const selected = e.target.value;
     if (selected) {
       const start = new Date(selected);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+    
       timelineFilters.startDate = start;
-      timelineFilters.endDate = new Date(start.getTime() + 86400000 - 1);
+      timelineFilters.endDate = end;
     } else {
       timelineFilters.startDate = null;
       timelineFilters.endDate = null;

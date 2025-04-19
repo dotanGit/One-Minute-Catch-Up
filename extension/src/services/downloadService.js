@@ -6,8 +6,7 @@ const downloadSources = new Map();
 // Listen for download creation and store the current tab URL
 chrome.downloads.onCreated.addListener(async (downloadItem) => {
     try {
-        // Get the current active tab
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.url) {
             downloadSources.set(downloadItem.id, tab.url);
         }
@@ -16,12 +15,11 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
     }
 });
 
-
 export function getDownloadsService(date) {
     return new Promise((resolve) => {
+        // 🔄 Use local day range instead of UTC
         const startTime = normalizeDateToStartOfDay(date);
-        const endTime = new Date(startTime);
-        endTime.setUTCHours(23, 59, 59, 999);
+        const endTime = new Date(startTime.getTime() + 86400000); // +1 local day
 
         chrome.downloads.search({
             startedAfter: safeToISOString(startTime),

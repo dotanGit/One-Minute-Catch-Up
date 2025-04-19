@@ -1,12 +1,16 @@
-import { normalizeDateToStartOfDay, safeGetTimestamp } from '../utils/dateUtils.js';
+import { normalizeDateToStartOfDay } from '../utils/dateUtils.js';
 import { badWords } from './badWordsFilter.js';
 
 // getBrowserHistoryService.js
 
 export async function getBrowserHistoryService(date) {
-  const start = new Date(date);
-  start.setUTCHours(0, 0, 0, 0);
-  const end = new Date(start.getTime() + 86400000);
+  // 🔄 Use local day boundaries
+  const start = normalizeDateToStartOfDay(date);
+  const end = new Date(start.getTime() + 86400000); // +1 local day
+
+  console.log('[DEBUG] Fetching browser history for date window:');
+  console.log('→ Start (local):', start.toString());
+  console.log('→ End (local):', end.toString());
 
   const historyItems = await chrome.history.search({
     text: '',
@@ -14,6 +18,9 @@ export async function getBrowserHistoryService(date) {
     endTime: end.getTime(),
     maxResults: 500
   });
+
+  console.log('[DEBUG] history.search() returned:', historyItems.length, 'items');
+  console.log('[DEBUG] Sample URLs:', historyItems.slice(0, 3).map(i => i.url));
 
   const events = [];
 
@@ -25,6 +32,10 @@ export async function getBrowserHistoryService(date) {
     for (const visit of visits) {
       const visitTime = visit.visitTime;
       if (visitTime >= start.getTime() && visitTime < end.getTime()) {
+        console.log(`[DEBUG] Added visit → ${item.url}`);
+        console.log(`   visitTime (ms): ${visitTime}`);
+        console.log(`   visitTime ISO : ${new Date(visitTime).toISOString()}`);
+
         events.push({
           id: `${item.id}-${visit.visitId}`,
           url: item.url,
@@ -39,42 +50,25 @@ export async function getBrowserHistoryService(date) {
   return events;
 }
 
-
-
 export function shouldFilterUrl(url) {
   try {
     const parsedUrl = new URL(url);
     const fullUrl = parsedUrl.href.toLowerCase();
 
-    // Filter based on badWords list
-    if (badWords.some(word => fullUrl.includes(word))) {
-      return true;
-    }
-    
-    // Filter search queries and autocomplete
+    if (badWords.some(word => fullUrl.includes(word))) return true;
+
     const searchIndicators = ['/search', '/s', '/suggest', '/autocomplete', '/complete/search'];
-    if (searchIndicators.some(part => parsedUrl.pathname.includes(part))) {
-      return true;
-    }
+    if (searchIndicators.some(part => parsedUrl.pathname.includes(part))) return true;
 
-    // Filter query parameters
     const queryIndicators = ['?q=', '?query='];
-    if (queryIndicators.some(part => parsedUrl.search.includes(part))) {
-      return true;
-    }
+    if (queryIndicators.some(part => parsedUrl.search.includes(part))) return true;
 
-    // Filter tracking/ad-related hostnames or paths
     const adIndicators = ['ads.', 'analytics.', 'tracker.', 'pixel.'];
-    if (adIndicators.some(part => parsedUrl.hostname.includes(part))) {
-      return true;
-    }
+    if (adIndicators.some(part => parsedUrl.hostname.includes(part))) return true;
 
     const adPaths = ['/ads/', '/tracking/'];
-    if (adPaths.some(part => parsedUrl.pathname.includes(part))) {
-      return true;
-    }
+    if (adPaths.some(part => parsedUrl.pathname.includes(part))) return true;
 
-    // Filter specific known domains
     const filteredDomains = [
       'google.com/search',
       'mail.google.com/mail',
@@ -85,11 +79,10 @@ export function shouldFilterUrl(url) {
       'doubleclick.net',
       'googleadservices.com'
     ];
-    if (filteredDomains.some(domain => parsedUrl.href.includes(domain))) {
-      return true;
-    }
+    if (filteredDomains.some(domain => parsedUrl.href.includes(domain))) return true;
+
     return false;
   } catch {
-    return true; // Filter invalid URLs
+    return true;
   }
 }

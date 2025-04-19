@@ -97,7 +97,7 @@ export async function initTimeline() {
     const days = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
-      d.setUTCDate(today.getUTCDate() - i);
+      d.setDate(today.getDate() - i);
       const key = getDateKey(d);
       console.log(`[UI] 📅 Adding day: ${d.toISOString()} → dateKey: timeline_${key}`);
       days.push(d);
