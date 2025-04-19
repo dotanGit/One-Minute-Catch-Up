@@ -834,23 +834,3 @@
     text-decoration: none;
 }
   
-
-
-.filter-bar {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 1001;
-  }
-  
-  .filter-bar select {
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-family: "Poppins", sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  

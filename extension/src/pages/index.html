@@ -35,19 +35,39 @@
         </div>
     </div>
 
-    <button id="filter-button" class="filter-button">
-        <span class="material-icons">filter_list</span>
-    </button>
-    <div id="filter-dropdown" class="filter-dropdown">
-        <select id="category-filter">
-            <option value="">All Categories</option>
-            <!-- Categories will be injected here -->
-        </select>
-        <select id="date-filter">
-            <option value="">All Dates</option>
-            <!-- Dates will be injected here -->
-        </select>
-    </div>
+
+    <div class="filter-menu">
+        <button id="filter-button" class="filter-button main">
+          <span class="material-icons">filter_list</span>
+        </button>
+      
+        <div class="expanded-filter-buttons">
+          <button class="filter-button" data-category="drive">
+            <img src="../assets/icons/drive-draw.png" alt="Drive" />
+          </button>
+          <button class="filter-button" data-category="emails">
+            <img src="../assets/icons/gmail-draw.png" alt="Gmail" />
+          </button>
+          <button class="filter-button" data-category="calendar">
+            <img src="../assets/icons/google-calendar-draw.png" alt="Calendar" />
+          </button>
+          <button class="filter-button" data-category="downloads">
+            <img src="../assets/icons/download.png" alt="Downloads" />
+          </button>
+          <button class="filter-button" data-category="history">
+            <img src="../assets/icons/chrome-draw.png" alt="Browser" />
+          </button>
+          <button class="filter-button" data-category="time">
+            <span class="material-icons">schedule</span>
+          </button>
+        </div>
+      
+        <div id="date-picker" class="date-picker hidden">
+          <select id="date-filter"></select>
+        </div>
+      </div>
+      
+      
 
     <div class="container">
         <div class="greeting"></div>

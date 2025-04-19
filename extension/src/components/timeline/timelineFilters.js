@@ -32,52 +32,28 @@ export function applyTimelineFilters(combinedData, { category = null, startDate 
 
 // === UI Setup ===
 export async function initTimelineFilterUI(onFilterChange) {
-  const filterButton = document.getElementById('filter-button');
-  const filterDropdown = document.getElementById('filter-dropdown');
-  const categoryFilter = document.getElementById('category-filter');
+  const filterMenu = document.querySelector('.filter-menu');
+  const mainButton = document.getElementById('filter-button');
+  const datePicker = document.getElementById('date-picker');
   const dateFilter = document.getElementById('date-filter');
 
-  // Toggle filter dropdown
-  filterButton.addEventListener('click', () => {
-    filterDropdown.classList.toggle('show');
+  // Toggle expansion
+  mainButton.addEventListener('click', () => {
+    filterMenu.classList.toggle('active');
+    mainButton.classList.toggle('rotated');
+    datePicker.classList.add('hidden');
   });
 
-  // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
-      filterDropdown.classList.remove('show');
-    }
-  });
-
+  // Populate date dropdown
   const result = await chrome.storage.local.get(null);
-  const categorySet = new Set();
   const dateSet = new Set();
-
   for (const key of Object.keys(result)) {
-    if (!key.startsWith('timeline_')) continue;
-    const dateStr = key.split('_')[1];
-    if (dateStr) dateSet.add(dateStr);
-
-    const data = result[key]?.data;
-    if (!data) continue;
-
-    if ((data.history || []).length) categorySet.add('history');
-    if ((data.drive?.files || []).length) categorySet.add('drive');
-    if ((data.emails?.all || []).length) categorySet.add('emails');
-    if ((data.calendar?.today || []).length || (data.calendar?.tomorrow || []).length) categorySet.add('calendar');
-    if ((data.downloads || []).length) categorySet.add('downloads');
+    if (key.startsWith('timeline_')) {
+      const date = key.split('_')[1];
+      if (date) dateSet.add(date);
+    }
   }
 
-  // Populate categories
-  categoryFilter.innerHTML = `<option value="">All Categories</option>`;
-  [...categorySet].sort().forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-    categoryFilter.appendChild(option);
-  });
-
-  // Populate dates
   dateFilter.innerHTML = `<option value="">All Dates</option>`;
   [...dateSet].sort().forEach(date => {
     const option = document.createElement('option');
@@ -86,22 +62,38 @@ export async function initTimelineFilterUI(onFilterChange) {
     dateFilter.appendChild(option);
   });
 
-  // Handle changes
-  categoryFilter.addEventListener('change', (e) => {
-    timelineFilters.category = e.target.value || null;
-    onFilterChange();
-  });
-
   dateFilter.addEventListener('change', (e) => {
     const selected = e.target.value;
     if (selected) {
-      const date = new Date(selected);
-      timelineFilters.startDate = date;
-      timelineFilters.endDate = new Date(date.getTime() + 86400000 - 1);
+      const start = new Date(selected);
+      timelineFilters.startDate = start;
+      timelineFilters.endDate = new Date(start.getTime() + 86400000 - 1);
     } else {
       timelineFilters.startDate = null;
       timelineFilters.endDate = null;
     }
     onFilterChange();
   });
+
+  document.querySelectorAll('.expanded-filter-buttons .filter-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const category = button.dataset.category;
+      if (category === 'time') {
+        datePicker.classList.toggle('hidden');
+      } else {
+        timelineFilters.category = category;
+        datePicker.classList.add('hidden');
+        onFilterChange();
+      }
+    });
+  });
 }
+
+
+document.addEventListener('click', (e) => {
+  const datePicker = document.getElementById('date-picker');
+  const timeBtn = document.querySelector('.filter-button[data-category="time"]');
+  if (!datePicker.contains(e.target) && !timeBtn.contains(e.target)) {
+    datePicker.classList.add('hidden');
+  }
+});

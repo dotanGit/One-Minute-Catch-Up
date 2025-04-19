@@ -123,14 +123,12 @@ body {
 }
 
 /* Button Selectors */
-.wallpaper-selector,
-.filter-selector {
+.wallpaper-selector {
     position: relative;
 }
 
 /* Common Button Styles */
-.wallpaper-button,
-.filter-button {
+.wallpaper-button {
     background: rgba(255, 255, 255, 0.15);
     border: none;
     border-radius: 50%;
@@ -145,109 +143,90 @@ body {
     backdrop-filter: blur(8px);
 }
 
-.wallpaper-button:hover,
-.filter-button:hover {
+.wallpaper-button:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-2px);
 }
 
-.wallpaper-button .material-icons,
-.filter-button .material-icons {
+.wallpaper-button .material-icons {
     font-size: 20px;
 }
 
 
 
 /* Common Button Styles */
-.filter-button {
+.filter-menu {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.15);
+    z-index: 1000;
+  }
+  
+  .filter-button {
+    background: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
     color: white;
-    backdrop-filter: blur(8px);
-}
-
-.filter-button:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-}
-
-.filter-button .material-icons {
-    font-size: 20px;
-}
-
-
-/* Dropdown Styles */
-.filter-dropdown {
+    transition: transform 0.3s, opacity 0.2s, bottom 0.3s;
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    background: rgba(0, 0, 0, 0.75);
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 220px;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.filter-dropdown.show {
+    right: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .filter-button img,
+  .filter-button .material-icons {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .filter-button.main {
+    position: static;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+  
+  .filter-button.rotated {
+    transform: rotate(180deg);
+  }
+  
+  .expanded-filter-buttons {
     display: flex;
-    z-index: 9999;
-}
-
-/* Filter Dropdown Specific Styles */
-.filter-dropdown select {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-family: inherit;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px top 50%;
-    background-size: 10px auto;
-    padding-right: 30px;
-}
-
-.filter-dropdown select:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.filter-dropdown select:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.15);
-}
-
-.filter-dropdown select option {
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
+    flex-direction: column-reverse;
+    gap: 10px;
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+  }
+  
+  .filter-menu.active .expanded-filter-buttons .filter-button {
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+  }
+  
+  .date-picker {
+    position: absolute;
+    bottom: 380px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
     padding: 8px;
-}
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  .date-picker.hidden {
+    display: none !important;
+  }
+  
+  
 
 /* Wallpaper Dropdown Specific Styles */
 .wallpaper-category {
