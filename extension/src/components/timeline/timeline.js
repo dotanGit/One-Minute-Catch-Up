@@ -81,6 +81,9 @@ export function showTimeline(isFirstLogin = false) {
 
 
 export async function initTimeline() {
+  const start = performance.now();
+  console.log('=====================[TIMER] ⏱️ Timeline init started====================');
+
   try {
     console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
@@ -189,7 +192,7 @@ export async function initTimeline() {
     initTimelineScroll();
 
     console.log('[UI] ✅ Timeline built');
-
+    console.log('=====================[TIMER] ✅ Timeline built in', (performance.now() - start).toFixed(0), 'ms====================  ');
   } catch (error) {
     console.error('❌ Error initializing timeline:', error);
     if (timelineEvents) {
