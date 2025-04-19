@@ -32,8 +32,22 @@ export function applyTimelineFilters(combinedData, { category = null, startDate 
 
 // === UI Setup ===
 export async function initTimelineFilterUI(onFilterChange) {
+  const filterButton = document.getElementById('filter-button');
+  const filterDropdown = document.getElementById('filter-dropdown');
   const categoryFilter = document.getElementById('category-filter');
   const dateFilter = document.getElementById('date-filter');
+
+  // Toggle filter dropdown
+  filterButton.addEventListener('click', () => {
+    filterDropdown.classList.toggle('show');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
+      filterDropdown.classList.remove('show');
+    }
+  });
 
   const result = await chrome.storage.local.get(null);
   const categorySet = new Set();
