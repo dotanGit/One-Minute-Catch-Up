@@ -1,27 +1,44 @@
 import { normalizeDateToStartOfDay, safeGetTimestamp } from '../utils/dateUtils.js';
 import { badWords } from './badWordsFilter.js';
 
-export function getBrowserHistoryService(date) {
-    return new Promise((resolve) => {
-        const startTime = normalizeDateToStartOfDay(date);
-        const endTime = new Date(startTime);
-        endTime.setUTCHours(23, 59, 59, 999);
+// getBrowserHistoryService.js
 
-        chrome.history.search({
-            text: '',
-            startTime: startTime.getTime(),
-            endTime: endTime.getTime(),
-            maxResults: 100
-        }, function(historyItems) {
-            const filteredItems = historyItems.filter(item => {
-                const ts = safeGetTimestamp(item.lastVisitTime);
-                return ts >= startTime.getTime() && ts <= endTime.getTime();
-            });
+export async function getBrowserHistoryService(date) {
+  const start = new Date(date);
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(start.getTime() + 86400000);
 
-            resolve(filteredItems);
+  const historyItems = await chrome.history.search({
+    text: '',
+    startTime: start.getTime(),
+    endTime: end.getTime(),
+    maxResults: 500
+  });
+
+  const events = [];
+
+  for (const item of historyItems) {
+    const visits = await new Promise((resolve) =>
+      chrome.history.getVisits({ url: item.url }, resolve)
+    );
+
+    for (const visit of visits) {
+      const visitTime = visit.visitTime;
+      if (visitTime >= start.getTime() && visitTime < end.getTime()) {
+        events.push({
+          id: `${item.id}-${visit.visitId}`,
+          url: item.url,
+          title: item.title,
+          lastVisitTime: visitTime,
+          timestamp: visitTime
         });
-    });
+      }
+    }
+  }
+
+  return events;
 }
+
 
 
 export function shouldFilterUrl(url) {

@@ -14,20 +14,34 @@ export function applyTimelineFilters(combinedData, { category = null, startDate 
     (!startDate || timestamp >= startDate.getTime()) &&
     (!endDate || timestamp <= endDate.getTime());
 
-  return {
-    history: category && category !== 'history' ? [] : (combinedData.history || []).filter(e => isInRange(e.timestamp)),
-    drive: {
-      files: category && category !== 'drive' ? [] : (combinedData.drive?.files || []).filter(f => isInRange(f.modifiedTime))
-    },
-    emails: {
-      all: category && category !== 'emails' ? [] : (combinedData.emails?.all || []).filter(e => isInRange(e.timestamp))
-    },
-    calendar: {
-      today: category && category !== 'calendar' ? [] : (combinedData.calendar?.today || []).filter(e => isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))),
-      tomorrow: category && category !== 'calendar' ? [] : (combinedData.calendar?.tomorrow || []).filter(e => isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date)))
-    },
-    downloads: category && category !== 'downloads' ? [] : (combinedData.downloads || []).filter(d => isInRange(d.startTime))
-  };
+    return {
+      history: category && category !== 'history' ? [] :
+        (combinedData.history || []).filter(e => isInRange(safeGetTimestamp(e.timestamp))),
+    
+      drive: {
+        files: category && category !== 'drive' ? [] :
+          (combinedData.drive?.files || []).filter(f => isInRange(safeGetTimestamp(f.modifiedTime)))
+      },
+    
+      emails: {
+        all: category && category !== 'emails' ? [] :
+          (combinedData.emails?.all || []).filter(e => isInRange(safeGetTimestamp(e.timestamp)))
+      },
+    
+      calendar: {
+        today: category && category !== 'calendar' ? [] :
+          (combinedData.calendar?.today || []).filter(e =>
+            isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
+          ),
+        tomorrow: category && category !== 'calendar' ? [] :
+          (combinedData.calendar?.tomorrow || []).filter(e =>
+            isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
+          )
+      },
+    
+      downloads: category && category !== 'downloads' ? [] :
+        (combinedData.downloads || []).filter(d => isInRange(safeGetTimestamp(d.startTime)))
+    };
 }
 
 // === UI Setup ===
@@ -88,8 +102,6 @@ export async function initTimelineFilterUI(onFilterChange) {
         timelineFilters.category = category;
         datePicker.classList.add('hidden');
         onFilterChange();
-        filterMenu.classList.remove('active');
-        mainButton.classList.remove('rotated');
       }
     });
   });
