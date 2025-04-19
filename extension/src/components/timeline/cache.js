@@ -47,3 +47,30 @@ export const timelineCache = {
     }
   }
 };
+
+
+export async function cleanupHiddenEventIdsFromCache() {
+  const allItems = await chrome.storage.local.get(null);
+  const validIds = new Set();
+
+  Object.entries(allItems).forEach(([key, value]) => {
+    if (!key.startsWith('timeline_')) return;
+    const data = value?.data;
+    if (!data) return;
+
+    (data.history || []).forEach(e => validIds.add(String(e.id)));
+    (data.drive?.files || []).forEach(e => validIds.add(String(e.id)));
+    (data.emails?.all || []).forEach(e => validIds.add(String(e.threadId)));
+    (data.calendar?.today || []).forEach(e => validIds.add(String(e.id)));
+    (data.calendar?.tomorrow || []).forEach(e => validIds.add(String(e.id)));
+    (data.downloads || []).forEach(e => validIds.add(String(e.id)));
+  });
+
+  const result = await chrome.storage.local.get('hiddenEventIds');
+  const oldHidden = result.hiddenEventIds || [];
+
+  const cleaned = oldHidden.filter(id => validIds.has(id));
+  await chrome.storage.local.set({ hiddenEventIds: cleaned });
+
+  console.log('[CACHE] 🧼 Cleaned hiddenEventIds from cache →', cleaned.length, 'kept');
+}

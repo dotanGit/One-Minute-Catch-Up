@@ -12,7 +12,7 @@ import {
   import { getDriveActivity } from '../../services/driveService.js';
   import { initTimelineScroll } from './timelineScroll.js';
   import { filterHiddenEvents,filterAllByDate,getHiddenIdsSet,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
-  import { timelineCache } from './cache.js';
+  import { timelineCache, cleanupHiddenEventIdsFromCache } from './cache.js';
   
   // ===== Global Variables =====
   const loadingSection = document.getElementById('loading');
@@ -87,6 +87,7 @@ export async function initTimeline() {
   try {
     console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
+    await cleanupHiddenEventIdsFromCache();
     const hiddenIds = await getHiddenIdsSet();
     const today = normalizeDateToStartOfDay(new Date());
     const now = Date.now();
@@ -144,8 +145,9 @@ export async function initTimeline() {
         console.log(`[UI] ✅ Fetched & cached: ${dateKey}`);
       }
 
-      allFiltered.push(cached.data);
-      console.log(`[UI] 📦 Cached data → ${dateKey} → history: ${cached?.data?.history?.length || 0}, downloads: ${cached?.data?.downloads?.length || 0}`);
+      const filteredFromCache = filterHiddenEvents(cached.data, hiddenIds);
+      allFiltered.push(filteredFromCache);
+      console.log(`[UI] 📦 Cached data → ${dateKey} → history: ${filteredFromCache?.history?.length || 0}, downloads: ${filteredFromCache?.downloads?.length || 0}`);
     }
 
     allFiltered.forEach((d, i) => {
