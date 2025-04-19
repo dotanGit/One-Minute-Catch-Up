@@ -178,15 +178,24 @@ export async function runDeltaFetchForToday() {
 
 
 // === Debounced Fetch Scheduler ===
+
+async function isUserLoggedIn() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('isLoggedIn', (result) => {
+      resolve(!!result?.isLoggedIn);
+    });
+  });
+}
+
 function scheduleDeltaFetch() {
   console.log('[BG] 🕓 scheduleDeltaFetch called');
   if (deltaTimer) {
     clearTimeout(deltaTimer);
     console.log('[BG] 🔁 Existing timer cleared');
   }
-  deltaTimer = setTimeout(() => {
+  deltaTimer = setTimeout(async () => {
     console.log('[BG] ⏰ Debounced timer expired');
-    if (isLoggedInCache) {
+    if (await isUserLoggedIn()) {
       console.log('[BG] ✅ Logged in → running delta fetch');
       runDeltaFetchForToday();
     } else {
@@ -226,9 +235,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return true;
     case 'enableBackgroundSync':
       allowBackgroundSync = true;
-      chrome.storage.local.get('isLoggedIn', ({ isLoggedIn }) => {
-        isLoggedInCache = !!isLoggedIn;
-      });
       return;
     case 'startFetchListeners':
       if (!listenersInitialized) {

@@ -19,9 +19,6 @@ export async function getBrowserHistoryService(date) {
     maxResults: 500
   });
 
-  console.log('[DEBUG] history.search() returned:', historyItems.length, 'items');
-  console.log('[DEBUG] Sample URLs:', historyItems.slice(0, 3).map(i => i.url));
-
   const events = [];
 
   for (const item of historyItems) {
@@ -32,10 +29,6 @@ export async function getBrowserHistoryService(date) {
     for (const visit of visits) {
       const visitTime = visit.visitTime;
       if (visitTime >= start.getTime() && visitTime < end.getTime()) {
-        console.log(`[DEBUG] Added visit → ${item.url}`);
-        console.log(`   visitTime (ms): ${visitTime}`);
-        console.log(`   visitTime ISO : ${new Date(visitTime).toISOString()}`);
-
         events.push({
           id: `${item.id}-${visit.visitId}`,
           url: item.url,

@@ -83,6 +83,7 @@ export function showTimeline(isFirstLogin = false) {
 
 
 export async function initTimeline() {
+  console.trace('[DEBUG] ❗ initTimeline called directly');
   const start = performance.now();
   console.log('=====================[TIMER] ⏱️ Timeline init started====================');
 
@@ -208,9 +209,9 @@ export async function initTimeline() {
 }
 
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await initTimeline();
-  initTimelineFilterUI(() => {
-    initTimeline(); // re-render if filter changes
-  });
-});
+// document.addEventListener('DOMContentLoaded', async () => {
+//   await initTimeline();
+//   initTimelineFilterUI(() => {
+//     initTimeline(); // re-render if filter changes
+//   });
+// });
