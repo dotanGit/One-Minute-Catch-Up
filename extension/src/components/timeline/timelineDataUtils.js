@@ -106,7 +106,7 @@ export function filterHiddenEvents(data, hiddenIds) {
   };
 }
 
-export function filterBrowserBySession(events, sessionMs = 15 * 60 * 1000) {
+export function filterBrowserBySession(events, sessionMs = 60 * 60 * 1000) {
   const now = Date.now();
   const result = [];
 

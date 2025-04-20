@@ -15,14 +15,14 @@ import {
 } from '../src/components/timeline/timelineDataUtils.js';
 import { timelineCache } from '../src/components/timeline/cache.js';
 
+
 // === CONFIG ===
-const THIRTY_MIN = 30 * 60 * 1000;
-const DEBOUNCE_DELAY = 30000;
+const SIXTY_MIN = 60 * 60 * 1000; // 60 minutes
+const DEBOUNCE_DELAY = 2 * 60 * 1000; // 2 minutes
 
 // === STATE ===
 let allowBackgroundSync = false;
 let deltaTimer = null;
-let isLoggedInCache = false;
 let listenersInitialized = false;
 
 // === AUTH ===
@@ -103,7 +103,7 @@ async function syncGmailDriveCalendar() {
   const now = Date.now();
   const { lastGmailCheck } = await chrome.storage.local.get('lastGmailCheck');
 
-  if (!lastGmailCheck || now - lastGmailCheck > THIRTY_MIN) {
+  if (!lastGmailCheck || now - lastGmailCheck > SIXTY_MIN) {
     const date = new Date();
     const dateKey = `timeline_${getDateKey(date)}`;
     const startOfDay = new Date(date);
@@ -188,6 +188,7 @@ async function isUserLoggedIn() {
 }
 
 function scheduleDeltaFetch() {
+  console.log('[DEBUG] scheduleDeltaFetch CALLED at', new Date().toLocaleTimeString());
   console.log('[BG] 🕓 scheduleDeltaFetch called');
   if (deltaTimer) {
     clearTimeout(deltaTimer);
@@ -261,4 +262,4 @@ setInterval(() => {
       if (isLoggedIn) syncGmailDriveCalendar();
     });
   }
-}, THIRTY_MIN);
+}, SIXTY_MIN);

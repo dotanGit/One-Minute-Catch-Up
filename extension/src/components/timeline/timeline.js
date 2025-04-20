@@ -16,6 +16,7 @@ import {
   import { applyTimelineFilters, initTimelineFilterUI, timelineFilters } from './timelineFilters.js';
 
   
+
   // ===== Global Variables =====
   const loadingSection = document.getElementById('loading');
   const timelineEvents = document.getElementById('timeline-events');
@@ -83,10 +84,9 @@ export function showTimeline(isFirstLogin = false) {
 
 
 export async function initTimeline() {
-  console.trace('[DEBUG] ❗ initTimeline called directly');
   const start = performance.now();
   console.log('=====================[TIMER] ⏱️ Timeline init started====================');
-
+  await initTimelineFilterUI(handleFilterChange);
   try {
     console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
@@ -109,11 +109,8 @@ export async function initTimeline() {
     for (const date of days) {
       const dateKey = `timeline_${getDateKey(date)}`;
       let cached = await timelineCache.get(dateKey);
-      console.log(`[UI] 🔍 Loading cache for: ${dateKey}, exists: ${!!cached}`);
-      console.log(`[UI] 🧩 Cache object for ${dateKey}:`, cached);
 
       if (!cached) {
-        console.log(`[UI] 🚨 No cache for ${dateKey}, doing full fetch`);
         const [history, drive, emails, calendar, downloads] = await Promise.all([
           getBrowserHistoryService(date),
           getDriveActivity(date),
@@ -129,32 +126,17 @@ export async function initTimeline() {
 
         const newCache = { data: filtered, lastFetchedAt: now };
         await timelineCache.set(dateKey, newCache);
-        console.log(`[DEBUG] 🧪 Filtered data before saving to cache (${dateKey}):`, {
-          history: filtered.history?.length,
-          downloads: filtered.downloads?.length,
-          emails: filtered.emails?.all?.length,
-          drive: filtered.drive?.files?.length,
-          calendarToday: filtered.calendar?.today?.length,
-          calendarTomorrow: filtered.calendar?.tomorrow?.length
-        });
 
         const verify = await timelineCache.get(dateKey);
-        console.log(`[UI] 🔎 Verify saved cache → ${dateKey}:`, {
-          history: verify?.data?.history?.length,
-          downloads: verify?.data?.downloads?.length
-        });
 
         cached = newCache;
-        console.log(`[UI] ✅ Fetched & cached: ${dateKey}`);
       }
 
       const filteredFromCache = filterHiddenEvents(cached.data, hiddenIds);
       allFiltered.push(filteredFromCache);
-      console.log(`[UI] 📦 Cached data → ${dateKey} → history: ${filteredFromCache?.history?.length || 0}, downloads: ${filteredFromCache?.downloads?.length || 0}`);
     }
 
     allFiltered.forEach((d, i) => {
-      console.log(`[UI] 🧪 allFiltered[${i}] → history: ${d?.history?.length}, downloads: ${d?.downloads?.length}`);
     });
 
     const combined = {
@@ -168,16 +150,7 @@ export async function initTimeline() {
       downloads: allFiltered.flatMap(d => d.downloads || [])
     };
 
-    console.log('[UI] 🧪 Final combined object before render:', {
-      history: combined.history.length,
-      drive: combined.drive.files.length,
-      emails: combined.emails.all.length,
-      calendarToday: combined.calendar.today.length,
-      calendarTomorrow: combined.calendar.tomorrow.length,
-      downloads: combined.downloads.length
-    });
-
-    console.log(`[UI] 📊 Combined totals → history: ${combined.history.length}, downloads: ${combined.downloads.length}`);
+    window.fullCombinedData = combined;
 
     window.globalStartTime = Math.min(
       ...combined.history.map(e => normalizeTimestamp(e.lastVisitTime)),
@@ -208,10 +181,8 @@ export async function initTimeline() {
   }
 }
 
-
-// document.addEventListener('DOMContentLoaded', async () => {
-//   await initTimeline();
-//   initTimelineFilterUI(() => {
-//     initTimeline(); // re-render if filter changes
-//   });
-// });
+function handleFilterChange() {
+  console.log('[DEBUG] 🔁 Filter change triggered');
+  const filtered = applyTimelineFilters(window.fullCombinedData, timelineFilters);
+  buildTimeline(filtered.history,filtered.drive,filtered.emails,filtered.calendar,filtered.downloads);
+}

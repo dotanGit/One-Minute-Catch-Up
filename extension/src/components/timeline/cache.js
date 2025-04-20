@@ -4,7 +4,6 @@ export const timelineCache = {
   async get(dateKey) {
     try {
       const result = await chrome.storage.local.get(dateKey);
-      console.log(`[CACHE] 📥 Getting cache for ${dateKey}:`, result[dateKey]);
       return result[dateKey];
     } catch (error) {
       console.error('[CACHE] ❌ Read error:', error);
