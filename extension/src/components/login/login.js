@@ -12,6 +12,8 @@ export function initLogin() {
     if (result.isLoggedIn) {
       console.log('[UI] ✅ Already logged in → loading timeline');
       loadTimeline(false); 
+      chrome.runtime.sendMessage({ action: 'startFetchListeners' });
+      chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
     } else {
       console.log('[UI] 👋 No login → showing login screen');
       showLogin(); 
