@@ -33,8 +33,6 @@ export function getEventDetails(event) {
                         value: event.actualTitle,
                         isLink: true,
                         onClick: async (e) => {
-                            console.log('File click handler triggered');
-                            console.log('Event data:', event);
                             e.preventDefault();
                             e.stopPropagation();
                             
@@ -55,25 +53,39 @@ export function getEventDetails(event) {
                                 statusDiv.style.opacity = '1';
                                 
                                 console.log('Attempting to open download with ID:', event.downloadId);
-                                try {
-                                    await chrome.downloads.open(event.downloadId);
-                                    console.log('Download opened successfully');
-                                    statusDiv.className = 'file-status success';
-                                    statusDiv.textContent = 'File opened successfully!';
-                                    setTimeout(() => {
-                                        statusDiv.style.display = 'none';
-                                    }, 2000);
-                                } catch (openError) {
-                                    console.error('Error opening download:', openError);
-                                    statusDiv.className = 'file-status error';
-                                    statusDiv.textContent = 'Error: Could not open the file';
-                                }
+                                await chrome.downloads.open(event.downloadId);
+                                console.log('Download opened successfully');
+                                statusDiv.className = 'file-status success';
+                                statusDiv.textContent = 'File opened successfully!';
+                                setTimeout(() => {
+                                    statusDiv.style.display = 'none';
+                                }, 2000);
                             } catch (error) {
-                                console.error('Error in click handler:', error);
-                                statusDiv.className = 'file-status error';
-                                statusDiv.textContent = 'Error: Could not open the file';
-                                statusDiv.style.display = 'block';
-                                statusDiv.style.opacity = '1';
+                                // Show modal
+                                const modal = document.getElementById('download-error-modal');
+                                modal.classList.add('show');
+                                
+                                // Handle redownload button
+                                const redownloadBtn = document.getElementById('redownload-btn');
+                                redownloadBtn.onclick = () => {
+                                    if (event.url) {
+                                        chrome.downloads.download({ url: event.url });
+                                        modal.classList.remove('show');
+                                    }
+                                };
+                                
+                                // Handle close button
+                                const closeBtn = document.getElementById('close-modal-btn');
+                                closeBtn.onclick = () => {
+                                    modal.classList.remove('show');
+                                };
+                                
+                                // Close on outside click
+                                modal.onclick = (e) => {
+                                    if (e.target === modal) {
+                                        modal.classList.remove('show');
+                                    }
+                                };
                             }
                         }
                     },
