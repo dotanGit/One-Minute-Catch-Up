@@ -18,7 +18,7 @@ import { timelineCache } from '../src/components/timeline/cache.js';
 
 // === CONFIG ===
 const SIXTY_MIN = 60 * 60 * 1000; // 60 minutes
-const DEBOUNCE_DELAY = 2 * 60 * 1000; // 2 minutes
+const DEBOUNCE_DELAY = 10000; // 2 minutes 2 * 60 * 1000
 
 // === STATE ===
 let allowBackgroundSync = false;

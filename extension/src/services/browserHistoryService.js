@@ -45,6 +45,16 @@ export async function getBrowserHistoryService(date) {
 
 export function shouldFilterUrl(url) {
   try {
+    // Filter out local file paths
+    const localPathIndicators = [
+      'C:', 'D:', 'E:', 'F:', // Common drive letters
+      '/Users/', 
+      'file:///',
+      'localhost',
+      '127.0.0.1'
+    ];
+    if (localPathIndicators.some(indicator => url.includes(indicator))) return true;
+
     const parsedUrl = new URL(url);
     const fullUrl = parsedUrl.href.toLowerCase();
 

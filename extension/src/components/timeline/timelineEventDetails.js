@@ -33,44 +33,46 @@ export function getEventDetails(event) {
                         value: event.actualTitle,
                         isLink: true,
                         onClick: async (e) => {
+                            console.log('Download click handler triggered');
+                            console.log('Event data:', event);
                             e.preventDefault();
                             e.stopPropagation();
                             
-                            const detailItem = e.target.closest('.detail-item');
-                            console.log('Detail item found:', detailItem);
-                            
-                            let statusDiv = detailItem.querySelector('.file-status');
-                            if (!statusDiv) {
-                                statusDiv = document.createElement('div');
-                                statusDiv.className = 'file-status';
-                                detailItem.appendChild(statusDiv);
-                            }
-
                             try {
-                                statusDiv.className = 'file-status pending';
-                                statusDiv.textContent = 'Opening file...';
-                                statusDiv.style.display = 'block';
-                                statusDiv.style.opacity = '1';
-                                
-                                console.log('Attempting to open download with ID:', event.downloadId);
-                                await chrome.downloads.open(event.downloadId);
-                                console.log('Download opened successfully');
-                                statusDiv.className = 'file-status success';
-                                statusDiv.textContent = 'File opened successfully!';
-                                setTimeout(() => {
-                                    statusDiv.style.display = 'none';
-                                }, 2000);
+                                // First try to open using downloadId
+                                await chrome.downloads.open(event.id);
                             } catch (error) {
-                                // Show modal
+                                console.log('Failed to open with downloadId, trying to check if file exists...');
+                                
+                                // Check if file exists using downloads.search
+                                const searchResults = await chrome.downloads.search({
+                                    filename: event.filename.split('\\').pop(), // Get just the filename
+                                    exists: true
+                                });
+
+                                if (searchResults.length > 0) {
+                                    // File exists, try to open it using the found download item
+                                    try {
+                                        await chrome.downloads.open(searchResults[0].id);
+                                        return; // Exit if successful
+                                    } catch (secondError) {
+                                        console.error('Failed to open existing file:', secondError);
+                                    }
+                                }
+
+                                // If we get here, show the modal
                                 const modal = document.getElementById('download-error-modal');
                                 modal.classList.add('show');
                                 
                                 // Handle redownload button
                                 const redownloadBtn = document.getElementById('redownload-btn');
                                 redownloadBtn.onclick = () => {
-                                    if (event.url) {
-                                        chrome.downloads.download({ url: event.url });
+                                    if (event.downloadUrl && !event.downloadUrl.startsWith('blob:')) {
+                                        chrome.downloads.download({ url: event.downloadUrl });
                                         modal.classList.remove('show');
+                                    } else {
+                                        console.error('No valid download URL available');
+                                        alert('Sorry, the original download link is no longer available.');
                                     }
                                 };
                                 
@@ -88,12 +90,6 @@ export function getEventDetails(event) {
                                 };
                             }
                         }
-                    },
-                    { 
-                        label: 'Source',
-                        value: event.sourceUrl && isValidUrl(event.sourceUrl) ? (new URL(event.sourceUrl)).hostname : 'Unknown',
-                        isLink: !!event.sourceUrl && isValidUrl(event.sourceUrl),
-                        url: event.sourceUrl && isValidUrl(event.sourceUrl) ? event.sourceUrl : '#'
                     }
                 ],
                 actions: []

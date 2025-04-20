@@ -42,9 +42,12 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
         downloads.forEach(download => {
             const downloadTime = normalizeTimestamp(download.startTime);
             
-            // Clean the URL to remove download parameters
-            const sourceUrl = cleanDownloadUrl(download.sourceUrl || download.referrer || download.url);
+            // Get the webpage URL where the download was initiated
+            const sourceUrl = cleanDownloadUrl(download.referrer || download.url);
             const pattern = extractPattern(sourceUrl);
+            
+            // Get the actual download URL
+            const downloadUrl = download.finalUrl || download.url;
             
             processedEvents.push({
                 type: 'download',
@@ -52,9 +55,9 @@ export function processAllEvents(history, drive, emails, calendar, downloads) {
                 title: 'Download',
                 actualTitle: download.filename.split('\\').pop().split('/').pop(),
                 description: pattern,
-                url: sourceUrl,  // The cleaned webpage URL
-                sourceUrl: sourceUrl,  // Explicitly include cleaned sourceUrl
-                downloadUrl: download.url,  // Keep the original download URL
+                url: sourceUrl,  // The webpage URL
+                sourceUrl: sourceUrl,  // The webpage URL (for consistency)
+                downloadUrl: downloadUrl,  // The actual file download URL
                 filename: download.filename,
                 icon: '📥',
                 duration: 0,
