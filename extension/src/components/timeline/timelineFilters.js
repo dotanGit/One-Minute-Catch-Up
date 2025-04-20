@@ -3,45 +3,47 @@ import { safeGetTimestamp } from '../../utils/dateUtils.js';
 
 // === Filter State ===
 export const timelineFilters = {
-  category: null,
+  category: new Set(),
   startDate: null,
   endDate: null
 };
 
 // === Apply Filters ===
-export function applyTimelineFilters(combinedData, { category = null, startDate = null, endDate = null }) {
+export function applyTimelineFilters(combinedData, { category = new Set(), startDate = null, endDate = null }) {
   const isInRange = (timestamp) =>
     (!startDate || timestamp >= startDate.getTime()) &&
     (!endDate || timestamp <= endDate.getTime());
 
-    return {
-      history: category && category !== 'history' ? [] :
-        (combinedData.history || []).filter(e => isInRange(safeGetTimestamp(e.timestamp))),
-    
-      drive: {
-        files: category && category !== 'drive' ? [] :
-          (combinedData.drive?.files || []).filter(f => isInRange(safeGetTimestamp(f.modifiedTime)))
-      },
-    
-      emails: {
-        all: category && category !== 'emails' ? [] :
-          (combinedData.emails?.all || []).filter(e => isInRange(safeGetTimestamp(e.timestamp)))
-      },
-    
-      calendar: {
-        today: category && category !== 'calendar' ? [] :
-          (combinedData.calendar?.today || []).filter(e =>
-            isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
-          ),
-        tomorrow: category && category !== 'calendar' ? [] :
-          (combinedData.calendar?.tomorrow || []).filter(e =>
-            isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
-          )
-      },
-    
-      downloads: category && category !== 'downloads' ? [] :
-        (combinedData.downloads || []).filter(d => isInRange(safeGetTimestamp(d.startTime)))
-    };
+  const include = (type) => category.size === 0 || category.has(type);
+
+  return {
+    history: include('history') ?
+      (combinedData.history || []).filter(e => isInRange(safeGetTimestamp(e.timestamp))) : [],
+
+    drive: {
+      files: include('drive') ?
+        (combinedData.drive?.files || []).filter(f => isInRange(safeGetTimestamp(f.modifiedTime))) : []
+    },
+
+    emails: {
+      all: include('emails') ?
+        (combinedData.emails?.all || []).filter(e => isInRange(safeGetTimestamp(e.timestamp))) : []
+    },
+
+    calendar: {
+      today: include('calendar') ?
+        (combinedData.calendar?.today || []).filter(e =>
+          isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
+        ) : [],
+      tomorrow: include('calendar') ?
+        (combinedData.calendar?.tomorrow || []).filter(e =>
+          isInRange(safeGetTimestamp(e.start?.dateTime || e.start?.date))
+        ) : []
+    },
+
+    downloads: include('downloads') ?
+      (combinedData.downloads || []).filter(d => isInRange(safeGetTimestamp(d.startTime))) : []
+  };
 }
 
 // === UI Setup ===
@@ -100,15 +102,25 @@ export async function initTimelineFilterUI(onFilterChange) {
   // Handle category button clicks
   document.querySelectorAll('.expanded-filter-buttons .filter-button').forEach(button => {
     button.addEventListener('click', (e) => {
-      e.stopPropagation(); // avoid outside click close
+      e.stopPropagation();
       const category = button.dataset.category;
+  
       if (category === 'time') {
         datePicker.classList.toggle('hidden');
-      } else {
-        timelineFilters.category = category;
-        datePicker.classList.add('hidden');
-        onFilterChange();
+        return;
       }
+  
+      // Toggle selection in the Set
+      if (timelineFilters.category.has(category)) {
+        timelineFilters.category.delete(category);
+        button.classList.remove('selected'); // optional styling
+      } else {
+        timelineFilters.category.add(category);
+        button.classList.add('selected'); // optional styling
+      }
+  
+      datePicker.classList.add('hidden');
+      onFilterChange();
     });
   });
 

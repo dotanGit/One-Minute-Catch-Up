@@ -181,12 +181,17 @@ body {
     pointer-events: none;
     transform: translateY(20px); /* start hidden below */
   }
+
+  .filter-button:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
   
   .filter-button img,
   .filter-button .material-icons {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
+  
   
   /* === MAIN FILTER BUTTON === */
   .filter-button.main {
@@ -209,6 +214,7 @@ body {
     bottom: 60px;
     right: 0;
   }
+  
   
   /* === ANIMATE IN WHEN ACTIVE === */
   .filter-menu.active .expanded-filter-buttons .filter-button {
