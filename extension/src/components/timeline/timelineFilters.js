@@ -52,18 +52,11 @@ export async function initTimelineFilterUI(onFilterChange) {
   const filterMenu = document.querySelector('.filter-menu');
   const mainButton = document.getElementById('filter-button');
   const datePicker = document.getElementById('date-picker');
-  const dateFilter = document.getElementById('date-filter');
+  const customSelect = datePicker.querySelector('.custom-select');
+  const selectedText = customSelect.querySelector('.select-selected');
+  const optionsContainer = customSelect.querySelector('.select-options');
 
-  // Toggle expansion when clicking main button
-  mainButton.addEventListener('click', (e) => {
-    console.log('[DEBUG] ✅ filter-button click triggered');
-    e.stopPropagation(); // prevent window click from closing immediately
-    const isActive = filterMenu.classList.toggle('active');
-    mainButton.classList.toggle('rotated', isActive);
-    if (!isActive) datePicker.classList.add('hidden');
-  });
-
-  // Populate date dropdown
+  // Populate date options
   const result = await chrome.storage.local.get(null);
   const dateSet = new Set();
   for (const key of Object.keys(result)) {
@@ -73,30 +66,55 @@ export async function initTimelineFilterUI(onFilterChange) {
     }
   }
 
-  dateFilter.innerHTML = `<option value="">All Dates</option>`;
-  [...dateSet].sort().forEach(date => {
-    const option = document.createElement('option');
-    option.value = date;
-    option.textContent = date;
-    dateFilter.appendChild(option);
+  // Add "All Dates" option
+  const allDatesOption = document.createElement('div');
+  allDatesOption.className = 'select-option';
+  allDatesOption.textContent = 'All Dates';
+  allDatesOption.addEventListener('click', () => {
+    selectedText.textContent = 'All Dates';
+    timelineFilters.startDate = null;
+    timelineFilters.endDate = null;
+    optionsContainer.classList.remove('active');
+    selectedText.classList.remove('active');
+    onFilterChange();
   });
+  optionsContainer.appendChild(allDatesOption);
 
-  // Filter on date selection
-  dateFilter.addEventListener('change', (e) => {
-    const selected = e.target.value;
-    if (selected) {
-      const start = new Date(selected);
+  // Add date options
+  [...dateSet].sort().forEach(date => {
+    const option = document.createElement('div');
+    option.className = 'select-option';
+    option.textContent = date;
+    option.addEventListener('click', () => {
+      selectedText.textContent = date;
+      const start = new Date(date);
       start.setHours(0, 0, 0, 0);
       const end = new Date(start);
       end.setHours(23, 59, 59, 999);
-    
+      
       timelineFilters.startDate = start;
       timelineFilters.endDate = end;
-    } else {
-      timelineFilters.startDate = null;
-      timelineFilters.endDate = null;
-    }
-    onFilterChange();
+      optionsContainer.classList.remove('active');
+      selectedText.classList.remove('active');
+      onFilterChange();
+    });
+    optionsContainer.appendChild(option);
+  });
+
+  // Toggle dropdown
+  selectedText.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedText.classList.toggle('active');
+    optionsContainer.classList.toggle('active');
+  });
+
+  // Toggle expansion when clicking main button
+  mainButton.addEventListener('click', (e) => {
+    console.log('[DEBUG] ✅ filter-button click triggered');
+    e.stopPropagation(); // prevent window click from closing immediately
+    const isActive = filterMenu.classList.toggle('active');
+    mainButton.classList.toggle('rotated', isActive);
+    if (!isActive) datePicker.classList.add('hidden');
   });
 
   // Handle category button clicks

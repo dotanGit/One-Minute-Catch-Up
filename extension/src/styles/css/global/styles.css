@@ -255,25 +255,104 @@ body {
   
 
   /* === DATE PICKER === */
-  .date-picker {
+/* === MODERN CUSTOM DATE PICKER STYLES === */
+.date-picker {
     position: absolute;
     bottom: 380px;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 8px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  .date-picker.hidden {
+    min-width: 115px;
+    transform: translateX(50px); /* Start position - off screen to the right */
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When visible */
+.date-picker:not(.hidden) {
+    transform: translateX(0); /* End position - normal position */
+    opacity: 1;
+}
+
+/* When hidden */
+.date-picker.hidden {
+    transform: translateX(50px); /* Move to the right when hiding */
     opacity: 0;
     pointer-events: none;
-    transform: scale(0.95);
-  }
-  
-  
-  
+}
+
+.custom-select {
+  position: relative;
+  width: 100%;
+  right: 50px;
+  top: 27px;
+}
+
+.select-selected {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgb(0, 0, 0);
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.select-selected:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.select-selected::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease;
+}
+
+.select-selected.active::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.select-options.active {
+  max-height: 317px;
+  opacity: 1;
+  padding: 8px 0;
+}
+
+.select-option {
+  padding: 10px 16px;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.select-option:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
 /* Wallpaper Dropdown Specific Styles */
 .wallpaper-category {
     margin-bottom: 15px;

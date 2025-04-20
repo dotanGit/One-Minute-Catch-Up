@@ -86,7 +86,6 @@ export function showTimeline(isFirstLogin = false) {
 export async function initTimeline() {
   const start = performance.now();
   console.log('=====================[TIMER] ⏱️ Timeline init started====================');
-  await initTimelineFilterUI(handleFilterChange);
   try {
     console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
@@ -151,6 +150,7 @@ export async function initTimeline() {
     };
 
     window.fullCombinedData = combined;
+    await initTimelineFilterUI(handleFilterChange);
 
     window.globalStartTime = Math.min(
       ...combined.history.map(e => normalizeTimestamp(e.lastVisitTime)),
