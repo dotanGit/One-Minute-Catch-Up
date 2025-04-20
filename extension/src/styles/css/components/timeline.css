@@ -912,4 +912,63 @@
         transform: translateY(0);
     }
 }
+
+/* Timeline minimized state */
+.timeline-wrapper.minimized .event-popup {
+    visibility: hidden;
+    opacity: 0;
+    transition: none; /* Remove transition delay */
+}
+
+.timeline-wrapper.minimized .timeline-dot:hover + .event-popup,
+.timeline-wrapper.minimized .event-popup:hover {
+    visibility: visible;
+    opacity: 1;
+    transition: none; /* Remove transition delay */
+}
+
+/* Minimize button styles */
+.minimize-button {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+}
+
+.minimize-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.minimize-button .material-icons {
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+.timeline-wrapper.minimized + .minimize-button .material-icons {
+    transform: rotate(180deg);
+}
+
+/* Ensure popups stay visible while being interacted with */
+.timeline-wrapper.minimized .event-popup:hover {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Add delay before hiding popup when mouse leaves */
+.timeline-wrapper.minimized .timeline-dot:hover + .event-popup {
+    transition-delay: 0s;
+}
+
+.timeline-wrapper.minimized .event-popup {
+    transition-delay: 0.3s;
+}
   
