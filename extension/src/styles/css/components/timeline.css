@@ -727,22 +727,22 @@
     text-decoration: underline;
 }
 
+
+/* Update the delete-marked-button styles */
 .delete-marked-button {
     position: fixed;
-    bottom: 70px;
-    right: 20px;
-    background: #ff4444;
+    bottom: 20px;
+    right: 65px; /* Position to the left of filter button */
+    background: linear-gradient(135deg, #ff6464, #f83838);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     cursor: pointer;
-    font-family: "Poppins", sans-serif;
-    font-weight: 500;
-    font-size: 14px;
     display: none;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
     z-index: 1000;
@@ -753,30 +753,33 @@
 }
 
 .delete-marked-button:hover {
-    background: #ff0000;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
+.delete-marked-button::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: url('../../../assets/icons/delete.svg') no-repeat center center;
+    background-size: contain;
+    filter: brightness(0) invert(1);
+}
 
-/* ----------------------------- */
-
+/* Update the clear-marked-button styles */
 .clear-marked-button {
     position: fixed;
-    bottom: 120px; /* 🠑 Above delete button */
-    right: 20px;
-    background: #555;
+    bottom: 20px;
+    right: 110px; /* Position to the left of delete button */
+    background: linear-gradient(135deg, #6ba5fb, #4a91fb);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     cursor: pointer;
-    font-family: "Poppins", sans-serif;
-    font-weight: 500;
-    font-size: 14px;
     display: none;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.2s ease;
     z-index: 1000;
@@ -787,9 +790,16 @@
 }
 
 .clear-marked-button:hover {
-    background: #333;
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.clear-marked-button::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: url('../../../assets/icons/refresh.svg') no-repeat center center;
+    background-size: contain;
+    filter: brightness(0) invert(1);
 }
 
 .timeline-event.marked {

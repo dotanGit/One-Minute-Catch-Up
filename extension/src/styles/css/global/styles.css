@@ -167,8 +167,8 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 50%;
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -186,8 +186,7 @@ body {
     background: rgba(255, 255, 255, 0.6);
   }
   
-  .filter-button img,
-  .filter-button .material-icons {
+  .filter-button img {
     width: 30px;
     height: 30px;
   }
@@ -238,19 +237,19 @@ body {
     transition-delay: 0s;
   }
   .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(2) {
-    transition-delay: 0.05s;
+    transition-delay: 0.08s;
   }
   .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(3) {
-    transition-delay: 0.1s;
+    transition-delay: 0.16s;
   }
   .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(4) {
-    transition-delay: 0.15s;
+    transition-delay: 0.24s;
   }
   .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(5) {
-    transition-delay: 0.2s;
+    transition-delay: 0.32s;
   }
   .filter-menu.active .expanded-filter-buttons .filter-button:nth-child(6) {
-    transition-delay: 0.25s;
+    transition-delay: 0.4s;
   }
   
 
@@ -283,14 +282,14 @@ body {
 .custom-select {
   position: relative;
   width: 100%;
-  right: 50px;
-  top: 27px;
+  right: 45px;
+  top: 65px;
 }
 
 .select-selected {
   background: rgba(255, 255, 255, 0.15);
   color: rgb(0, 0, 0);
-  padding: 12px 16px;
+  padding: 6px 16px;
   border-radius: 10px;
   cursor: pointer;
   backdrop-filter: blur(8px);
@@ -381,6 +380,43 @@ body {
 
 .wallpaper-thumbnail:hover {
     transform: scale(1.05);
+}
+
+/* === FILTER BUTTON SELECTED STATE === */
+.filter-button.selected {
+    background: linear-gradient(135deg, #6ba5fb, #4a91fb);
+    box-shadow: 0 2px 10px rgba(106, 165, 251, 0.3);
+}
+
+/* Category-specific selected states */
+.filter-button[data-category="drive"].selected {
+    background: linear-gradient(135deg, #cc9a05, #b47b11);
+    box-shadow: 0 2px 10px rgba(251, 188, 5, 0.3);
+}
+
+.filter-button[data-category="emails"].selected {
+    background: linear-gradient(135deg, #c0382c, #b1372c);
+    box-shadow: 0 2px 10px rgba(234, 67, 53, 0.3);
+}
+
+.filter-button[data-category="calendar"].selected {
+    background: linear-gradient(135deg, #298441, #226a34);
+    box-shadow: 0 2px 10px rgba(52, 168, 83, 0.3);
+}
+
+.filter-button[data-category="history"].selected {
+    background: linear-gradient(135deg, #3872d0, #295eb9);
+    box-shadow: 0 2px 10px rgba(66, 133, 244, 0.3);
+}
+
+.filter-button[data-category="downloads"].selected {
+    background: linear-gradient(135deg, #eb4f1f, #d14419);
+    box-shadow: 0 2px 10px rgba(255, 87, 34, 0.3);
+}
+
+.filter-button[data-category="time"].selected {
+    background: linear-gradient(135deg, #757575, #424242);
+    box-shadow: 0 2px 10px rgba(117, 117, 117, 0.3);
 }
 
  

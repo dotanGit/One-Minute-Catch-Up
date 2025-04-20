@@ -220,7 +220,6 @@ function updateDeleteMarkedButtonVisibility() {
     if (!deleteButton) {
       deleteButton = document.createElement('button');
       deleteButton.className = 'delete-marked-button';
-      deleteButton.textContent = 'Delete Marked';
       deleteButton.addEventListener('click', deleteMarkedEvents);
       document.body.appendChild(deleteButton);
     }
@@ -229,7 +228,6 @@ function updateDeleteMarkedButtonVisibility() {
     if (!clearButton) {
       clearButton = document.createElement('button');
       clearButton.className = 'clear-marked-button';
-      clearButton.textContent = 'Clear All Marks';
       clearButton.addEventListener('click', () => {
         document.querySelectorAll('.timeline-event.marked')
           .forEach(el => el.classList.remove('marked'));

@@ -76,6 +76,8 @@ export async function initTimelineFilterUI(onFilterChange) {
     timelineFilters.endDate = null;
     optionsContainer.classList.remove('active');
     selectedText.classList.remove('active');
+    // Remove selected state from time button when clearing dates
+    document.querySelector('.filter-button[data-category="time"]').classList.remove('selected');
     onFilterChange();
   });
   optionsContainer.appendChild(allDatesOption);
@@ -96,6 +98,8 @@ export async function initTimelineFilterUI(onFilterChange) {
       timelineFilters.endDate = end;
       optionsContainer.classList.remove('active');
       selectedText.classList.remove('active');
+      // Add selected state to time button when setting a date
+      document.querySelector('.filter-button[data-category="time"]').classList.add('selected');
       onFilterChange();
     });
     optionsContainer.appendChild(option);
@@ -125,6 +129,12 @@ export async function initTimelineFilterUI(onFilterChange) {
   
       if (category === 'time') {
         datePicker.classList.toggle('hidden');
+        // Toggle selected state based on whether there's a date filter active
+        if (timelineFilters.startDate || timelineFilters.endDate) {
+            button.classList.add('selected');
+        } else {
+            button.classList.remove('selected');
+        }
         return;
       }
   
