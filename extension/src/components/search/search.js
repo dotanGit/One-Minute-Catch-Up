@@ -1,7 +1,6 @@
 import { isValidUrl } from './searchUtils.js';
 import { saveSearchToHistory, getSearchSuggestions, getAutocompleteSuggestions } from './searchHistory.js';
 import { createSuggestionsContainer, displaySearchSuggestions } from './searchSuggestions.js';
-import { initializeGreeting } from './userGreeting.js';
 import { initializeShortcuts } from './searchShortcuts.js';
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -10,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchButton = document.querySelector('.search-button');
     const searchContainer = document.querySelector('.search-container');
     const searchBarContainer = document.querySelector('.search-bar-container');
-    const greetingElement = document.querySelector('.greeting');
     const addEngineModal = document.getElementById('addEngineModal');
     const saveEngineButton = document.getElementById('saveEngine');
     const cancelEngineButton = document.getElementById('cancelEngine');
@@ -276,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    initializeGreeting(greetingElement);
     initializeShortcuts();
 
     searchInput.focus();

@@ -1,0 +1,27 @@
+.daily-greeting {
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+.greeting-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.greeting-quote {
+  font-size: 14px;
+  font-style: italic;
+  color: #666;
+  margin-top: 8px;
+}
+
+.greeting-time {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c2c2c;
+  margin-bottom: 8px;
+}

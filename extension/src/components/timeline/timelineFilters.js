@@ -48,7 +48,6 @@ export function applyTimelineFilters(combinedData, { category = new Set(), start
 
 // === UI Setup ===
 export async function initTimelineFilterUI(onFilterChange) {
-  console.log('[DEBUG] 🛠 initTimelineFilterUI is running');
   const filterMenu = document.querySelector('.filter-menu');
   const mainButton = document.getElementById('filter-button');
   const datePicker = document.getElementById('date-picker');
@@ -114,7 +113,6 @@ export async function initTimelineFilterUI(onFilterChange) {
 
   // Toggle expansion when clicking main button
   mainButton.addEventListener('click', (e) => {
-    console.log('[DEBUG] ✅ filter-button click triggered');
     e.stopPropagation(); // prevent window click from closing immediately
     const isActive = filterMenu.classList.toggle('active');
     mainButton.classList.toggle('rotated', isActive);

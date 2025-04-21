@@ -184,7 +184,6 @@ export function attachEventListeners(eventDiv, eventDetails) {
     // Handle links with click handlers
     eventDetails.details.forEach((detail, index) => {
         if (detail.isLink && detail.onClick) {
-            console.log('Looking for link with click handler:', index);
             const link = eventDiv.querySelector(`.detail-value.link[data-detail-index="${index}"]`);
             if (link) {
                 link.addEventListener('click', detail.onClick);

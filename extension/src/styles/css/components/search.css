@@ -61,7 +61,7 @@
 /* Search Suggestions */
 .search-suggestions {
     position: fixed;
-    top: calc(var(--search-bar-top) + 50px);
+    top: calc(var(--search-bar-top) + 231px);
     width: 800px;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(30px);

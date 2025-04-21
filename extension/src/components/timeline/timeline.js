@@ -84,10 +84,7 @@ export function showTimeline(isFirstLogin = false) {
 
 
 export async function initTimeline() {
-  const start = performance.now();
-  console.log('=====================[TIMER] ⏱️ Timeline init started====================');
   try {
-    console.log('[UI] 🟢 initTimeline called');
     window.loadedEventKeys = new Set();
     await cleanupHiddenEventIdsFromCache();
     const hiddenIds = await getHiddenIdsSet();
@@ -99,7 +96,6 @@ export async function initTimeline() {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const key = getDateKey(d);
-      console.log(`[UI] 📅 Adding day: ${d.toISOString()} → dateKey: timeline_${key}`);
       days.push(d);
     }
 
@@ -170,9 +166,6 @@ export async function initTimeline() {
     if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
 
     initTimelineScroll();
-
-    console.log('[UI] ✅ Timeline built');
-    console.log('=====================[TIMER] ✅ Timeline built in', (performance.now() - start).toFixed(0), 'ms====================  ');
   } catch (error) {
     console.error('❌ Error initializing timeline:', error);
     if (timelineEvents) {

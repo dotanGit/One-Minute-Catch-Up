@@ -8,10 +8,6 @@ export async function getBrowserHistoryService(date) {
   const start = normalizeDateToStartOfDay(date);
   const end = new Date(start.getTime() + 86400000); // +1 local day
 
-  console.log('[DEBUG] Fetching browser history for date window:');
-  console.log('→ Start (local):', start.toString());
-  console.log('→ End (local):', end.toString());
-
   const historyItems = await chrome.history.search({
     text: '',
     startTime: start.getTime(),

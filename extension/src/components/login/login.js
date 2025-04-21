@@ -1,6 +1,8 @@
 import { showTimeline } from '../timeline/timeline.js';
 import { initTimeline } from '../timeline/timeline.js';
 import { onTimelineInitialized } from '../timeline/timelineDomUtils.js';
+import { getAuthToken } from '../../utils/auth.js';
+
 
 export function initLogin() {
   console.log('[UI] 🚀 initLogin started');
@@ -36,6 +38,8 @@ export function initLogin() {
             await chrome.storage.local.set({ isLoggedIn: true });
             console.log('[UI] 📥 isLoggedIn saved');
 
+            await fetchAndStoreUserName();
+
             const loginSection = document.getElementById('login-section');
             if (loginSection) loginSection.style.display = 'none';
 
@@ -69,3 +73,38 @@ async function loadTimeline(withAnimation) {
   showTimeline(withAnimation);
   console.log('[UI] ✅ Timeline loaded');
 }
+
+
+export async function fetchAndStoreUserName() {
+  try {
+    const token = await getAuthToken();
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const profile = await response.json();
+    const name = profile.given_name || profile.name || '';
+    await chrome.storage.local.set({ userName: name });
+    console.log('[Login] Stored user name:', name);
+  } catch (err) {
+    console.error('[Login] Failed to fetch user name:', err);
+  }
+}
+
+// Attach this to your login button
+document.getElementById('login-button').addEventListener('click', async () => {
+  try {
+    const token = await getAuthToken();
+
+    // ✅ Fetch and store the name
+    await fetchAndStoreUserName();
+
+    // continue with your other logic, e.g.
+    // await initTimeline();
+    // hide login UI, show dashboard, etc.
+
+  } catch (err) {
+    console.error('[Login] Login failed:', err);
+  }
+});

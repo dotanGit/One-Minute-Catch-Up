@@ -18,7 +18,6 @@ export const timelineCache = {
 
       if (cacheKeys.length >= this.maxEntries) {
         const oldestKeys = cacheKeys.sort().slice(0, cacheKeys.length - this.maxEntries + 1);
-        console.log(`[CACHE] 🧹 Removing oldest keys: ${oldestKeys.join(', ')}`);
         await chrome.storage.local.remove(oldestKeys);
       }
 
@@ -30,15 +29,6 @@ export const timelineCache = {
             data: data,
             date: dateKey.split('_')[1]
           };
-
-      console.log(`[CACHE] 💾 Saving cache for ${dateKey}`, {
-        payload,
-        history: payload.data?.history?.length ?? 'null',
-        downloads: payload.data?.downloads?.length ?? 'null',
-        calendarToday: payload.data?.calendar?.today?.length,
-        emails: payload.data?.emails?.all?.length,
-        drive: payload.data?.drive?.files?.length
-      });
 
       await chrome.storage.local.set({ [dateKey]: payload });
     } catch (error) {
@@ -70,6 +60,4 @@ export async function cleanupHiddenEventIdsFromCache() {
 
   const cleaned = oldHidden.filter(id => validIds.has(id));
   await chrome.storage.local.set({ hiddenEventIds: cleaned });
-
-  console.log('[CACHE] 🧼 Cleaned hiddenEventIds from cache →', cleaned.length, 'kept');
 }
