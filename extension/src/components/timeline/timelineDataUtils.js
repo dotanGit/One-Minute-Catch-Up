@@ -97,7 +97,7 @@ export function filterHiddenEvents(data, hiddenIds) {
   return {
     history: (data.history || []).filter(e => !hiddenIds.has(e.id)),
     drive: { files: (data.drive?.files || []).filter(f => !hiddenIds.has(f.id)) },
-    emails: { all: (data.emails?.all || []).filter(e => !hiddenIds.has(e.threadId)) },
+    emails: { all: (data.emails?.all || []).filter(e => !hiddenIds.has(e.id)) },
     calendar: {
       today: (data.calendar?.today || []).filter(e => !hiddenIds.has(e.id)),
       tomorrow: (data.calendar?.tomorrow || []).filter(e => !hiddenIds.has(e.id))

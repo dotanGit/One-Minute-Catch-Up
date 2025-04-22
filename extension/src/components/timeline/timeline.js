@@ -86,7 +86,6 @@ export function showTimeline(isFirstLogin = false) {
 export async function initTimeline() {
   try {
     window.loadedEventKeys = new Set();
-    await cleanupHiddenEventIdsFromCache();
     const hiddenIds = await getHiddenIdsSet();
     const today = normalizeDateToStartOfDay(new Date());
     const now = Date.now();
