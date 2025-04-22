@@ -66,7 +66,7 @@ export async function getGmailActivity(date) {
           subject,
           to,
           timestamp: Number(timestamp),
-          id: message.id,
+          id: String(message.id),
           threadId: message.threadId
         });
       }
@@ -96,7 +96,7 @@ export async function getGmailActivity(date) {
           subject,
           from,
           timestamp: Number(timestamp),
-          id: message.id,
+          id: String(message.id),
           threadId: message.threadId
         });
       }

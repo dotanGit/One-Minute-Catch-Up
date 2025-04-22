@@ -2,12 +2,16 @@ export const wallpaperImages = {
     nature: {
         name: "Nature",
         images: [
-            'https://dotangit.github.io/chrome-extension-images/full/nature/2325447.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/nature/265216.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/nature/547115.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/nature/1322185.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/nature/3816807.jpg',
-            'https://dotangit.github.io/chrome-extension-images/full/nature/1379640.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/0.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/1.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/2.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/3.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/4.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/5.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/6.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/7.jpg',
+            'https://dotangit.github.io/chrome-extension-images/full/new Nature/8.jpg',
+            
         ]
     },
     animals: {
