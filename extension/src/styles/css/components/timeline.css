@@ -615,7 +615,7 @@
 
 .nav-button {
     position: fixed; /* changed from absolute */
-    top: calc(50% + 147px); /* align to middle of screen */
+    top: calc(50% + 151px); /* align to middle of screen */
     transform: translateY(-50%);
     z-index: 100; /* make sure on top */
     cursor: pointer;
@@ -650,7 +650,7 @@
 
 #scroll-latest {
     right: 139px;
-    top: calc(50% + 143px);
+    top: calc(50% + 149px);
 }
 
 #scroll-latest img {
