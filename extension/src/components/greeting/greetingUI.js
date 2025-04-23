@@ -1,18 +1,25 @@
 // greeting/greetingUI.js
-import { getTodayGreeting } from './greetingManager.js';
+import { getTodayGreeting, getTimeBasedGreeting, capitalizeFirstLetter } from './greetingManager.js';
 
 export async function renderGreeting(containerSelector = '#greeting-container') {
   const container = document.querySelector(containerSelector);
   if (!container) return;
 
-  const greeting = await getTodayGreeting();
+  const { userName } = await chrome.storage.local.get(['userName']);
+  const greeting = await getTodayGreeting(userName);
   if (!greeting) return;
 
-  // 🔹 Split AI message into 2 parts (main + quote)
-  const [main, quote] = greeting.split('. ', 2);
+  // First-time greeting format (detected by known phrase)
+  if (greeting.includes("I'm your new assistant")) {
+    container.innerHTML = `
+      <div class="daily-greeting">
+        <p class="greeting-text">${greeting}</p>
+      </div>
+    `;
+    return;
+  }
 
-  // 🔹 Get time-based greeting and stored user name
-  const { userName } = await chrome.storage.local.get(['userName']);
+  const [main, quote] = greeting.split('. ', 2);
   const name = userName ? `, ${capitalizeFirstLetter(userName)}` : '';
   const timeGreeting = getTimeBasedGreeting();
 
@@ -23,19 +30,4 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
       ${quote ? `<p class="greeting-quote">"${quote?.trim()}"</p>` : ''}
     </div>
   `;
-}
-
-
-export function getTimeBasedGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 5) return 'Good night';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 22) return 'Good evening';
-  return 'Good night';
-}
-
-export function capitalizeFirstLetter(string) {
-  if (!string) return '';
-  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
