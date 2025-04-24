@@ -155,14 +155,10 @@ export async function initTimeline() {
       ...combined.downloads.map(d => normalizeTimestamp(d.startTime))
     );
 
-    if (timelineWrapper) timelineWrapper.style.visibility = 'hidden';
-
     const filteredCombined = applyTimelineFilters(combined, timelineFilters);
     buildTimeline(filteredCombined.history, filteredCombined.drive, filteredCombined.emails, filteredCombined.calendar, filteredCombined.downloads);
 
     markAllEventKeys(combined);
-
-    if (timelineWrapper) timelineWrapper.style.visibility = 'visible';
 
     initTimelineScroll();
   } catch (error) {
