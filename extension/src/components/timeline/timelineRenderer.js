@@ -2,32 +2,61 @@ import { processAllEvents,getEventCategory } from './timelineEventProcessor.js';
 import { getEventDetails } from './timelineEventDetails.js';
 import { attachEventListeners } from './timelineDomUtils.js';
 
-export function buildTimeline(history, drive, emails, calendar, downloads) {
+export function buildTodayTimeline(data) {
   const timelineEvents = document.getElementById('timeline-events');
   const timelineLine = document.querySelector('.timeline-line');
   const container = document.querySelector('.timeline-container');
-  if (!timelineEvents || !timelineLine || !container) return;
+  if (!timelineEvents || !timelineLine || !container) return 0;
 
-  const processedEvents = processAllEvents(history, drive, emails, calendar, downloads);
-  processedEvents.sort((a, b) => a.timestamp - b.timestamp);
+  const events = processAllEvents(data.history, data.drive, data.emails, data.calendar, data.downloads);
+  events.sort((a, b) => b.timestamp - a.timestamp);
+
+  events.forEach((e, i) => e._renderIndex = i);
 
   const FIXED_SPACE = 200;
-
-  timelineEvents.innerHTML = '';
-  const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE);
+  const totalWidth = Math.max(1300, events.length * FIXED_SPACE);
   timelineEvents.style.width = `${totalWidth}px`;
   timelineLine.style.width = `${totalWidth}px`;
 
-  const fragment = createEventElements(processedEvents);
+  const fragment = createEventElements(events);
 
+  timelineEvents.innerHTML = '';
   timelineEvents.appendChild(fragment);
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (container) container.scrollLeft = container.scrollWidth;
+      container.scrollLeft = container.scrollWidth;
     });
   });
+
+  return events.length;
 }
+
+
+export function appendPastTimeline(daysDataArray, startingIndex = 0) {
+  const timelineEvents = document.getElementById('timeline-events');
+  const timelineLine = document.querySelector('.timeline-line');
+  if (!timelineEvents || !timelineLine) return;
+
+  const FIXED_SPACE = 200;
+  let currentIndex = startingIndex;
+
+  daysDataArray.forEach((data) => {
+    const events = processAllEvents(data.history, data.drive, data.emails, data.calendar, data.downloads);
+    events.sort((a, b) => b.timestamp - a.timestamp);
+    events.forEach((e, i) => e._renderIndex = currentIndex + i);
+    currentIndex += events.length;
+
+    const fragment = createEventElements(events);
+    timelineEvents.appendChild(fragment);
+  });
+
+  const totalWidth = Math.max(1300, currentIndex * FIXED_SPACE);
+  timelineEvents.style.width = `${totalWidth}px`;
+  timelineLine.style.width = `${totalWidth}px`;
+}
+
+
 
 
 
@@ -36,7 +65,7 @@ export function createEventElements(events, invertPosition = false) {
   const FIXED_SPACE = 200;
   const template = document.getElementById('event-template');
 
-  const sortedEvents = [...events].sort((a, b) => b.timestamp - a.timestamp);
+  const sortedEvents = events;
 
   sortedEvents.forEach((event, index) => {
     const clone = template.content.cloneNode(true);
@@ -51,7 +80,9 @@ export function createEventElements(events, invertPosition = false) {
     eventDiv.classList.add(positionClass);
     eventDiv.setAttribute('data-event-id', event.id);
     eventDiv.setAttribute('data-category', category);
-    eventDiv.style.right = `${index * FIXED_SPACE}px`;
+    eventDiv.style.right = `${(event._renderIndex ?? index) * FIXED_SPACE}px`;
+    eventDiv.style.left = 'auto';
+    eventDiv.style.position = 'absolute';
 
     const timeText = new Date(Number(event.timestamp)).toLocaleString([], {
       month: 'short',
