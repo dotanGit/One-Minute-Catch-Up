@@ -2,21 +2,12 @@ import { getEventDetails } from './timelineEventDetails.js';
 import { getEventCategory } from './timelineEventProcessor.js';
 import { initTimeline } from './timeline.js';
 
-export function createEventElements(events, mode = 'append', currentTimelineWidth = 0, invertPosition = false) {
+export function createEventElements(events, invertPosition = false) {
     const fragment = document.createDocumentFragment();
     const FIXED_SPACE = 200;
-
-    // Get existing events to know where to position new ones
-    const timelineEvents = document.getElementById('timeline-events');
-    const existingEvents = timelineEvents ? timelineEvents.querySelectorAll('.timeline-event') : [];
     
     // Sort events by timestamp
     const sortedEvents = [...events].sort((a, b) => {
-        // For prepending, we want oldest to newest (left to right)
-        if (mode === 'prepend') {
-            return a.timestamp - b.timestamp;
-        }
-        // For initial load/append, we want newest to oldest (right to left)
         return b.timestamp - a.timestamp;
     });
 
@@ -29,12 +20,7 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
         eventDiv.className = `timeline-event ${positionClass}`;
         eventDiv.setAttribute('data-event-id', event.id);
 
-        let position;
-        if (mode === 'prepend') {
-            position = currentTimelineWidth - ((index + 1) * FIXED_SPACE);
-        } else {
-            position = index * FIXED_SPACE;
-        }
+        const position = index * FIXED_SPACE;
 
         eventDiv.style.right = `${position}px`;
         eventDiv.style.left = 'auto';
@@ -93,39 +79,6 @@ export function createEventElements(events, mode = 'append', currentTimelineWidt
     });
 
     return fragment;
-}
-
-export function createEventPopupContent(eventDetails, timeText) {
-    // Use the timestamp from the original event object
-    const eventDate = timeText.split(',')[0]; // Extract just the date part
-    return `
-        <div class="timeline-dot">
-            <button class="close-button" title="Hide this event">×</button>
-            <button class="mark-button" title="Mark this event">✓</button>
-        </div>
-        <div class="event-popup">
-            <div class="date">
-                ${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}
-            </div>
-            ${eventDetails.details.map((detail, index) => {
-                const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
-                const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
-                return `
-                    <div class="detail-item">
-                        <span class="detail-label ${labelClass}">${detail.label}:</span>
-                        ${detail.isLink 
-                            ? detail.onClick
-                                ? `<a href="#" class="detail-value link ${valueClass}" data-has-click-handler="true" data-detail-index="${index}">${detail.value}</a>`
-                                : `<a href="${detail.url}" class="detail-value link ${valueClass}" target="_blank">${detail.value.replace(/^https?:\/\//, '')}</a>`
-                            : detail.role === 'heading'
-                                ? `<span class="detail-value heading ${valueClass}" role="heading">${detail.value}</span>`
-                                : `<span class="detail-value ${valueClass}">${detail.value}</span>`
-                        }
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
 }
 
 
