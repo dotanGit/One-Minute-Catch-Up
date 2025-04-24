@@ -128,13 +128,6 @@ export function createEventPopupContent(eventDetails, timeText) {
     `;
 }
 
-export function addNowMarker(timelineEvents) {
-    const nowMarker = document.createElement('div');
-    nowMarker.className = 'timeline-now-marker';
-    nowMarker.style.left = '100%';
-    nowMarker.innerHTML = '<div class="now-text">NOW</div>';
-    timelineEvents.appendChild(nowMarker);
-}
 
 export function attachEventListeners(eventDiv, eventDetails) {
     // Handle close button click

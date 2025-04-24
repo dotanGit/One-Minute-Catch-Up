@@ -4,7 +4,7 @@ import {
     normalizeTimestamp,
     safeGetTimestamp
   } from '../../utils/dateUtils.js';
-  import { buildTimeline, prependTimeline } from './timelineRenderer.js';
+  import { buildTimeline } from './timelineRenderer.js';
   import { getDownloadsService } from '../../services/downloadService.js';
   import { getBrowserHistoryService } from '../../services/browserHistoryService.js';
   import { getGmailActivity } from '../../services/gmailService.js';
