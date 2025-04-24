@@ -43,3 +43,17 @@
     align-items: center;
     z-index: 2;
 }
+
+
+/* Remove scrollbar default view*/
+.timeline-container::-webkit-scrollbar {
+    display: none;
+}
+
+.timeline-container::-webkit-scrollbar-track {
+    display: none;
+}
+
+.timeline-container::-webkit-scrollbar-thumb {
+    display: none;
+}

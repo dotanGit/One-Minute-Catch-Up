@@ -1,8 +1,8 @@
 
 .nav-button {
     position: fixed;
-    top: 508px; /* same as timeline-wrapper */
-    transform: translateY(-50%);
+    bottom: 195px; /* same as timeline-wrapper -> current height of 400px/2=200px minus 5px for the bottom margin*/
+    transform: translateY(50%); /* shift center of button down */
     z-index: 100;
     cursor: pointer;
     background: transparent;
@@ -37,10 +37,11 @@
 }
 
 #scroll-right {
-    right: 75px; /* adjust as you like */
+    right: 100px; /* adjust as you like */
 }
 
 #scroll-latest {
+    bottom: 197px;
     right: 139px;
 }
 

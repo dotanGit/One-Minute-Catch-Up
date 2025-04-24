@@ -1,0 +1,131 @@
+/* Add styles for clickable details */
+.detail-value.link {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    font-size: 0.8rem;       /* Reduce link size */
+}
+
+.detail-value.link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
+
+/* Update the delete-marked-button styles */
+.delete-marked-button {
+    position: fixed;
+    bottom: 20px;
+    right: 65px; /* Position to the left of filter button */
+    background: linear-gradient(135deg, #ff6464, #f83838);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.delete-marked-button.visible {
+    display: flex;
+}
+
+.delete-marked-button:hover {
+    transform: translateY(-2px);
+}
+
+.delete-marked-button::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: url('../../../assets/icons/delete.svg') no-repeat center center;
+    background-size: contain;
+    filter: brightness(0) invert(1);
+}
+
+/* Update the clear-marked-button styles */
+.clear-marked-button {
+    position: fixed;
+    bottom: 20px;
+    right: 110px; /* Position to the left of delete button */
+    background: linear-gradient(135deg, #6ba5fb, #4a91fb);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.clear-marked-button.visible {
+    display: flex;
+}
+
+.clear-marked-button:hover {
+    transform: translateY(-2px);
+}
+
+.clear-marked-button::before {
+    content: '';
+    width: 24px;
+    height: 24px;
+    background: url('../../../assets/icons/refresh.svg') no-repeat center center;
+    background-size: contain;
+    filter: brightness(0) invert(1);
+}
+
+.timeline-event.marked {
+    opacity: 0.6;
+    filter: grayscale(0.8);
+}
+
+
+
+.timeline-event.marked .timeline-dot {
+    background: rgba(128, 128, 128, 0.4);
+    border: 2px solid #666;
+}
+
+.timeline-event.marked .event-popup {
+    background: rgba(128, 128, 128, 0.1);
+}
+
+.timeline-event.marked .date {
+    background: #666;
+}
+
+.timeline-event.marked .detail-item {
+    color: #666;
+}
+
+.timeline-event.marked .detail-label {
+    color: #666;
+}
+
+.timeline-event.marked .detail-value {
+    color: #666;
+}
+
+.timeline-event.marked .detail-value.link {
+    color: #666;
+    text-decoration: none;
+}
+
+.timeline-event.marked .detail-value.link:hover {
+    color: #666;
+    text-decoration: none;
+}
+
