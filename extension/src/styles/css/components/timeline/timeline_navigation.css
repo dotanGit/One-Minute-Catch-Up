@@ -1,0 +1,46 @@
+
+.nav-button {
+    position: fixed;
+    top: 508px; /* same as timeline-wrapper */
+    transform: translateY(-50%);
+    z-index: 100;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+.nav-button img {
+    width: 24px;
+    height: 24px;
+    display: block;
+    filter: grayscale(100%) brightness(0.6); /* gray look */
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+#scroll-latest img {
+    width: 37px;
+    height: 37px;
+}
+
+.nav-button:hover img {
+    transform: translateY(1px) scale(1.3);
+    filter: grayscale(0%) brightness(0); /* black */
+}
+
+#scroll-left {
+    left: 110px; /* adjust as you like */
+}
+
+#scroll-right {
+    right: 75px; /* adjust as you like */
+}
+
+#scroll-latest {
+    right: 139px;
+}
+

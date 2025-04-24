@@ -4,7 +4,9 @@
     <title>New Tab</title>
     <link rel="stylesheet" href="../styles/css/global/styles.css">
     <link rel="stylesheet" href="../styles/css/components/search.css">
-    <link rel="stylesheet" href="../styles/css/components/timeline.css">
+    <link rel="stylesheet" href="../styles/css/components/timeline/timeline_base.css">
+    <link rel="stylesheet" href="../styles/css/components/timeline/timeline.css">
+    <link rel="stylesheet" href="../styles/css/components/timeline/timeline_navigation.css">
     <link rel="stylesheet" href="../styles/css/components/login.css">
     <link rel="stylesheet" href="../components/greeting/greeting.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -148,21 +150,25 @@
         <!-- Timeline Container -->
         <div class="timeline-wrapper" style="display: none;">
             <div class="timeline-container">
-                <div class="timeline-line" style="left: 175px;"></div>
+                <div class="timeline-line"></div>
                 <div class="timeline-events" id="timeline-events"></div>
             </div>
+            
         </div>
         
-        <!-- Move these outside the timeline-wrapper -->
         <button id="scroll-left" class="nav-button">
             <img src="../assets/icons/arrow_back.svg" alt="Scroll Left" />
-        </button>
-        <button id="scroll-latest" class="nav-button">
+          </button>
+          
+          <button id="scroll-latest" class="nav-button">
             <img src="../assets/icons/now-clock.png" alt="Go to Latest" />
-        </button>
-        <button id="scroll-right" class="nav-button">
+          </button>
+          
+          <button id="scroll-right" class="nav-button">
             <img src="../assets/icons/arrow_forward.svg" alt="Scroll Right" />
-        </button>
+          </button>
+          
+          
           
 
         <!-- Modal for adding new shortcut -->
