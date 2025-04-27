@@ -10,21 +10,50 @@ export async function buildTimeline(history, drive, emails, calendar, downloads)
   if (!timelineEvents || !timelineLine || !container) return;
 
   const processedEvents = processAllEvents(history, drive, emails, calendar, downloads);
-  processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
   const FIXED_SPACE = 200;
+
+  // Let's log the widths before we change anything
+  console.log('Before width change:', {
+    containerWidth: container.scrollWidth,
+    timelineEventsWidth: timelineEvents.offsetWidth,
+    timelineLineWidth: timelineLine.offsetWidth
+  });
 
   timelineEvents.innerHTML = '';
   const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE);
   timelineEvents.style.width = `${totalWidth}px`;
   timelineLine.style.width = `${totalWidth}px`;
 
-  const fragment = createEventElements(processedEvents);
+  // Log after width change
+  console.log('After width change:', {
+    totalWidth,
+    containerWidth: container.scrollWidth,
+    timelineEventsWidth: timelineEvents.offsetWidth,
+    timelineLineWidth: timelineLine.offsetWidth
+  });
 
+  const fragment = createEventElements(processedEvents);
   timelineEvents.appendChild(fragment);
+
+  const newRealWidth = timelineEvents.scrollWidth;
+  timelineEvents.style.width = `${newRealWidth}px`;
+  timelineLine.style.width = `${newRealWidth}px`;
+
+  // Log final widths after elements are added
+  console.log('After elements added:', {
+    containerWidth: container.scrollWidth,
+    timelineEventsWidth: timelineEvents.offsetWidth,
+    timelineLineWidth: timelineLine.offsetWidth
+  });
 
   // === NEW: Save First 6 Events HTML ===
   const first6Nodes = Array.from(timelineEvents.querySelectorAll('.timeline-event')).slice(0, 6);
+  console.log('=== First 6 Events Being Cached ===');
+  first6Nodes.forEach((node, index) => {
+    const dateDiv = node.querySelector('.date');
+    console.log(`Event ${index + 1}:`, dateDiv.textContent);
+  });
   const tempDiv = document.createElement('div');
   first6Nodes.forEach(node => tempDiv.appendChild(node.cloneNode(true)));
   const htmlString = tempDiv.innerHTML;
@@ -47,6 +76,7 @@ export function createEventElements(events, invertPosition = false) {
   const template = document.getElementById('event-template');
 
   const sortedEvents = [...events].sort((a, b) => b.timestamp - a.timestamp);
+
 
   sortedEvents.forEach((event, index) => {
     const clone = template.content.cloneNode(true);

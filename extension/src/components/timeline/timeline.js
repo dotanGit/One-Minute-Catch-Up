@@ -90,13 +90,12 @@ export async function initTimeline() {
     const cachedHTML = await loadFirst6EventsHTML();
     if (cachedHTML) {
       console.log('[TIMELINE] 🚀 Using cached mini timeline');
-
       const timelineEvents = document.getElementById('timeline-events');
       if (timelineEvents) {
         timelineEvents.innerHTML = cachedHTML;
       }
 
-      return; // 🛑 Stop here
+      // return; // 🛑 Stop here
     }
     
     // === New: Simple display of cached HTML ===
