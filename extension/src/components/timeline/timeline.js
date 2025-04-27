@@ -4,7 +4,7 @@ import {
     normalizeTimestamp,
     safeGetTimestamp
   } from '../../utils/dateUtils.js';
-  import { buildTodayTimeline,appendPastTimeline } from './timelineRenderer.js';
+  import { buildTimeline } from './timelineRenderer.js';
   import { getDownloadsService } from '../../services/downloadService.js';
   import { getBrowserHistoryService } from '../../services/browserHistoryService.js';
   import { getGmailActivity } from '../../services/gmailService.js';
@@ -12,7 +12,7 @@ import {
   import { getDriveActivity } from '../../services/driveService.js';
   import { initTimelineScroll } from './timelineScroll.js';
   import { filterHiddenEvents,filterAllByDate,getHiddenIdsSet,filterBrowserBySession,getDateKey } from './timelineDataUtils.js';
-  import { timelineCache, cleanupHiddenEventIdsFromCache } from './cache.js';
+  import { timelineCache, cleanupHiddenEventIdsFromCache ,loadFirst6EventsHTML } from './cache.js';
   import { applyTimelineFilters, initTimelineFilterUI, timelineFilters } from './timelineFilters.js';
 
   
@@ -85,39 +85,37 @@ export function showTimeline(isFirstLogin = false) {
 
 export async function initTimeline() {
   try {
+
+    // === New: Simple display of cached HTML ===
+    const cachedHTML = await loadFirst6EventsHTML();
+    if (cachedHTML) {
+      console.log('[TIMELINE] 🚀 Using cached mini timeline');
+
+      const timelineEvents = document.getElementById('timeline-events');
+      if (timelineEvents) {
+        timelineEvents.innerHTML = cachedHTML;
+      }
+
+      return; // 🛑 Stop here
+    }
+    
+    // === New: Simple display of cached HTML ===
     window.loadedEventKeys = new Set();
     const hiddenIds = await getHiddenIdsSet();
     const today = normalizeDateToStartOfDay(new Date());
     const now = Date.now();
 
-    const todayKey = `timeline_${getDateKey(today)}`;
-    let todayCache = await timelineCache.get(todayKey);
-
-    if (!todayCache) {
-      const [history, drive, emails, calendar, downloads] = await Promise.all([
-        getBrowserHistoryService(today),
-        getDriveActivity(today),
-        getGmailActivity(today),
-        getCalendarEvents(today),
-        getDownloadsService(today)
-      ]);
-      const raw = { history, drive, emails, calendar, downloads };
-      const cleaned = filterHiddenEvents(raw, hiddenIds);
-      const filtered = filterAllByDate(cleaned, today);
-      filtered.history = filterBrowserBySession(filtered.history);
-      todayCache = { data: filtered, lastFetchedAt: now };
-      await timelineCache.set(todayKey, todayCache);
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = getDateKey(d);
+      days.push(d);
     }
 
-    // ✅ Phase 1: Render only today
-    const todayData = todayCache.data;
-    const renderedCount = buildTodayTimeline(todayData);
+    const allFiltered = [];
 
-    // ✅ Phase 2: Load and append past 6 days
-    const pastDaysData = [];
-    for (let i = 1; i <= 6; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
+    for (const date of days) {
       const dateKey = `timeline_${getDateKey(date)}`;
       let cached = await timelineCache.get(dateKey);
 
@@ -129,30 +127,62 @@ export async function initTimeline() {
           getCalendarEvents(date),
           getDownloadsService(date)
         ]);
+
         const raw = { history, drive, emails, calendar, downloads };
         const cleaned = filterHiddenEvents(raw, hiddenIds);
         const filtered = filterAllByDate(cleaned, date);
         filtered.history = filterBrowserBySession(filtered.history);
-        cached = { data: filtered, lastFetchedAt: now };
-        await timelineCache.set(dateKey, cached);
+
+        const newCache = { data: filtered, lastFetchedAt: now };
+        await timelineCache.set(dateKey, newCache);
+
+        const verify = await timelineCache.get(dateKey);
+
+        cached = newCache;
       }
 
-      pastDaysData.push(cached.data);
+      const filteredFromCache = filterHiddenEvents(cached.data, hiddenIds);
+      allFiltered.push(filteredFromCache);
     }
 
-    appendPastTimeline(pastDaysData, renderedCount);
-    initTimelineScroll();
+    allFiltered.forEach((d, i) => {
+    });
 
+    const combined = {
+      history: allFiltered.flatMap(d => d.history || []),
+      drive: { files: allFiltered.flatMap(d => d.drive?.files || []) },
+      emails: { all: allFiltered.flatMap(d => d.emails?.all || []) },
+      calendar: {
+        today: allFiltered.flatMap(d => d.calendar?.today || []),
+        tomorrow: allFiltered.flatMap(d => d.calendar?.tomorrow || [])
+      },
+      downloads: allFiltered.flatMap(d => d.downloads || [])
+    };
+
+    window.fullCombinedData = combined;
+    await initTimelineFilterUI(handleFilterChange);
+
+    window.globalStartTime = Math.min(
+      ...combined.history.map(e => normalizeTimestamp(e.lastVisitTime)),
+      ...combined.drive.files.map(f => normalizeTimestamp(f.modifiedTime)),
+      ...combined.emails.all.map(e => normalizeTimestamp(e.timestamp)),
+      ...combined.calendar.today.map(e => safeGetTimestamp(e.start?.dateTime || e.start?.date)),
+      ...combined.downloads.map(d => normalizeTimestamp(d.startTime))
+    );
+
+    const filteredCombined = applyTimelineFilters(combined, timelineFilters);
+    buildTimeline(filteredCombined.history, filteredCombined.drive, filteredCombined.emails, filteredCombined.calendar, filteredCombined.downloads);
+
+    markAllEventKeys(combined);
+
+    initTimelineScroll();
   } catch (error) {
     console.error('❌ Error initializing timeline:', error);
-    const timelineEvents = document.getElementById('timeline-events');
     if (timelineEvents) {
       timelineEvents.innerHTML = '<div class="error">Error loading timeline data</div>';
     }
   }
 }
-
-
 
 function handleFilterChange() {
   console.log('[DEBUG] 🔁 Filter change triggered');

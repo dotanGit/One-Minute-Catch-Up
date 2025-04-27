@@ -1,62 +1,43 @@
 import { processAllEvents,getEventCategory } from './timelineEventProcessor.js';
 import { getEventDetails } from './timelineEventDetails.js';
 import { attachEventListeners } from './timelineDomUtils.js';
+import { saveFirst6EventsHTML } from './cache.js';
 
-export function buildTodayTimeline(data) {
+export async function buildTimeline(history, drive, emails, calendar, downloads) {
   const timelineEvents = document.getElementById('timeline-events');
   const timelineLine = document.querySelector('.timeline-line');
   const container = document.querySelector('.timeline-container');
-  if (!timelineEvents || !timelineLine || !container) return 0;
+  if (!timelineEvents || !timelineLine || !container) return;
 
-  const events = processAllEvents(data.history, data.drive, data.emails, data.calendar, data.downloads);
-  events.sort((a, b) => b.timestamp - a.timestamp);
-
-  events.forEach((e, i) => e._renderIndex = i);
+  const processedEvents = processAllEvents(history, drive, emails, calendar, downloads);
+  processedEvents.sort((a, b) => a.timestamp - b.timestamp);
 
   const FIXED_SPACE = 200;
-  const totalWidth = Math.max(1300, events.length * FIXED_SPACE);
+
+  timelineEvents.innerHTML = '';
+  const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE);
   timelineEvents.style.width = `${totalWidth}px`;
   timelineLine.style.width = `${totalWidth}px`;
 
-  const fragment = createEventElements(events);
+  const fragment = createEventElements(processedEvents);
 
-  timelineEvents.innerHTML = '';
   timelineEvents.appendChild(fragment);
+
+  // === NEW: Save First 6 Events HTML ===
+  const first6Nodes = Array.from(timelineEvents.querySelectorAll('.timeline-event')).slice(0, 6);
+  const tempDiv = document.createElement('div');
+  first6Nodes.forEach(node => tempDiv.appendChild(node.cloneNode(true)));
+  const htmlString = tempDiv.innerHTML;
+
+  await saveFirst6EventsHTML(htmlString);
+  console.log('[TIMELINE] 💾 Saved first 6 events HTML after build');
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      container.scrollLeft = container.scrollWidth;
+      if (container) container.scrollLeft = container.scrollWidth;
     });
   });
-
-  return events.length;
 }
-
-
-export function appendPastTimeline(daysDataArray, startingIndex = 0) {
-  const timelineEvents = document.getElementById('timeline-events');
-  const timelineLine = document.querySelector('.timeline-line');
-  if (!timelineEvents || !timelineLine) return;
-
-  const FIXED_SPACE = 200;
-  let currentIndex = startingIndex;
-
-  daysDataArray.forEach((data) => {
-    const events = processAllEvents(data.history, data.drive, data.emails, data.calendar, data.downloads);
-    events.sort((a, b) => b.timestamp - a.timestamp);
-    events.forEach((e, i) => e._renderIndex = currentIndex + i);
-    currentIndex += events.length;
-
-    const fragment = createEventElements(events);
-    timelineEvents.appendChild(fragment);
-  });
-
-  const totalWidth = Math.max(1300, currentIndex * FIXED_SPACE);
-  timelineEvents.style.width = `${totalWidth}px`;
-  timelineLine.style.width = `${totalWidth}px`;
-}
-
-
 
 
 
@@ -65,7 +46,7 @@ export function createEventElements(events, invertPosition = false) {
   const FIXED_SPACE = 200;
   const template = document.getElementById('event-template');
 
-  const sortedEvents = events;
+  const sortedEvents = [...events].sort((a, b) => b.timestamp - a.timestamp);
 
   sortedEvents.forEach((event, index) => {
     const clone = template.content.cloneNode(true);
@@ -80,9 +61,7 @@ export function createEventElements(events, invertPosition = false) {
     eventDiv.classList.add(positionClass);
     eventDiv.setAttribute('data-event-id', event.id);
     eventDiv.setAttribute('data-category', category);
-    eventDiv.style.right = `${(event._renderIndex ?? index) * FIXED_SPACE}px`;
-    eventDiv.style.left = 'auto';
-    eventDiv.style.position = 'absolute';
+    eventDiv.style.right = `${index * FIXED_SPACE}px`;
 
     const timeText = new Date(Number(event.timestamp)).toLocaleString([], {
       month: 'short',

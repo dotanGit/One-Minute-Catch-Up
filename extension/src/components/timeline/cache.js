@@ -61,3 +61,33 @@ export async function cleanupHiddenEventIdsFromCache() {
   const cleaned = oldHidden.filter(id => validIds.has(id));
   await chrome.storage.local.set({ hiddenEventIds: cleaned });
 }
+
+
+// === First 6 Events HTML Cache ===
+export async function saveFirst6EventsHTML(htmlString) {
+  try {
+    await chrome.storage.local.set({ first6events_html: htmlString });
+    console.log('[CACHE] 📦 First 6 events HTML saved');
+  } catch (error) {
+    console.error('[CACHE] ❌ Error saving first 6 events HTML:', error);
+  }
+}
+
+export async function loadFirst6EventsHTML() {
+  try {
+    const result = await chrome.storage.local.get('first6events_html');
+    return result.first6events_html || null;
+  } catch (error) {
+    console.error('[CACHE] ❌ Error loading first 6 events HTML:', error);
+    return null;
+  }
+}
+
+export async function clearFirst6EventsHTML() {
+  try {
+    await chrome.storage.local.remove('first6events_html');
+    console.log('[CACHE] 🧹 First 6 events HTML cleared');
+  } catch (error) {
+    console.error('[CACHE] ❌ Error clearing first 6 events HTML:', error);
+  }
+}
