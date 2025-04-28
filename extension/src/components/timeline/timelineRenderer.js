@@ -13,25 +13,10 @@ export async function buildTimeline(history, drive, emails, calendar, downloads)
 
   const FIXED_SPACE = 200;
 
-  // Let's log the widths before we change anything
-  console.log('Before width change:', {
-    containerWidth: container.scrollWidth,
-    timelineEventsWidth: timelineEvents.offsetWidth,
-    timelineLineWidth: timelineLine.offsetWidth
-  });
-
   timelineEvents.innerHTML = '';
   const totalWidth = Math.max(1300, processedEvents.length * FIXED_SPACE);
   timelineEvents.style.width = `${totalWidth}px`;
   timelineLine.style.width = `${totalWidth}px`;
-
-  // Log after width change
-  console.log('After width change:', {
-    totalWidth,
-    containerWidth: container.scrollWidth,
-    timelineEventsWidth: timelineEvents.offsetWidth,
-    timelineLineWidth: timelineLine.offsetWidth
-  });
 
   const fragment = createEventElements(processedEvents);
   timelineEvents.appendChild(fragment);
@@ -40,20 +25,9 @@ export async function buildTimeline(history, drive, emails, calendar, downloads)
   timelineEvents.style.width = `${newRealWidth}px`;
   timelineLine.style.width = `${newRealWidth}px`;
 
-  // Log final widths after elements are added
-  console.log('After elements added:', {
-    containerWidth: container.scrollWidth,
-    timelineEventsWidth: timelineEvents.offsetWidth,
-    timelineLineWidth: timelineLine.offsetWidth
-  });
-
   // === NEW: Save First 6 Events HTML ===
   const first6Nodes = Array.from(timelineEvents.querySelectorAll('.timeline-event')).slice(0, 6);
   console.log('=== First 6 Events Being Cached ===');
-  first6Nodes.forEach((node, index) => {
-    const dateDiv = node.querySelector('.date');
-    console.log(`Event ${index + 1}:`, dateDiv.textContent);
-  });
   const tempDiv = document.createElement('div');
   first6Nodes.forEach(node => tempDiv.appendChild(node.cloneNode(true)));
   const htmlString = tempDiv.innerHTML;
@@ -77,6 +51,7 @@ export function createEventElements(events, invertPosition = false) {
 
   const sortedEvents = [...events].sort((a, b) => b.timestamp - a.timestamp);
 
+  // const totalWidth = Math.max(1300, events.length * FIXED_SPACE);
 
   sortedEvents.forEach((event, index) => {
     const clone = template.content.cloneNode(true);
@@ -91,7 +66,8 @@ export function createEventElements(events, invertPosition = false) {
     eventDiv.classList.add(positionClass);
     eventDiv.setAttribute('data-event-id', event.id);
     eventDiv.setAttribute('data-category', category);
-    eventDiv.style.right = `${index * FIXED_SPACE}px`;
+    eventDiv.style.right = `${(index * FIXED_SPACE)+110}px`;
+    // eventDiv.style.left = `${totalWidth - (index * FIXED_SPACE)}px`;
 
     const timeText = new Date(Number(event.timestamp)).toLocaleString([], {
       month: 'short',

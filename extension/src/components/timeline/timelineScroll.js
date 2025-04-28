@@ -53,10 +53,10 @@ export function initTimelineScroll() {
     });
 }
 
+
 function startScroll(direction) {
     stopScroll();
-    const isRTL = getComputedStyle(container).direction === 'rtl';
-    const scrollAmount = scrollSpeed * (isRTL ? -1 : 1) * direction;
+    const scrollAmount = scrollSpeed * direction;
 
     function scrollStep() {
         container.scrollLeft += scrollAmount;

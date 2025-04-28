@@ -170,6 +170,25 @@ export async function initTimeline() {
     );
 
     const filteredCombined = applyTimelineFilters(combined, timelineFilters);
+
+    // ADD this after
+    // const singleEventCombined = {
+    //   history: filteredCombined.history.slice(0, 10),
+    //   drive: { files: [] },
+    //   emails: { all: [] },
+    //   calendar: { today: [], tomorrow: [] },
+    //   downloads: []
+    // };
+
+    // // CHANGE this
+    // buildTimeline(
+    //   singleEventCombined.history,
+    //   singleEventCombined.drive,
+    //   singleEventCombined.emails,
+    //   singleEventCombined.calendar,
+    //   singleEventCombined.downloads
+    // );
+
     buildTimeline(filteredCombined.history, filteredCombined.drive, filteredCombined.emails, filteredCombined.calendar, filteredCombined.downloads);
 
     markAllEventKeys(combined);
