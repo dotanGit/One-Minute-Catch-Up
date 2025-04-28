@@ -13,12 +13,12 @@ import {
   filterBrowserBySession,
   getDateKey
 } from '../src/components/timeline/timelineDataUtils.js';
-import { timelineCache } from '../src/components/timeline/cache.js';
+import { timelineCache, updateFirst6EventsData } from '../src/components/timeline/cache.js';
 
 
 // === CONFIG ===
 const SIXTY_MIN = 60 * 60 * 1000; // 60 minutes
-const DEBOUNCE_DELAY = 10000; // 2 minutes 2 * 60 * 1000
+const DEBOUNCE_DELAY = 2 * 60 * 1000; // 2 minutes
 
 // === STATE ===
 let allowBackgroundSync = false;
@@ -139,6 +139,8 @@ async function syncGmailDriveCalendar() {
       },
       lastGmailCheck: now
     });
+    await updateFirst6EventsData(currentData);
+    chrome.runtime.sendMessage({ action: 'refreshMiniTimeline' });
   }
 }
 
@@ -173,8 +175,12 @@ export async function runDeltaFetchForToday() {
   };
 
   await timelineCache.set(dateKey, payload);
+  await updateFirst6EventsData(baseData);
+  chrome.runtime.sendMessage({ action: 'refreshMiniTimeline' });
   console.log('[BG] ✅ Delta fetch finished & cache updated');
 }
+
+
 
 
 // === Debounced Fetch Scheduler ===
