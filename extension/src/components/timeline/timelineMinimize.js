@@ -1,4 +1,4 @@
-export function initTimelineMinimize() {
+export async function initTimelineMinimize() {
     const minimizeBtn = document.getElementById('minimizeTimeline');
     const timelineWrapper = document.querySelector('.timeline-wrapper');
     

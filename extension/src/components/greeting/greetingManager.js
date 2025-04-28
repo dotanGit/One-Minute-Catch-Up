@@ -11,6 +11,7 @@ function getYesterdayKey() {
 
 export async function initDailyGreeting(userSummary) {
   const yesterdayKey = getYesterdayKey();
+  console.log('[DEBUG] Yesterday Key:', yesterdayKey);
   const existing = await getGreeting(yesterdayKey);
 
   if (existing) {

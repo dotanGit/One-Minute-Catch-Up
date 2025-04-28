@@ -1,7 +1,8 @@
-export async function getUserSummary() {
-  const todayKey = `timeline_${new Date().toISOString().split('T')[0]}`;
-  const cached = await chrome.storage.local.get(todayKey);
-  const data = cached[todayKey]?.data;
+export async function getUserSummary(date = new Date()) {
+  const dateKey = `timeline_${date.toISOString().split('T')[0]}`;
+
+  const cached = await chrome.storage.local.get(dateKey);
+  const data = cached[dateKey]?.data;
 
   if (!data) return "No activity recorded yet today.";
 
@@ -10,7 +11,7 @@ export async function getUserSummary() {
   // 🗓️ Calendar
   const calendarEvents = data.calendar?.today?.map(ev => ev.summary).filter(Boolean) || [];
   if (calendarEvents.length) {
-    lines.push("🗓️ Calendar:");
+    lines.push("Calendar:");
     calendarEvents.forEach(title => lines.push(`- ${title}`));
     lines.push("");
   }
@@ -18,23 +19,23 @@ export async function getUserSummary() {
   // 📤 Emails Sent
   const sentEmails = (data.emails?.all || []).filter(e => e.type === 'sent');
   if (sentEmails.length) {
-    lines.push("📤 Emails Sent:");
-    sentEmails.slice(0, 3).forEach(e => lines.push(`- ${e.subject}`));
+    lines.push("Emails Sent:");
+    sentEmails.slice(0, 5).forEach(e => lines.push(`- ${e.subject}`));
     lines.push("");
   }
 
   // 📥 Emails Received
   const receivedEmails = (data.emails?.all || []).filter(e => e.type === 'received');
   if (receivedEmails.length) {
-    lines.push("📥 Emails Received:");
-    receivedEmails.slice(0, 3).forEach(e => lines.push(`- ${e.subject}`));
+    lines.push("Emails Received:");
+    receivedEmails.slice(0, 5).forEach(e => lines.push(`- ${e.subject}`));
     lines.push("");
   }
 
   // 🌐 Browser History
   const history = (data.history || []).filter(h => h.title && h.url && !isDistraction(h.url));
   if (history.length) {
-    lines.push("🌐 Browsing:");
+    lines.push("Browsing:");
     history.slice(0, 5).forEach(h => lines.push(`- ${h.title} (${h.url})`));
     lines.push("");
   }
@@ -42,8 +43,8 @@ export async function getUserSummary() {
   // 📁 Drive Files
   const driveFiles = data.drive?.files || [];
   if (driveFiles.length) {
-    lines.push("📁 Drive Files:");
-    driveFiles.slice(0, 3).forEach(f => lines.push(`- ${f.name}`));
+    lines.push("Drive Files:");
+    driveFiles.slice(0, 5).forEach(f => lines.push(`- ${f.name}`));
     lines.push("");
   }
 

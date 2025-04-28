@@ -10,7 +10,7 @@ export async function callGptGreeting(prompt) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 150,
         temperature: 0.8
