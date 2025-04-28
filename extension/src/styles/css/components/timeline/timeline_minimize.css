@@ -1,15 +1,25 @@
-/* Timeline minimized state */
+/* Timeline minimized state - immediate hide on minimize button click */
 .timeline-wrapper.minimized .event-popup {
     visibility: hidden;
     opacity: 0;
-    transition: none; /* Remove transition delay */
+    transition: visibility 0s, opacity 0.2s ease-out;
 }
 
+/* Hover behavior with smooth fade in */
 .timeline-wrapper.minimized .timeline-dot:hover + .event-popup,
 .timeline-wrapper.minimized .event-popup:hover {
     visibility: visible;
     opacity: 1;
-    transition: none; /* Remove transition delay */
+    transition: opacity 0.2s ease-in;
+}
+
+/* Smooth fadeout after hover with delay */
+.timeline-wrapper.minimized .timeline-dot:not(:hover) + .event-popup:not(:hover):not(.force-hide) {
+    visibility: hidden;
+    opacity: 0;
+    transition: 
+        visibility 0s linear 0.5s,
+        opacity 0.3s ease-out; /* Smooth fadeout */
 }
 
 /* Minimize button styles */
@@ -46,13 +56,5 @@
 .timeline-wrapper.minimized .event-popup:hover {
     visibility: visible;
     opacity: 1;
-}
-
-/* Add delay before hiding popup when mouse leaves */
-.timeline-wrapper.minimized .timeline-dot:hover + .event-popup {
-    transition-delay: 0s;
-}
-
-.timeline-wrapper.minimized .event-popup {
-    transition-delay: 0.3s;
+    transition: opacity 0.2s ease-in;
 }

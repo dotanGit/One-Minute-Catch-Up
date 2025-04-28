@@ -1,21 +1,25 @@
 import { initTimeline } from './timeline.js';
+import { initTimelineFilterUI } from './timelineFilters.js';
 
 export function attachEventListeners(eventDiv, eventDetails) {
     // Handle close button click
     const closeButton = eventDiv.querySelector('.close-button');
     if (closeButton) {
-        closeButton.addEventListener('click', (e) => {
+        closeButton.addEventListener('click', async (e) => {
             e.stopPropagation();
             const eventId = eventDiv.getAttribute('data-event-id');
             chrome.storage.local.get(['hiddenEventIds'], (result) => {
                 const hiddenIds = new Set(result.hiddenEventIds || []);
                 hiddenIds.add(String(eventId));
-                chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, () => {
+                chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, async () => {
                     console.log('Hidden IDs in cache:', Array.from(hiddenIds));
                     // Remove the event from the DOM
                     eventDiv.remove();
-                    // Rebuild the timeline
-                    initTimeline();
+                    // Update delete button visibility
+                    updateDeleteMarkedButtonVisibility();
+                    // Rebuild the timeline and reinitialize filters
+                    await initTimeline();
+                    await initTimelineFilterUI(() => initTimeline());
                 });
             });
         });
@@ -64,12 +68,15 @@ export function deleteMarkedEvents() {
         chrome.storage.local.get(['hiddenEventIds'], (result) => {
             const hiddenIds = new Set(result.hiddenEventIds || []);
             eventIds.forEach(id => hiddenIds.add(id));
-            chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, () => {
+            chrome.storage.local.set({ hiddenEventIds: Array.from(hiddenIds) }, async () => {
                 console.log('Hidden IDs in cache:', Array.from(hiddenIds));
                 // Remove all marked events from the DOM
                 markedEvents.forEach(event => event.remove());
-                // Rebuild the timeline
-                initTimeline();
+                // Hide the delete and clear buttons
+                updateDeleteMarkedButtonVisibility();
+                // Rebuild the timeline and reinitialize filters
+                await initTimeline();
+                await initTimelineFilterUI(() => initTimeline());
             });
         });
     }
@@ -81,22 +88,22 @@ function updateDeleteMarkedButtonVisibility() {
   
     // Create Delete button if missing
     if (!deleteButton) {
-      deleteButton = document.createElement('button');
-      deleteButton.className = 'delete-marked-button';
-      deleteButton.addEventListener('click', deleteMarkedEvents);
-      document.body.appendChild(deleteButton);
+        deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-marked-button';
+        deleteButton.addEventListener('click', deleteMarkedEvents);
+        document.body.appendChild(deleteButton);
     }
   
     // Create Clear button if missing
     if (!clearButton) {
-      clearButton = document.createElement('button');
-      clearButton.className = 'clear-marked-button';
-      clearButton.addEventListener('click', () => {
-        document.querySelectorAll('.timeline-event.marked')
-          .forEach(el => el.classList.remove('marked'));
-        updateDeleteMarkedButtonVisibility();
-      });
-      document.body.appendChild(clearButton);
+        clearButton = document.createElement('button');
+        clearButton.className = 'clear-marked-button';
+        clearButton.addEventListener('click', () => {
+            document.querySelectorAll('.timeline-event.marked')
+                .forEach(el => el.classList.remove('marked'));
+            updateDeleteMarkedButtonVisibility();
+        });
+        document.body.appendChild(clearButton);
     }
   
     // Show/hide both buttons based on marked items
@@ -105,7 +112,13 @@ function updateDeleteMarkedButtonVisibility() {
   
     deleteButton.classList.toggle('visible', show);
     clearButton.classList.toggle('visible', show);
-  }
+
+    // If no marked events, consider removing the buttons from DOM
+    if (!show) {
+        deleteButton.remove();
+        clearButton.remove();
+    }
+}
   
   
 

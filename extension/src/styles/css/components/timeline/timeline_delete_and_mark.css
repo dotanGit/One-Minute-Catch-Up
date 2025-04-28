@@ -45,7 +45,7 @@
     content: '';
     width: 24px;
     height: 24px;
-    background: url('../../../assets/icons/delete.svg') no-repeat center center;
+    background: url('../../../../assets/icons/delete.svg') no-repeat center center;
     background-size: contain;
     filter: brightness(0) invert(1);
 }
@@ -82,7 +82,7 @@
     content: '';
     width: 24px;
     height: 24px;
-    background: url('../../../assets/icons/refresh.svg') no-repeat center center;
+    background: url('../../../../assets/icons/refresh.svg') no-repeat center center;
     background-size: contain;
     filter: brightness(0) invert(1);
 }
