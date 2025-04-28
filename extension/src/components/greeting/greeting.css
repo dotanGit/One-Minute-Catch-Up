@@ -6,6 +6,7 @@
   padding: 18px 22px;
   margin-bottom: 30px;
   margin-top: 30px;
+  height: 150px;
 }
 
 .greeting-time {
@@ -31,5 +32,14 @@
   color: #666;
   margin-top: 8px;
   font-weight: 400;
+}
+
+#greeting-container {
+  min-height: 150px;   /* matches .daily-greeting height */
+  height: 150px;       /* force the height so it never collapses */
+  margin-bottom: 30px; /* matches your .daily-greeting margin-bottom */
+  margin-top: 30px;    /* matches your .daily-greeting margin-top */
+  transition: none;    /* prevent any animation */
+  box-sizing: border-box;
 }
 
