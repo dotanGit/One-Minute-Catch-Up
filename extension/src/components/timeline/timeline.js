@@ -94,8 +94,6 @@ export async function initTimeline() {
       if (timelineEvents) {
         timelineEvents.innerHTML = cachedHTML;
       }
-
-      // return; // 🛑 Stop here
     }
     
     // === New: Simple display of cached HTML ===

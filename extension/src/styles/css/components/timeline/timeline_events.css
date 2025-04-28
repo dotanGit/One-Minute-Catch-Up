@@ -123,7 +123,7 @@
 
 .timeline-event[data-category="calendar"] .timeline-dot {
     background: rgba(52, 168, 83, 0.4); 
-    border: 2px dashed rgb(255, 255, 255); 
+    border: 2px dashed rgb(52, 168, 83); 
 }
 
 .timeline-event[data-category="drive"] .timeline-dot {
@@ -333,45 +333,33 @@
 .detail-item .detail-value {
     color: var(--color, rgba(30, 30, 30));
     flex-grow: 1;
-    font-size: 0.8rem;       /* Reduce value size */
+    font-size: 0.8rem;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
     word-break: break-word;
+    -webkit-line-clamp: 3;
+    cursor: pointer;
+    text-decoration: none;
 }
 
-
-.subject-value, .summary-value, .location-value, .title-value, .file-value{
-    -webkit-line-clamp: 2;
+/* Style for links */
+.detail-item .detail-value.link {
+    color: var(--color, rgba(30, 30, 30));
+    text-decoration: none;
 }
 
+/* Show link styling on hover */
+.detail-item:hover .detail-value.link {
+    color: var(--accent-color);
+    text-decoration: underline;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
 
+/* Keep single line for specific values */
 .website-value, .source-value {
     -webkit-line-clamp: 1;
-}
-
-/* Copy button styles */
-.copy-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    margin-top: 8px;
-    width: 100%;
-}
-
-.copy-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.copy-button.success {
-    background: rgba(0, 255, 135, 0.2);
-    color: #00FF87;
 }
 
 /* Remove fade-in animation and hover effects */

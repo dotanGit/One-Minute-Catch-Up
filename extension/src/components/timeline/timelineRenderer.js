@@ -42,16 +42,12 @@ export async function buildTimeline(history, drive, emails, calendar, downloads)
   });
 }
 
-
-
 export function createEventElements(events, invertPosition = false) {
   const fragment = document.createDocumentFragment();
   const FIXED_SPACE = 200;
   const template = document.getElementById('event-template');
 
   const sortedEvents = [...events].sort((a, b) => b.timestamp - a.timestamp);
-
-  // const totalWidth = Math.max(1300, events.length * FIXED_SPACE);
 
   sortedEvents.forEach((event, index) => {
     const clone = template.content.cloneNode(true);
@@ -67,7 +63,6 @@ export function createEventElements(events, invertPosition = false) {
     eventDiv.setAttribute('data-event-id', event.id);
     eventDiv.setAttribute('data-category', category);
     eventDiv.style.right = `${(index * FIXED_SPACE)+110}px`;
-    // eventDiv.style.left = `${totalWidth - (index * FIXED_SPACE)}px`;
 
     const timeText = new Date(Number(event.timestamp)).toLocaleString([], {
       month: 'short',
@@ -81,27 +76,19 @@ export function createEventElements(events, invertPosition = false) {
     dateDiv.innerHTML = `${eventDetails.title}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;${timeText}`;
 
     const detailsContainer = eventDiv.querySelector('.details-container');
-    eventDetails.details.forEach((detail, i) => {
+    eventDetails.details.forEach((detail) => {
       const item = document.createElement('div');
       item.className = 'detail-item';
 
-      const label = document.createElement('span');
-      const labelClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-label';
-      label.className = `detail-label ${labelClass}`;
-      label.textContent = `${detail.label}:`;
-
-      const valueClass = detail.label.toLowerCase().replace(/\s+/g, '-') + '-value';
       let valueNode;
-
       if (detail.isLink) {
         const a = document.createElement('a');
-        a.className = `detail-value link ${valueClass}`;
-        a.textContent = detail.value.replace(/^https?:\/\//, '');
+        a.className = 'detail-value link';
+        a.textContent = detail.value;
 
         if (detail.onClick) {
           a.href = '#';
-          a.dataset.hasClickHandler = 'true';
-          a.dataset.detailIndex = i;
+          a.onclick = detail.onClick;
         } else {
           a.href = detail.url;
           a.target = '_blank';
@@ -109,29 +96,24 @@ export function createEventElements(events, invertPosition = false) {
         valueNode = a;
       } else {
         const span = document.createElement('span');
-        span.className = `detail-value ${valueClass}`;
-        if (detail.role === 'heading') {
-          span.classList.add('heading');
-          span.setAttribute('role', 'heading');
-        }
+        span.className = 'detail-value';
         span.textContent = detail.value;
         valueNode = span;
       }
 
-      item.appendChild(label);
       item.appendChild(valueNode);
       detailsContainer.appendChild(item);
     });
 
+    // Handle favicon for browser events
     if (category === 'browser') {
       const dot = eventDiv.querySelector('.timeline-dot');
-      const websiteDetail = eventDetails.details.find(d => d.label.toLowerCase() === 'website');
-      if (websiteDetail?.value) {
+      if (event.url) {
         try {
-          const url = new URL(websiteDetail.value.startsWith('http') ? websiteDetail.value : 'https://' + websiteDetail.value);
+          const url = new URL(event.url.startsWith('http') ? event.url : 'https://' + event.url);
           dot.style.setProperty('--favicon-url', `url('https://www.google.com/s2/favicons?domain=${url.hostname}&sz=32')`);
         } catch (err) {
-          console.warn('Invalid URL for favicon:', websiteDetail.value);
+          console.warn('Invalid URL for favicon:', event.url);
         }
       }
     }

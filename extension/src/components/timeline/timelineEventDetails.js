@@ -1,13 +1,3 @@
-function isValidUrl(string) {
-    try {
-        new URL(string);
-        return true;
-    } catch (_) {
-        return false;
-    }
-}
-
-
 export function getEventDetails(event) {
     switch (event.type) {
         case 'drive':
@@ -15,26 +5,20 @@ export function getEventDetails(event) {
                 title: event.title,
                 details: [
                     { 
-                        label: 'File Name', 
                         value: event.description,
                         isLink: true,
                         url: event.webViewLink || '#'
-                    },
-                    { label: 'Last Edit', value: new Date(event.timestamp).toLocaleTimeString() },
-                ],
-                actions: []
+                    }
+                ]
             };
         case 'download':
             return {
                 title: 'Download',
                 details: [
                     { 
-                        label: 'File', 
                         value: event.actualTitle,
                         isLink: true,
                         onClick: async (e) => {
-                            console.log('Download click handler triggered');
-                            console.log('Event data:', event);
                             e.preventDefault();
                             e.stopPropagation();
                             
@@ -42,82 +26,56 @@ export function getEventDetails(event) {
                                 // First try to open using downloadId
                                 await chrome.downloads.open(event.id);
                             } catch (error) {
-                                console.log('Failed to open with downloadId, trying to check if file exists...');
+                                console.log('Failed to open with downloadId:', error);
                                 
-                                // Check if file exists using downloads.search
-                                const searchResults = await chrome.downloads.search({
-                                    filename: event.filename.split('\\').pop(), // Get just the filename
-                                    exists: true
-                                });
+                                try {
+                                    // Try to check if file exists
+                                    const searchResults = await chrome.downloads.search({
+                                        filename: event.actualTitle,
+                                        exists: true
+                                    });
 
-                                if (searchResults.length > 0) {
-                                    // File exists, try to open it using the found download item
-                                    try {
-                                        await chrome.downloads.open(searchResults[0].id);
-                                        return; // Exit if successful
-                                    } catch (secondError) {
-                                        console.error('Failed to open existing file:', secondError);
+                                    if (searchResults.length > 0) {
+                                        try {
+                                            await chrome.downloads.open(searchResults[0].id);
+                                            return;
+                                        } catch (secondError) {
+                                            throw new Error('File exists but cannot be opened');
+                                        }
+                                    } else {
+                                        throw new Error('File not found');
+                                    }
+                                } catch (searchError) {
+                                    // If we get here, try to redownload
+                                    if (event.downloadUrl && !event.downloadUrl.startsWith('blob:')) {
+                                        const confirmRedownload = window.confirm(
+                                            'The file could not be found. Would you like to download it again?'
+                                        );
+                                        
+                                        if (confirmRedownload) {
+                                            try {
+                                                await chrome.downloads.download({ url: event.downloadUrl });
+                                            } catch (downloadError) {
+                                                alert('Failed to redownload the file. The download link may no longer be valid.');
+                                            }
+                                        }
+                                    } else {
+                                        alert('Sorry, this file cannot be opened or redownloaded. It might have been moved, deleted, or the download link has expired.');
                                     }
                                 }
-
-                                // If we get here, show the modal
-                                const modal = document.getElementById('download-error-modal');
-                                modal.classList.add('show');
-                                
-                                // Handle redownload button
-                                const redownloadBtn = document.getElementById('redownload-btn');
-                                redownloadBtn.onclick = () => {
-                                    if (event.downloadUrl && !event.downloadUrl.startsWith('blob:')) {
-                                        chrome.downloads.download({ url: event.downloadUrl });
-                                        modal.classList.remove('show');
-                                    } else {
-                                        console.error('No valid download URL available');
-                                        alert('Sorry, the original download link is no longer available.');
-                                    }
-                                };
-                                
-                                // Handle close button
-                                const closeBtn = document.getElementById('close-modal-btn');
-                                closeBtn.onclick = () => {
-                                    modal.classList.remove('show');
-                                };
-                                
-                                // Close on outside click
-                                modal.onclick = (e) => {
-                                    if (e.target === modal) {
-                                        modal.classList.remove('show');
-                                    }
-                                };
                             }
                         }
                     }
-                ],
-                actions: []
+                ]
             };
         case 'browser':
-            const isLocalFile = event.url.startsWith('file://');
             return {
-                title: 'Browser Visit',
+                title: event.title,
                 details: [
                     { 
-                        label: 'Title', 
-                        value: event.actualTitle || 'No title'
-                    },
-                    { 
-                        label: isLocalFile ? 'File' : 'Website', 
-                        value: isLocalFile ? event.url.replace('file:///', '') : event.description,
+                        value: event.actualTitle || 'No title',
                         isLink: true,
                         url: event.url
-                    }
-                ],
-                actions: [
-                    { 
-                        label: 'Visit Site', 
-                        url: event.url,
-                        onClick: (e) => {
-                            e.preventDefault();
-                            window.open(event.url, '_blank');
-                        }
                     }
                 ]
             };
@@ -126,40 +84,33 @@ export function getEventDetails(event) {
                 title: event.title,
                 details: [
                     { 
-                        label: 'Subject', 
-                        value: event.subject,
+                        value: event.subject || 'No subject',
                         isLink: true,
                         url: event.emailUrl || '#'
                     }
-                ],
-                actions: []
+                ]
             };
         case 'calendar':
             return {
                 title: event.title,
                 details: [
                     { 
-                        label: 'Summary', 
-                        value: event.description,
-                        role: 'heading'
-                    },
-                    { label: 'Location', value: event.location || 'No location' },
-                ],
-                actions: []
+                        value: event.description || 'Untitled event',
+                        isLink: true,
+                        url: event.eventUrl || '#'
+                    }
+                ]
             };
         default:
             return {
                 title: event.title || 'Browser Activity',
                 details: [
                     { 
-                        label: 'Website', 
                         value: event.description,
                         isLink: true,
                         url: event.url || '#'
-                    },
-                    { label: 'Title', value: event.title },
-                ],
-                actions: []
+                    }
+                ]
             };
     }
 }

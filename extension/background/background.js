@@ -13,7 +13,7 @@ import {
   filterBrowserBySession,
   getDateKey
 } from '../src/components/timeline/timelineDataUtils.js';
-import { timelineCache, updateFirst6EventsData } from '../src/components/timeline/cache.js';
+import { timelineCache } from '../src/components/timeline/cache.js';
 
 
 // === CONFIG ===
@@ -139,8 +139,6 @@ async function syncGmailDriveCalendar() {
       },
       lastGmailCheck: now
     });
-    await updateFirst6EventsData(currentData);
-    chrome.runtime.sendMessage({ action: 'refreshMiniTimeline' });
   }
 }
 
@@ -175,8 +173,6 @@ export async function runDeltaFetchForToday() {
   };
 
   await timelineCache.set(dateKey, payload);
-  await updateFirst6EventsData(baseData);
-  chrome.runtime.sendMessage({ action: 'refreshMiniTimeline' });
   console.log('[BG] ✅ Delta fetch finished & cache updated');
 }
 
