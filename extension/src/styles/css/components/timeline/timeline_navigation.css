@@ -33,15 +33,15 @@
 }
 
 #scroll-left {
-    left: 110px; /* adjust as you like */
+    left: 5%; /* adjust as you like */
 }
 
 #scroll-right {
-    right: 100px; /* adjust as you like */
+    right: 5%; /* adjust as you like */
 }
 
 #scroll-latest {
     bottom: 197px;
-    right: 139px;
+    right: 8%;
 }
 

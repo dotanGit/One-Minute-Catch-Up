@@ -36,6 +36,9 @@
     color: white;
     transition: all 0.2s ease;
     backdrop-filter: blur(8px);
+    bottom: 20px;
+    left: 20px;
+    position: absolute;
 }
 
 .minimize-button:hover {
