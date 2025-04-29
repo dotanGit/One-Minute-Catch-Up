@@ -1,0 +1,36 @@
+/* Greeting Container */
+.greeting-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Time-based Greeting */
+.greeting-heading {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* AI Summary */
+.greeting-summary {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--text-color-secondary);
+    text-align: center;
+    max-width: 600px;
+    margin: 0;
+}
+
+/* Quote of the Day */
+.greeting-quote {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    color: var(--text-color-secondary);
+    font-style: italic;
+    text-align: center;
+    max-width: 500px;
+    margin: 0;
+    opacity: 0.8;
+}

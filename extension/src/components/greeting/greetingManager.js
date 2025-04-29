@@ -14,10 +14,10 @@ export async function initDailyGreeting(userSummary) {
   console.log('[DEBUG] Yesterday Key:', yesterdayKey);
   const existing = await getGreeting(yesterdayKey);
 
-  if (existing) {
-    console.log('[Greeting] Found cached greeting:', existing);
-    return;
-  }
+  // if (existing) {
+  //   console.log('[Greeting] Found cached greeting:', existing);
+  //   return;
+  // }
 
   const prompt = buildGreetingPrompt(userSummary);
   const greeting = await callGptGreeting(prompt);
@@ -32,13 +32,21 @@ export async function initDailyGreeting(userSummary) {
 export async function getTodayGreeting(userName) {
   const yesterdayKey = getYesterdayKey();
   const greeting = await getGreeting(yesterdayKey);
-  if (greeting) return greeting;
+  
+  if (greeting) {
+    // Split the greeting into parts
+    const [summary, quote] = greeting.split('.');
+    return {
+      summary: summary.trim(),
+      quote: quote ? `"${quote.trim()}` : null
+    };
+  }
 
-  const time = getTimeBasedGreeting();
-  const name = userName ? `, ${capitalizeFirstLetter(userName)}` : '';
-  const quote = `"Every day is a fresh start." – Mary Pickford`;
-
-  return `${time}${name}. I'm your new assistant. Tomorrow I'll give you a summary based on what you did today. ${quote}`;
+  // Default greeting for new users
+  return {
+    summary: "I'm your new assistant. Tomorrow I'll give you a summary based on what you did today.",
+    quote: '"Every day is a fresh start." – Mary Pickford'
+  };
 }
 
 export function getTimeBasedGreeting() {

@@ -7,27 +7,13 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
 
   const { userName } = await chrome.storage.local.get(['userName']);
   const greeting = await getTodayGreeting(userName);
-  if (!greeting) return;
-
-  // First-time greeting format (detected by known phrase)
-  if (greeting.includes("I'm your new assistant")) {
-    container.innerHTML = `
-      <div class="daily-greeting">
-        <p class="greeting-text">${greeting}</p>
-      </div>
-    `;
-    return;
-  }
-
-  const [main, quote] = greeting.split('. ', 2);
-  const name = userName ? `, ${capitalizeFirstLetter(userName)}` : '';
   const timeGreeting = getTimeBasedGreeting();
+  const name = userName ? `, ${capitalizeFirstLetter(userName)}` : '';
 
-  container.innerHTML = `
-    <div class="daily-greeting">
-      <p class="greeting-time">${timeGreeting}${name}.</p>
-      <p class="greeting-text">${main?.trim()}.</p>
-      ${quote ? `<p class="greeting-quote">"${quote?.trim()}"</p>` : ''}
-    </div>
-  `;
+  // Update the existing elements
+  container.querySelector('.greeting-heading').textContent = `${timeGreeting}${name}.`;
+  container.querySelector('.greeting-summary').textContent = greeting.summary;
+  if (greeting.quote) {
+    container.querySelector('.greeting-quote').textContent = greeting.quote;
+  }
 }

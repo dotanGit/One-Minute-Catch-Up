@@ -61,8 +61,8 @@ Your task:
 1. Read the activities carefully.
 2. Identify the **most meaningful achievement or effort**.
 3. Write a 2-sentence personal greeting:
-   - **First sentence**: Mention one specific activity and its positive impact. (14 words max)
-   - **Second sentence**: Add a famous, meaningful motivational quote that fits naturally.
+   - **irst sentence always starts with summary:**: Mention one specific activity and its positive impact. (14 words max)
+   - **Second sentence always starts with quote:**: Add a famous, meaningful motivational quote that fits naturally.
 
 Strict rules:
 - Use a real, well-known motivational quote (by someone famous like Mandela, Churchill, Einstein, etc).
@@ -70,8 +70,6 @@ Strict rules:
 - Be concise, motivating, and meaningful.
 - Never say the day was empty. Always highlight some progress, even small.
 
-Output format (no extra words):
-[Main sentence]. [Quote].
 
 Here is the user's summary:
 ${userSummary}

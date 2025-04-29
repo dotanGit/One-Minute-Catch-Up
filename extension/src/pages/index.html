@@ -3,7 +3,13 @@
 <head>
     <title>New Tab</title>
     <link rel="stylesheet" href="../styles/css/global/styles.css">
-    <link rel="stylesheet" href="../styles/css/components/search.css">
+
+    <!-- TOP CONTENT -->
+    <link rel="stylesheet" href="../styles/css/components/top-content/top-content.css">
+    <link rel="stylesheet" href="../styles/css/components/top-content/greeting/greeting.css">
+    <link rel="stylesheet" href="../styles/css/components/top-content/search/search.css">
+
+    <!-- TIMELINE -->
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_base.css">
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_events.css">
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_navigation.css">
@@ -11,7 +17,6 @@
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_delete_and_mark.css">
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_minimize.css">
     <link rel="stylesheet" href="../styles/css/components/login.css">
-    <link rel="stylesheet" href="../components/greeting/greeting.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
@@ -32,236 +37,248 @@
         </div>
     </div>
 
-    <div class="top-right-buttons">
-        <button id="changeWallpaper" class="wallpaper-button">
-            <span class="material-icons">wallpaper</span>
-        </button>
-        <div id="wallpaperDropdown" class="wallpaper-dropdown">
-            <!-- Categories and photos will be added here dynamically -->
-        </div>
-    </div>
-
-
-    <div class="filter-menu">
-        <button id="filter-button" class="filter-button main">
-            <img src="../assets/icons/filter.svg" alt="Filter" />
-        </button>
-      
-        <div class="expanded-filter-buttons">
-          <button class="filter-button" data-category="drive">
-            <img src="../assets/icons/drive-draw.png" alt="Drive" />
-          </button>
-          <button class="filter-button" data-category="emails">
-            <img src="../assets/icons/gmail-draw.png" alt="Gmail" />
-          </button>
-          <button class="filter-button" data-category="calendar">
-            <img src="../assets/icons/google-calendar-draw.png" alt="Calendar" />
-          </button>
-          <button class="filter-button" data-category="history">
-            <img src="../assets/icons/chrome-draw.png" alt="Browser" />
-          </button>
-          <button class="filter-button" data-category="downloads">
-            <img src="../assets/icons/download-draw.png" alt="Downloads" />
-          </button>
-          <button class="filter-button" data-category="time">
-            <img src="../assets/icons/date-draw.png" alt="Date" />
-          </button>
-        </div>
-      
-        <div id="date-picker" class="date-picker hidden">
-            <div class="custom-select">
-                <div class="select-selected">All Dates</div>
-                <div class="select-options"></div>
+    <!-- Top Controls Section -->
+    <header class="top-controls">
+        <div class="top-right-buttons">
+            <button id="changeWallpaper" class="wallpaper-button">
+                <span class="material-icons">wallpaper</span>
+            </button>
+            <div id="wallpaperDropdown" class="wallpaper-dropdown">
+                <!-- Categories and photos will be added here dynamically -->
             </div>
         </div>
-      </div>
 
-      <button id="minimizeTimeline" class="minimize-button">
-        <span class="material-icons">unfold_less</span>
-    </button>
-      
-      
-
-    <div class="container">
-        <div id="greeting-container"></div>
-        <div class="search-bar-container">
-            <div class="search-engine-selector">
-                <img id="search-engine-icon" src="../assets/icons/google.png" alt="Engine Icon" />
-                <div id="engine-dropdown" class="engine-dropdown">
-                    <div class="engine-option" data-engine="google">
-                        <img src="../assets/icons/google.png" alt="Google" /> Google
-                    </div>
-                    <div class="engine-option" data-engine="chatgpt">
-                        <img src="../assets/icons/chatgpt.png" alt="ChatGPT" /> ChatGPT
-                    </div>
-                    <div class="engine-option" data-engine="reddit">
-                        <img src="../assets/icons/reddit.png" alt="Reddit" /> Reddit
-                    </div>
-                    <div class="engine-option" data-engine="youtube">
-                        <img src="../assets/icons/youtube.png" alt="Youtube" /> Youtube
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search Google or type a URL">
-                <button class="search-button">
-                    <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-                    </svg>
+        <div class="filter-menu">
+            <button id="filter-button" class="filter-button main">
+                <img src="../assets/icons/filter.svg" alt="Filter" />
+            </button>
+          
+            <div class="expanded-filter-buttons">
+                <button class="filter-button" data-category="drive">
+                    <img src="../assets/icons/drive-draw.png" alt="Drive" />
+                </button>
+                <button class="filter-button" data-category="emails">
+                    <img src="../assets/icons/gmail-draw.png" alt="Gmail" />
+                </button>
+                <button class="filter-button" data-category="calendar">
+                    <img src="../assets/icons/google-calendar-draw.png" alt="Calendar" />
+                </button>
+                <button class="filter-button" data-category="history">
+                    <img src="../assets/icons/chrome-draw.png" alt="Browser" />
+                </button>
+                <button class="filter-button" data-category="downloads">
+                    <img src="../assets/icons/download-draw.png" alt="Downloads" />
+                </button>
+                <button class="filter-button" data-category="time">
+                    <img src="../assets/icons/date-draw.png" alt="Date" />
                 </button>
             </div>
-            <div class="shortcuts-container">
-                <button id="shortcuts-button" class="shortcuts-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                        <path d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z"/>
-                    </svg>
-                    <span>Shortcuts</span>
-                </button>
-                <div id="shortcuts-dropdown" class="shortcuts-dropdown">
-                    <div id="quickLinksGrid" class="quick-links-grid">
-                        <!-- Quick links will be inserted here dynamically -->
-                    </div>
+          
+            <div id="date-picker" class="date-picker hidden">
+                <div class="custom-select">
+                    <div class="select-selected">All Dates</div>
+                    <div class="select-options"></div>
                 </div>
             </div>
         </div>
+    </header>
 
-        <!-- Login Section -->
-        <div id="login-section" class="login-section" style="display: none;">
-            <div class="login-container">
-                <div class="login-logo">
-                    <img src="../assets/icons/fire.png" alt="Fire">
+    <!-- Top Content Section -->
+    <section class="top-content">
+        <!-- Greeting Section -->
+        <div id="greeting-container" class="greeting-section">
+            <h1 class="greeting-heading"></h1>
+            <p class="greeting-summary"></p>
+            <p class="greeting-quote"></p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-bar">
+                <!-- Search Engine Selector -->
+                <div class="search-engine">
+                    <img id="search-engine-icon" src="../assets/icons/google.png" alt="Engine Icon" />
+                    <div id="engine-dropdown" class="engine-dropdown">
+                        <div class="engine-option" data-engine="google">
+                            <img src="../assets/icons/google.png" alt="Google" /> Google
+                        </div>
+                        <div class="engine-option" data-engine="chatgpt">
+                            <img src="../assets/icons/chatgpt.png" alt="ChatGPT" /> ChatGPT
+                        </div>
+                        <div class="engine-option" data-engine="reddit">
+                            <img src="../assets/icons/reddit.png" alt="Reddit" /> Reddit
+                        </div>
+                        <div class="engine-option" data-engine="youtube">
+                            <img src="../assets/icons/youtube.png" alt="Youtube" /> Youtube
+                        </div>
+                    </div>
                 </div>
-                <div class="login-content">
-                    <h1 class="login-title">Catch-Up</h1>
-                    <p class="login-description">Your personal digital timeline that keeps track of:</p>
-                    <ul class="login-features">
-                        <li><img src="../assets/icons/chrome-draw.png" alt="Browser"> Browser History</li>
-                        <li><img src="../assets/icons/gmail-draw.png" alt="Gmail"> Gmail Activity</li>
-                        <li><img src="../assets/icons/drive-draw.png" alt="Drive"> Google Drive Changes</li>
-                        <li><img src="../assets/icons/google-calendar-draw.png" alt="Calendar"> Calendar Events</li>
-                    </ul>
-                    <p class="privacy-message"><img src="../assets/icons/lock.png" alt="Lock"> Your data is for your eyes only. We never share, sell, or use your information for marketing purposes.</p>
-                    <button id="login-button" class="login-button">
-                        <img src="../assets/icons/google.png" alt="Google" class="google-icon">
-                        Sign in with Google
+
+                <!-- Search Input -->
+                <div class="search-input-wrapper">
+                    <input type="text" class="search-input" placeholder="Search Google or type a URL">
+                    <button class="search-button">
+                        <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Shortcuts Button -->
+                <div class="shortcuts-button-wrapper">
+                    <button id="shortcuts-button" class="shortcuts-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
+                            <path d="M240-160q-33 0-56.5-23.5T160-240q0-33 23.5-56.5T240-320q33 0 56.5 23.5T320-240q0 33-23.5 56.5T240-160Zm240 0q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm240 0q-33 0-56.5-23.5T640-240q0-33 23.5-56.5T720-320q33 0 56.5 23.5T800-240q0 33-23.5 56.5T720-160ZM240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400ZM240-640q-33 0-56.5-23.5T160-720q0-33 23.5-56.5T240-800q33 0 56.5 23.5T320-720q0 33-23.5 56.5T240-640Zm240 0q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Zm240 0q-33 0-56.5-23.5T640-720q0-33 23.5-56.5T720-800q33 0 56.5 23.5T800-720q0 33-23.5 56.5T720-640Z"/>
+                        </svg>
+                        <span>Shortcuts</span>
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Timeline Container -->
+            <!-- Search Suggestions -->
+            <div class="search-suggestions">
+                <div id="quickLinksGrid" class="quick-links-grid">
+                    <!-- Quick links will be inserted here dynamically -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login-section" class="login-section" style="display: none;">
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="../assets/icons/fire.png" alt="Fire">
+            </div>
+            <div class="login-content">
+                <h1 class="login-title">Catch-Up</h1>
+                <p class="login-description">Your personal digital timeline that keeps track of:</p>
+                <ul class="login-features">
+                    <li><img src="../assets/icons/chrome-draw.png" alt="Browser"> Browser History</li>
+                    <li><img src="../assets/icons/gmail-draw.png" alt="Gmail"> Gmail Activity</li>
+                    <li><img src="../assets/icons/drive-draw.png" alt="Drive"> Google Drive Changes</li>
+                    <li><img src="../assets/icons/google-calendar-draw.png" alt="Calendar"> Calendar Events</li>
+                </ul>
+                <p class="privacy-message"><img src="../assets/icons/lock.png" alt="Lock"> Your data is for your eyes only. We never share, sell, or use your information for marketing purposes.</p>
+                <button id="login-button" class="login-button">
+                    <img src="../assets/icons/google.png" alt="Google" class="google-icon">
+                    Sign in with Google
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="timeline-section">
+        <button id="minimizeTimeline" class="minimize-button">
+            <span class="material-icons">unfold_less</span>
+        </button>
+
         <div class="timeline-wrapper">
             <div class="timeline-container">
                 <div class="timeline-line"></div>
                 <div class="timeline-events" id="timeline-events"></div>
             </div>
-            
         </div>
         
-        <button id="scroll-left" class="nav-button">
-            <img src="../assets/icons/arrow_back.svg" alt="Scroll Left" />
-          </button>
-          
-          <button id="scroll-latest" class="nav-button">
-            <img src="../assets/icons/now-clock.png" alt="Go to Latest" />
-          </button>
-          
-          <button id="scroll-right" class="nav-button">
-            <img src="../assets/icons/arrow_forward.svg" alt="Scroll Right" />
-          </button>
-          
-          <template id="event-template">
-            <div class="timeline-event above" data-event-id="" data-category="" style="position: absolute;">
-              <div class="timeline-dot">
+        <div class="timeline-navigation">
+            <button id="scroll-left" class="nav-button">
+                <img src="../assets/icons/arrow_back.svg" alt="Scroll Left" />
+            </button>
+            
+            <button id="scroll-latest" class="nav-button">
+                <img src="../assets/icons/now-clock.png" alt="Go to Latest" />
+            </button>
+            
+            <button id="scroll-right" class="nav-button">
+                <img src="../assets/icons/arrow_forward.svg" alt="Scroll Right" />
+            </button>
+        </div>
+    </section>
+
+    <!-- Templates -->
+    <template id="event-template">
+        <div class="timeline-event above" data-event-id="" data-category="" style="position: absolute;">
+            <div class="timeline-dot">
                 <button class="close-button" title="Hide this event"><img src="../assets/icons/close.svg" alt="Close"></button>
                 <button class="mark-button" title="Mark this event"><img src="../assets/icons/check.svg" alt="Mark"></button>
-              </div>
-              <div class="event-popup">
+            </div>
+            <div class="event-popup">
                 <div class="date"></div>
                 <div class="details-container"></div>
-              </div>
             </div>
-          </template>
-          
+        </div>
+    </template>
 
-        <!-- Modal for adding new shortcut -->
-        <div id="addShortcutModal" class="modal">
-            <div class="modal-content">
-                <h3>Add Shortcut</h3>
-                <div class="modal-form">
-                    <div class="form-group">
-                        <label for="shortcutName">Name</label>
-                        <input type="text" id="shortcutName" placeholder="Enter a name">
-                    </div>
-                    <div class="form-group">
-                        <label for="shortcutUrl">URL</label>
-                        <input type="text" id="shortcutUrl" placeholder="Enter a URL">
-                    </div>
-                    <div class="modal-buttons">
-                        <button id="cancelShortcut" class="btn-secondary">Cancel</button>
-                        <button id="saveShortcut" class="btn-primary">Done</button>
-                    </div>
+    <!-- Modals -->
+    <div id="addShortcutModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Shortcut</h3>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label for="shortcutName">Name</label>
+                    <input type="text" id="shortcutName" placeholder="Enter a name">
+                </div>
+                <div class="form-group">
+                    <label for="shortcutUrl">URL</label>
+                    <input type="text" id="shortcutUrl" placeholder="Enter a URL">
+                </div>
+                <div class="modal-buttons">
+                    <button id="cancelShortcut" class="btn-secondary">Cancel</button>
+                    <button id="saveShortcut" class="btn-primary">Done</button>
                 </div>
             </div>
         </div>
-
-<!-- Modal for adding new search engine -->
-        <div id="addEngineModal" class="modal">
-            <div class="modal-content">
-                <h3>Add Search Engine</h3>
-                <div class="modal-form">
-                    <div class="form-group">
-                        <label for="engineName">Engine Name</label>
-                        <input type="text" id="engineName" placeholder="Enter name (e.g., Google)" />
-                    </div>
-                    <div class="form-group">
-                        <label for="engineUrl">Search URL</label>
-                        <input type="text" id="engineUrl" placeholder="Just enter the website (e.g., google.com)" />
-                        <small>Supported: google.com, youtube.com, reddit.com, chat.openai.com, wikipedia.org</small>
-
-                    </div>
-                    <div class="form-group">
-                        <label for="engineIcon">Icon URL (optional)</label>
-                        <input type="text" id="engineIcon" placeholder="Enter icon URL (optional)" />
-                    </div>
-                    <div class="modal-buttons">
-                        <button id="cancelEngine" class="btn-secondary">Cancel</button>
-                        <button id="saveEngine" class="btn-primary">Save Engine</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-
-
-        <!-- Add this at the bottom of your body tag -->
-        <div id="download-error-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <img src="../assets/icons/notifications.svg" alt="Warning" class="modal-icon">
-                    <h3>File Not Found</h3>
+    <div id="addEngineModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Search Engine</h3>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label for="engineName">Engine Name</label>
+                    <input type="text" id="engineName" placeholder="Enter name (e.g., Google)" />
                 </div>
-                <div class="modal-body">
-                    <p>We couldn't locate this file in your downloads folder. This might happen if:</p>
-                    <ul>
-                        <li>The file was moved to a different location</li>
-                        <li>The file name was changed</li>
-                        <li>The file was deleted</li>
-                    </ul>
-                    <p class="note">Note: We can only access files in their original download location.</p>
+                <div class="form-group">
+                    <label for="engineUrl">Search URL</label>
+                    <input type="text" id="engineUrl" placeholder="Just enter the website (e.g., google.com)" />
+                    <small>Supported: google.com, youtube.com, reddit.com, chat.openai.com, wikipedia.org</small>
                 </div>
-                <div class="modal-actions">
-                    <button id="redownload-btn" class="btn-primary">Redownload File</button>
-                    <button id="close-modal-btn" class="btn-secondary">Close</button>
+                <div class="form-group">
+                    <label for="engineIcon">Icon URL (optional)</label>
+                    <input type="text" id="engineIcon" placeholder="Enter icon URL (optional)" />
+                </div>
+                <div class="modal-buttons">
+                    <button id="cancelEngine" class="btn-secondary">Cancel</button>
+                    <button id="saveEngine" class="btn-primary">Save Engine</button>
                 </div>
             </div>
         </div>
+    </div>
 
-    <script type="module" src="../components/search/search.js"></script>
+    <div id="download-error-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <img src="../assets/icons/notifications.svg" alt="Warning" class="modal-icon">
+                <h3>File Not Found</h3>
+            </div>
+            <div class="modal-body">
+                <p>We couldn't locate this file in your downloads folder. This might happen if:</p>
+                <ul>
+                    <li>The file was moved to a different location</li>
+                    <li>The file name was changed</li>
+                    <li>The file was deleted</li>
+                </ul>
+                <p class="note">Note: We can only access files in their original download location.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="redownload-btn" class="btn-primary">Redownload File</button>
+                <button id="close-modal-btn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script type="module" src="../components/search/search.js"></script> -->
     <script type="module" src="./main.js"></script>
     <script type="module" src="../components/wallpaper/wallPaper.js"></script>
     <script type="module" src="../components/timeline/timelineMinimize.js"></script>
