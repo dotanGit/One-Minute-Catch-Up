@@ -97,25 +97,48 @@
             <!-- 1. Search Engine Selector -->
             <div class="search-engine-selector">
                 <button class="engine-button" aria-label="Select search engine">
-                    <img id="current-engine-icon" src="../assets/icons/google.png" alt="Current search engine" />
+                    <img id="current-engine-icon" src="" alt="Current search engine" />
                 </button>
                 <!-- Engine Options Dropdown -->
                 <div class="engine-options" hidden>
-                    <div class="engine-option" data-engine="google">
-                        <img src="../assets/icons/google.png" alt="Google" />
-                        <span>Google</span>
+                    <!-- Engine Option #1-->
+                    <div class="engine-option" data-engine="">
+                        <img src="" alt="" />
+                        <span></span>
+                        <div class="engine-actions">
+                            <button class="edit-engine" title="Edit engine">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="delete-engine" title="Delete engine">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="engine-option" data-engine="chatgpt">
-                        <img src="../assets/icons/chatgpt.png" alt="ChatGPT" />
-                        <span>ChatGPT</span>
+                    <!-- Engine Option #2-->
+                    <div class="engine-option" data-engine="">
+                        <img src="" alt="" />
+                        <span></span>
+                        <div class="engine-actions">
+                            <button class="edit-engine" title="Edit engine">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="delete-engine" title="Delete engine">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="engine-option" data-engine="reddit">
-                        <img src="../assets/icons/reddit.png" alt="Reddit" />
-                        <span>Reddit</span>
-                    </div>
-                    <div class="engine-option" data-engine="youtube">
-                        <img src="../assets/icons/youtube.png" alt="YouTube" />
-                        <span>YouTube</span>
+                    <!-- Engine Option #3-->
+                    <div class="engine-option" data-engine="">
+                        <img src="" alt="" />
+                        <span></span>
+                        <div class="engine-actions">
+                            <button class="edit-engine" title="Edit engine">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="delete-engine" title="Delete engine">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -208,92 +231,57 @@
     </section>
           
     <!-- Templates -->
-          <template id="event-template">
-            <div class="timeline-event above" data-event-id="" data-category="" style="position: absolute;">
-              <div class="timeline-dot">
+    <template id="event-template">
+        <div class="timeline-event above" data-event-id="" data-category="" style="position: absolute;">
+            <div class="timeline-dot">
                 <button class="close-button" title="Hide this event"><img src="../assets/icons/close.svg" alt="Close"></button>
                 <button class="mark-button" title="Mark this event"><img src="../assets/icons/check.svg" alt="Mark"></button>
-              </div>
-              <div class="event-popup">
+            </div>
+            <div class="event-popup">
                 <div class="date"></div>
                 <div class="details-container"></div>
-              </div>
             </div>
-          </template>
-          
+        </div>
+    </template>
+
     <!-- Modals -->
-        <div id="addShortcutModal" class="modal">
-            <div class="modal-content">
-                <h3>Add Shortcut</h3>
-                <div class="modal-form">
-                    <div class="form-group">
-                        <label for="shortcutName">Name</label>
-                        <input type="text" id="shortcutName" placeholder="Enter a name">
-                    </div>
-                    <div class="form-group">
-                        <label for="shortcutUrl">URL</label>
-                        <input type="text" id="shortcutUrl" placeholder="Enter a URL">
-                    </div>
-                    <div class="modal-buttons">
-                        <button id="cancelShortcut" class="btn-secondary">Cancel</button>
-                        <button id="saveShortcut" class="btn-primary">Done</button>
-                    </div>
+    <div id="selectEngineModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Select Search Engine</h3>
+            <div class="engine-grid">
+                <div class="engine-grid-item" data-engine="google">
+                    <img src="../assets/icons/google.png" alt="Google" />
+                    <span>Google</span>
+                </div>
+                <div class="engine-grid-item" data-engine="chatgpt">
+                    <img src="../assets/icons/chatgpt.png" alt="ChatGPT" />
+                    <span>ChatGPT</span>
+                </div>
+                <div class="engine-grid-item" data-engine="reddit">
+                    <img src="../assets/icons/reddit.png" alt="Reddit" />
+                    <span>Reddit</span>
+                </div>
+                <div class="engine-grid-item" data-engine="youtube">
+                    <img src="../assets/icons/youtube.png" alt="YouTube" />
+                    <span>YouTube</span>
+                </div>
+                <div class="engine-grid-item" data-engine="wikipedia">
+                    <img src="../assets/icons/wikipedia.png" alt="Wikipedia" />
+                    <span>Wikipedia</span>
+                </div>
+                <div class="engine-grid-item" data-engine="github">
+                    <img src="../assets/icons/github.png" alt="GitHub" />
+                    <span>GitHub</span>
                 </div>
             </div>
-        </div>
-
-        <div id="addEngineModal" class="modal">
-            <div class="modal-content">
-                <h3>Add Search Engine</h3>
-                <div class="modal-form">
-                    <div class="form-group">
-                        <label for="engineName">Engine Name</label>
-                        <input type="text" id="engineName" placeholder="Enter name (e.g., Google)" />
-                    </div>
-                    <div class="form-group">
-                        <label for="engineUrl">Search URL</label>
-                        <input type="text" id="engineUrl" placeholder="Just enter the website (e.g., google.com)" />
-                        <small>Supported: google.com, youtube.com, reddit.com, chat.openai.com, wikipedia.org</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="engineIcon">Icon URL (optional)</label>
-                        <input type="text" id="engineIcon" placeholder="Enter icon URL (optional)" />
-                    </div>
-                    <div class="modal-buttons">
-                        <button id="cancelEngine" class="btn-secondary">Cancel</button>
-                        <button id="saveEngine" class="btn-primary">Save Engine</button>
-                    </div>
-                </div>
+            <div class="modal-buttons">
+                <button id="cancelEngine" class="btn-secondary">Cancel</button>
             </div>
         </div>
-
-        <div id="download-error-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <img src="../assets/icons/notifications.svg" alt="Warning" class="modal-icon">
-                    <h3>File Not Found</h3>
-                </div>
-                <div class="modal-body">
-                    <p>We couldn't locate this file in your downloads folder. This might happen if:</p>
-                    <ul>
-                        <li>The file was moved to a different location</li>
-                        <li>The file name was changed</li>
-                        <li>The file was deleted</li>
-                    </ul>
-                    <p class="note">Note: We can only access files in their original download location.</p>
-                </div>
-                <div class="modal-actions">
-                    <button id="redownload-btn" class="btn-primary">Redownload File</button>
-                    <button id="close-modal-btn" class="btn-secondary">Close</button>
-                </div>
-            </div>
-        </div>
+    </div>
 
     <script type="module" src="./main.js"></script>
     <script type="module" src="../components/search/search.js"></script>
-    <script type="module" src="../components/search/searchShortcuts.js"></script>
-    <script type="module" src="../components/search/searchHistory.js"></script>
-    <script type="module" src="../components/search/searchSuggestions.js"></script>
     <script type="module" src="../components/wallpaper/wallPaper.js"></script>
     <script type="module" src="../components/timeline/timelineMinimize.js"></script>
 </body>
