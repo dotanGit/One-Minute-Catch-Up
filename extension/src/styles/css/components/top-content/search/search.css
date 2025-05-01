@@ -1,1 +1,111 @@
+/*themes */
+[data-theme="light"] {
+    --search-bg: rgba(255, 255, 255, 0.5);
+    --search-text: #000000;
+    --search-icon: #6b6b6b;
+    --search-icon-hover: #000000;
+}
 
+[data-theme="dark"] {
+    --search-bg: #282828;
+    --search-text: #ffffff;
+    --search-icon: #9aa0a6;
+    --search-icon-hover: #ffffff;
+}
+
+/* Search Section Container */
+.search-section {
+    background-color: var(--search-bg);
+    backdrop-filter: blur(30px);
+    padding: 0 1rem 0 1rem;
+    width: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 1.5rem;
+    height: 3.5rem;
+}
+
+.search-section:has(.search-input:focus) {
+    border-radius: 1.5rem 1.5rem 0 0; 
+    background-color: white;
+}
+
+/* 1. Search Engine Selector */
+.search-engine-selector {
+    flex: 0 0 auto; /* Don't grow or shrink */
+}
+
+.engine-button {
+    background: none;  
+    border: none;      
+    cursor: pointer;   
+}
+
+.engine-button img {
+    width: clamp(1.5rem, 2vw, 2rem);
+    height: auto;
+    display: block;    /* Remove any extra space */
+}
+
+.engine-button:hover img{
+    scale: 1.1;
+}
+
+/* 2. Search Input Container - Takes most space */
+.search-input-container {
+    flex: 1; /* Takes all available space */
+}
+
+.search-input {
+    width: 100%;
+    border: none;
+    height: 2.75rem;
+    font-size: clamp(0.875rem, 1.3vw, 2rem);
+    background: transparent;
+    color: var(--search-text);
+}
+
+.search-input:focus {
+    outline: none;
+    border: none;
+}
+
+/* 3. Search Button - Fixed size */
+.search-button {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.search-button svg {
+    width: clamp(1.25rem, 1.6vw, 2rem);
+    height: auto;
+    fill: var(--search-icon);
+}
+
+.search-button:hover svg{
+    fill: var(--search-icon-hover);
+    scale: 1.1;
+}
+
+/* 4. Shortcuts Button - Fixed size */
+.shortcuts-button {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.shortcuts-button svg {
+    width: clamp(1.25rem, 1.6vw, 2rem);
+    height: auto;
+    fill: var(--search-icon);
+}
+
+.shortcuts-button:hover svg{
+    fill: var(--search-icon-hover);
+    scale: 1.1;
+}
