@@ -66,10 +66,8 @@ class SearchEngineManager {
         engineOptions.forEach(option => {
             option.dataset.engine = '';
             const img = option.querySelector('img');
-            const span = option.querySelector('span');
             img.src = '';
             img.alt = '';
-            span.textContent = '';
         });
         
         // Populate with current engines
@@ -78,10 +76,8 @@ class SearchEngineManager {
                 const option = engineOptions[index];
                 option.dataset.engine = engine.engine;
                 const img = option.querySelector('img');
-                const span = option.querySelector('span');
                 img.src = engine.icon;
                 img.alt = engine.name;
-                span.textContent = engine.name;
             }
         });
     }
