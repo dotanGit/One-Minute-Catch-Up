@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Lora:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Fraunces:ital@0;1&display=swap');
 
 
 /* Theme Variables */
 :root {
   /* Font sizes using relative units */
-  --heading-size: clamp(2rem, 3vw, 10rem);
-  --summary-size: clamp(1.2rem, 2vw, 2rem);
-  --quote-size: clamp(1rem, 1.8vw, 1.75rem);
+  --heading-size: clamp(2rem, 2.75vw, 10rem);
+  --summary-size: clamp(1.2rem, 1.5vw, 6rem);
+  --quote-size: clamp(1.2rem, 1.5vw, 6rem);
   --quote-font: 'Crimson Text', serif;
-  --main-font: 'Roboto', system-ui, sans-serif;
+  --main-font: 'Manrope', system-ui, sans-serif;
 }
 
 /* Dark theme */
@@ -39,9 +39,8 @@
 .greeting-heading {
   font-family: var(--main-font);
   font-size: var(--heading-size);
-  font-weight: 500;
+  font-weight: 450;
   color: var(--greeting-head);
-  margin: 0;
   text-align: center;
 }
 
@@ -52,8 +51,6 @@
   color: var(--greeting-text-summary);
   text-align: center;
   max-width: 90%;
-  margin: 0;
-  line-height: 1.5;
 }
 
 /* Quote of the Day - Simple but elegant styling */
@@ -65,23 +62,4 @@
   text-align: center;
   max-width: 90%;
   position: relative;
-  line-height: 1.6;
-}
-
-/* Quote marks styling */
-.greeting-quote::before,
-.greeting-quote::after {
-  font-size: 2em;
-  position: absolute;
-  opacity: 0.3;
-}
-
-.greeting-quote::before {
-  left: 0;
-  top: 0;
-}
-
-.greeting-quote::after {
-  right: 0;
-  bottom: -0.5rem;
 }
