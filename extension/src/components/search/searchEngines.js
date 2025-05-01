@@ -3,39 +3,39 @@ const PREDEFINED_ENGINES = {
     google: {
         name: 'Google',
         engine: 'google',
-        icon: '../assets/icons/google.png',
+        icon: '../assets/icons/search-engines/google.png',
         url: 'https://www.google.com/search?q={query}'
     },
     chatgpt: {
         name: 'ChatGPT',
         engine: 'chatgpt',
-        icon: '../assets/icons/chatgpt.png',
+        icon: '../assets/icons/search-engines/chatgpt.png',
         url: 'https://chatgpt.com/?q={query}&hints=search'
     },
     reddit: {
         name: 'Reddit',
         engine: 'reddit',
-        icon: '../assets/icons/reddit.png',
+        icon: '../assets/icons/search-engines/reddit.png',
         url: 'https://www.reddit.com/search/?q={query}'
     },
     youtube: {
         name: 'YouTube',
         engine: 'youtube',
-        icon: '../assets/icons/youtube.png',
+        icon: '../assets/icons/search-engines/youtube.png',
         url: 'https://www.youtube.com/results?search_query={query}'
     },
-    wikipedia: {
-        name: 'Wikipedia',
-        engine: 'wikipedia',
-        icon: '../assets/icons/wikipedia.png',
-        url: 'https://en.wikipedia.org/w/index.php?search={query}'
-    },
-    github: {
-        name: 'GitHub',
-        engine: 'github',
-        icon: '../assets/icons/github.png',
-        url: 'https://github.com/search?q={query}'
-    }
+    yahoo: {
+        name: 'Yahoo Finance',
+        engine: 'yahoo-finance',
+        icon: '../assets/icons/search-engines/stocks.png',
+        url: 'https://finance.yahoo.com/lookup?s={query}'
+      },
+    quora: {
+        name: 'Quora',
+        engine: 'quora',
+        icon: '../assets/icons/search-engines/quora.png',
+        url: 'https://www.quora.com/search?q={query}'
+      }
 };
 
 class SearchEngineManager {
@@ -53,31 +53,6 @@ class SearchEngineManager {
 
     saveEngines() {
         localStorage.setItem('searchEngines', JSON.stringify(this.engines));
-    }
-
-    addEngine(engineName) {
-        if (PREDEFINED_ENGINES[engineName]) {
-            // Find the engine to replace (the one that was clicked)
-            const currentEngine = this.engines.find(e => e.engine === engineName);
-            if (!currentEngine) {
-                // If we have less than 3 engines, add the new one
-                if (this.engines.length < 3) {
-                    this.engines.push(PREDEFINED_ENGINES[engineName]);
-                }
-            } else {
-                // Replace the current engine with the selected one
-                const index = this.engines.indexOf(currentEngine);
-                this.engines[index] = PREDEFINED_ENGINES[engineName];
-            }
-            this.saveEngines();
-            this.initializeEngineOptions();
-        }
-    }
-
-    deleteEngine(engineName) {
-        this.engines = this.engines.filter(e => e.engine !== engineName);
-        this.saveEngines();
-        this.initializeEngineOptions();
     }
 
     getEngine(engineName) {
@@ -130,17 +105,12 @@ class SearchEngineManager {
                     this.saveEngines();
                     this.initializeEngineOptions();
                     
-                    // Update the current engine icon if this was the active engine or the first engine
-                    if (this.clickedOption.dataset.engine === this.currentEngine || clickedIndex === 0) {
-                        const currentEngineIcon = document.getElementById('current-engine-icon');
-                        if (currentEngineIcon) {
-                            currentEngineIcon.src = engineData.icon;
-                            currentEngineIcon.alt = engineData.name;
-                        }
-                        // Update the current engine if it's the first one
-                        if (clickedIndex === 0) {
-                            this.currentEngine = newEngine;
-                        }
+                    // Update the current engine icon if this was the active engine
+                    const currentEngineIcon = document.getElementById('current-engine-icon');
+                    if (currentEngineIcon && clickedIndex === 0) {
+                        currentEngineIcon.src = engineData.icon;
+                        currentEngineIcon.alt = engineData.name;
+                        this.currentEngine = newEngine;
                     }
                 }
                 
@@ -155,7 +125,7 @@ class SearchEngineManager {
 
     showEngineSelection(currentEngine, clickedOption) {
         this.currentEngine = currentEngine;
-        this.clickedOption = clickedOption; // Store which option was clicked
+        this.clickedOption = clickedOption;
         const modal = document.getElementById('selectEngineModal');
         const gridItems = modal.querySelectorAll('.engine-grid-item');
         

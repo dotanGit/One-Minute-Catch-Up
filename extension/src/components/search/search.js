@@ -46,8 +46,6 @@ class SearchHandler {
             
             if (e.target.closest('.edit-engine')) {
                 this.handleEditEngine(engine);
-            } else if (e.target.closest('.delete-engine')) {
-                this.handleDeleteEngine(engine);
             } else {
                 this.switchSearchEngine(engine);
             }
@@ -85,15 +83,6 @@ class SearchHandler {
     handleEditEngine(engine) {
         const clickedOption = event.target.closest('.engine-option');
         searchEngineManager.showEngineSelection(engine, clickedOption);
-    }
-
-    handleDeleteEngine(engine) {
-        if (confirm('Are you sure you want to delete this search engine?')) {
-            searchEngineManager.deleteEngine(engine);
-            if (this.currentEngine === engine) {
-                this.switchSearchEngine(searchEngineManager.engines[0].engine);
-            }
-        }
     }
 }
 
