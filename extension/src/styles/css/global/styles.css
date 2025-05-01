@@ -25,17 +25,6 @@ body {
     margin: 0 auto;
 }
 
-.greeting {
-    font-size: 35px;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 60px;
-    margin-top: 60px;
-    background: linear-gradient(45deg, #6d6b6b, #323232);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 .wallpaper-selector {
     position: fixed;
     top: 20px;
