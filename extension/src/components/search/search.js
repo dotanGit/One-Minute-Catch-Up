@@ -17,6 +17,7 @@ class SearchHandler {
         this.currentEngine = searchEngineManager.engines[0].engine;
         this.currentEngineIcon.src = searchEngineManager.engines[0].icon;
         this.currentEngineIcon.alt = searchEngineManager.engines[0].name;
+        this.searchInput.placeholder = searchEngineManager.engines[0].placeholder;
         
         this.initializeEventListeners();
     }
@@ -77,6 +78,7 @@ class SearchHandler {
         this.currentEngine = engine;
         this.currentEngineIcon.src = engineData.icon;
         this.currentEngineIcon.alt = engineData.name;
+        this.searchInput.placeholder = engineData.placeholder;
         this.engineOptions.hidden = true;
     }
 
