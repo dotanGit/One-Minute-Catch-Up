@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../styles/css/components/top-content/greeting/greeting.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/search/search.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/search/search-engine.css">
-
+    <link rel="stylesheet" href="../styles/css/components/top-content/search/search-shortcuts.css">
     <!-- TIMELINE -->
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_base.css">
     <link rel="stylesheet" href="../styles/css/components/timeline/timeline_events.css">
@@ -161,12 +161,23 @@
                     <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
             </button>
-            <!-- 4. Shortcuts Button -->
-            <button class="shortcuts-button" aria-label="Show shortcuts">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
-                    <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z"/>
-                </svg>
-            </button>
+
+            <!-- 4. Shortcuts Section -->
+            <div class="shortcuts-section">
+                <button class="shortcuts-button" aria-label="Show shortcuts">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
+                        <path d="M520-600v-240h320v240H520ZM120-440v-400h320v400H120Zm400 320v-400h320v400H520Zm-400 0v-240h320v240H120Zm80-400h160v-240H200v240Zm400 320h160v-240H600v240Zm0-480h160v-80H600v80ZM200-200h160v-80H200v80Zm160-320Zm240-160Zm0 240ZM360-280Z"/>
+                    </svg>
+                </button>
+
+                <div class="shortcuts-list hidden">
+                    <!-- Shortcuts will be added here dynamically -->
+                    <button class="add-shortcut-button">
+                        <span class="material-icons">add</span>
+                        Add Shortcut
+                    </button>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -271,6 +282,39 @@
             </div>
         </div>
     </div>
+
+    <div id="addShortcutModal" class="modal" style="display: none;" data-theme="dark">
+        <div class="modal-content" data-theme="dark">
+            <h3>Add Shortcut</h3>
+            <form id="shortcutForm">
+                <div class="form-group">
+                    <label for="shortcutName">Name</label>
+                    <input type="text" id="shortcutName" placeholder="Enter shortcut name" required>
+                </div>
+                <div class="form-group">
+                    <label for="shortcutUrl">URL</label>
+                    <input type="url" id="shortcutUrl" placeholder="Enter shortcut URL" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" id="cancelShortcut" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <template id="shortcut-item-template">
+      <div class="shortcut-item">
+        <a class="shortcut-link" href="" target="_blank" rel="noopener">
+          <img class="shortcut-favicon" src="" alt="">
+          <span class="shortcut-name"></span>
+        </a>
+        <div class="shortcut-controls">
+          <button class="edit-shortcut"><span class="material-icons">edit</span></button>
+          <button class="delete-shortcut"><span class="material-icons">delete</span></button>
+        </div>
+      </div>
+    </template>
 
     <script type="module" src="./main.js"></script>
     <script type="module" src="../components/search/search.js"></script>

@@ -1,7 +1,6 @@
 import { isValidUrl } from './searchUtils.js';
 import { saveSearchToHistory, getSearchSuggestions, getAutocompleteSuggestions } from './searchHistory.js';
 import { createSuggestionsContainer, displaySearchSuggestions } from './searchSuggestions.js';
-import { initializeShortcuts } from './searchShortcuts.js';
 import { searchEngineManager } from './searchEngines.js';
 
 // Search functionality for the extension

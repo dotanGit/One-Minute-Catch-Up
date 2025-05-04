@@ -2,6 +2,7 @@ import { initLogin, loadTimeline } from '../components/login/login.js';
 import { initTimelineMinimize } from '../components/timeline/timelineMinimize.js';
 import { renderGreeting } from '../components/greeting/greeting.js';
 import { getUserSummary } from '../components/summary/userSummaryBuilder.js';
+import { shortcutsManager } from '../components/search/searchShortcuts.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Check login status first
