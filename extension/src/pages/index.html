@@ -174,7 +174,6 @@
                     <!-- Shortcuts will be added here dynamically -->
                     <button class="add-shortcut-button">
                         <span class="material-icons">add</span>
-                        Add Shortcut
                     </button>
                 </div>
             </div>
@@ -305,14 +304,17 @@
 
     <template id="shortcut-item-template">
       <div class="shortcut-item">
+        <button class="shortcut-menu-btn" aria-label="Shortcut menu">
+          <span class="material-icons">more_vert</span>
+        </button>
+        <div class="shortcut-menu-dropdown">
+          <button class="edit-shortcut">Edit</button>
+          <button class="delete-shortcut">Delete</button>
+        </div>
         <a class="shortcut-link" href="" target="_blank" rel="noopener">
           <img class="shortcut-favicon" src="" alt="">
           <span class="shortcut-name"></span>
         </a>
-        <div class="shortcut-controls">
-          <button class="edit-shortcut"><span class="material-icons">edit</span></button>
-          <button class="delete-shortcut"><span class="material-icons">delete</span></button>
-        </div>
       </div>
     </template>
 

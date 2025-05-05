@@ -115,16 +115,62 @@ class ShortcutsManager {
 
         shortcutElement.querySelector('.shortcut-name').textContent = shortcut.name;
 
-        shortcutElement.querySelector('.edit-shortcut').addEventListener('click', (e) => {
+        // Menu button logic
+        const menuBtn = shortcutElement.querySelector('.shortcut-menu-btn');
+        const menuDropdown = shortcutElement.querySelector('.shortcut-menu-dropdown');
+
+        menuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = shortcutElement.classList.contains('menu-open');
+
+            // Close all other open dropdowns
+            document.querySelectorAll('.shortcut-item.menu-open').forEach(item => {
+                if (item !== shortcutElement) {
+                    item.classList.remove('menu-open');
+                    const dropdown = item.querySelector('.shortcut-menu-dropdown');
+                    const link = item.querySelector('.shortcut-link');
+                    if (dropdown) dropdown.style.display = 'none';
+                    if (link) link.style.display = '';
+                }
+            });
+
+            if (isOpen) {
+                menuDropdown.style.display = 'none';
+                link.style.display = '';
+                shortcutElement.classList.remove('menu-open');
+            } else {
+                menuDropdown.style.display = 'flex';
+                link.style.display = 'none';
+                shortcutElement.classList.add('menu-open');
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function handler(e) {
+            if (!shortcutElement.contains(e.target)) {
+                menuDropdown.style.display = 'none';
+                link.style.display = '';
+                shortcutElement.classList.remove('menu-open');
+            }
+        });
+
+        // Edit and Delete logic
+        menuDropdown.querySelector('.edit-shortcut').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.editShortcut(index);
+            menuDropdown.style.display = 'none';
+            link.style.display = '';
+            shortcutElement.classList.remove('menu-open');
         });
 
-        shortcutElement.querySelector('.delete-shortcut').addEventListener('click', (e) => {
+        menuDropdown.querySelector('.delete-shortcut').addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this.removeShortcut(index);
+            // No need to show link, as item will be removed
         });
 
         return shortcutElement;
