@@ -129,7 +129,7 @@
 }
 
 /* Modal Styles */
-#selectEngineModal {
+.engine-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -155,7 +155,7 @@
     }
 }
 
-.modal-content {
+.engine-modal-content {
     background: var(--selectEngineModal-bg);
     border-radius: 2rem;
     padding: 3rem;
@@ -181,7 +181,7 @@
     }
 }
 
-.modal-content::before {
+.engine-modal-content::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -198,7 +198,7 @@
     to { transform: rotate(360deg); }
 }
 
-.modal-content h3 {
+.engine-modal-content h3 {
     font-size: 2rem;
     margin-bottom: 2.5rem;
     text-align: center;
@@ -208,7 +208,7 @@
     letter-spacing: 0.5px;
 }
 
-.modal-content h3::after {
+.engine-modal-content h3::after {
     content: '';
     position: absolute;
     bottom: -0.5rem;
@@ -293,7 +293,7 @@
     letter-spacing: 0.5px;
 }
 
-.modal-buttons {
+.engine-modal-buttons {
     display: flex;
     justify-content: flex-end;
     margin-top: 2.5rem;

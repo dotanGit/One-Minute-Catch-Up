@@ -246,9 +246,25 @@
         </div>
     </template>
 
-    <!-- Modals -->
-    <div id="selectEngineModal" class="modal" style="display: none;" data-theme="dark">
-        <div class="modal-content" data-theme="dark">
+    <template id="shortcut-item-template">
+        <div class="shortcut-item">
+          <button class="shortcut-menu-btn" aria-label="Shortcut menu">
+            <span class="material-icons">more_vert</span>
+          </button>
+          <div class="shortcut-menu-dropdown">
+            <button class="edit-shortcut">Edit</button>
+            <button class="delete-shortcut">Delete</button>
+          </div>
+          <a class="shortcut-link" href="" target="_blank" rel="noopener">
+            <img class="shortcut-favicon" src="" alt="">
+            <span class="shortcut-name"></span>
+          </a>
+        </div>
+      </template>
+
+    <!-- Engine Modal -->
+    <div id="selectEngineModal" class="engine-modal" style="display: none;" data-theme="light">
+        <div class="engine-modal-content">
             <h3>Select Search Engine</h3>
             <div class="engine-grid">
                 <div class="engine-grid-item" data-engine="google">
@@ -276,47 +292,30 @@
                     <span>Quora</span>
                 </div>
             </div>
-            <div class="modal-buttons">
+            <div class="engine-modal-buttons">
                 <button id="cancelEngine" class="btn-secondary">Cancel</button>
             </div>
         </div>
     </div>
 
-    <div id="addShortcutModal" class="modal" style="display: none;" data-theme="dark">
-        <div class="modal-content" data-theme="dark">
+    <!-- Add Shortcut Modal -->
+    <div id="addShortcutModal" class="shortcut-modal" style="display: none;" data-theme="dark">
+        <div class="shortcut-modal-content">
             <h3>Add Shortcut</h3>
             <form id="shortcutForm">
                 <div class="form-group">
-                    <label for="shortcutName">Name</label>
                     <input type="text" id="shortcutName" placeholder="Enter shortcut name" required>
                 </div>
                 <div class="form-group">
-                    <label for="shortcutUrl">URL</label>
                     <input type="url" id="shortcutUrl" placeholder="Enter shortcut URL" required>
                 </div>
-                <div class="modal-buttons">
+                <div class="shortcut-modal-buttons">
                     <button type="button" id="cancelShortcut" class="btn-secondary">Cancel</button>
                     <button type="submit" class="btn-primary">Add</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <template id="shortcut-item-template">
-      <div class="shortcut-item">
-        <button class="shortcut-menu-btn" aria-label="Shortcut menu">
-          <span class="material-icons">more_vert</span>
-        </button>
-        <div class="shortcut-menu-dropdown">
-          <button class="edit-shortcut">Edit</button>
-          <button class="delete-shortcut">Delete</button>
-        </div>
-        <a class="shortcut-link" href="" target="_blank" rel="noopener">
-          <img class="shortcut-favicon" src="" alt="">
-          <span class="shortcut-name"></span>
-        </a>
-      </div>
-    </template>
 
     <script type="module" src="./main.js"></script>
     <script type="module" src="../components/search/search.js"></script>
