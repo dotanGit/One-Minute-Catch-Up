@@ -1,7 +1,7 @@
-import { isValidUrl } from './searchUtils.js';
-import { saveSearchToHistory, getSearchSuggestions, getAutocompleteSuggestions } from './searchHistory.js';
-import { createSuggestionsContainer, displaySearchSuggestions } from './searchSuggestions.js';
 import { searchEngineManager } from './searchEngines.js';
+import { saveSearchToHistory,getSearchSuggestions } from './searchHistory.js'; 
+import { SearchSuggestionManager } from './searchSuggestions.js';
+
 
 // Search functionality for the extension
 class SearchHandler {
@@ -11,6 +11,8 @@ class SearchHandler {
         this.currentEngineIcon = document.getElementById('current-engine-icon');
         this.engineOptions = document.querySelector('.engine-options');
         this.engineSelector = document.querySelector('.engine-button');
+        this.suggestionManager = new SearchSuggestionManager();
+
         
         // Initialize with the first engine from the list
         this.currentEngine = searchEngineManager.engines[0].engine;
@@ -57,11 +59,22 @@ class SearchHandler {
                 this.engineOptions.hidden = true;
             }
         });
+
+        // Show suggestions when input is focused or clicked
+        this.searchInput.addEventListener('focus', async () => {
+            const suggestions = await getSearchSuggestions();
+            this.suggestionManager.displaySuggestions(suggestions, (query) => {
+                this.searchInput.value = query;
+                this.suggestionManager.hideSuggestions();
+            });
+        });
     }
 
     performSearch() {
         const query = this.searchInput.value.trim();
         if (!query) return;
+
+        saveSearchToHistory(query);
 
         const engine = searchEngineManager.getEngine(this.currentEngine);
         if (!engine) return;
