@@ -27,10 +27,6 @@
     top: 4rem;
     left: 0;
     z-index: 1000;
-    background: var(--selectEngineModal-bg);
-    border-radius: 1rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-    overflow: hidden;
     transform-origin: top left;
     animation: optionsEntrance 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -57,7 +53,6 @@
     cursor: pointer;
     position: relative;
     transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    border-bottom: 1px solid var(--grid-item-bg);
 }
 
 .engine-option:last-child {
@@ -66,6 +61,7 @@
 
 .engine-option:hover {
     background: var(--grid-item-hover);
+    border-radius: 1rem;
     transform: translateX(0.5rem);
 }
 

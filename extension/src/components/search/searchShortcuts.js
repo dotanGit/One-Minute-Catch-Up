@@ -52,9 +52,10 @@ class ShortcutsManager {
         this.shortcutForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('shortcutName').value;
-            const url = document.getElementById('shortcutUrl').value;
+            let url = document.getElementById('shortcutUrl').value;
 
             if (name && url) {
+                url = this.normalizeUrl(url);
                 if (this.editingIndex !== undefined) {
                     this.updateShortcut(this.editingIndex, { name, url });
                 } else {
@@ -188,6 +189,13 @@ class ShortcutsManager {
         this.shortcuts.splice(index, 1);
         this.saveShortcuts();
         this.renderShortcuts();
+    }
+
+    normalizeUrl(url) {
+        if (!/^https?:\/\//i.test(url)) {
+            return 'https://' + url;
+        }
+        return url;
     }
 }
 

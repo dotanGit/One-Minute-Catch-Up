@@ -8,6 +8,9 @@
     --shortcutModal-btn-primary-text: #000000;
     --shortcutModal-btn-secondary: #cccccc;
     --shortcutModal-btn-secondary-hover: #bbbbbb;
+    --shortcut-name-color: #ffffff;
+    --shortcut-menu-button-color: #ffffff;
+    --add-button-hover-color: #ffffff;
 }
 
 
@@ -21,6 +24,9 @@
     --shortcutModal-btn-primary-text: #ffffff;
     --shortcutModal-btn-secondary: #555555;
     --shortcutModal-btn-secondary-hover: #666666;
+    --shortcut-name-color: #000000;
+    --shortcut-menu-button-color: #000000;
+    --add-button-hover-color: #000000;
 }
 
 
@@ -28,11 +34,10 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background: var(--search-bg);
     border-radius: 1rem;
     padding: 0.7rem 1rem;
     display: flex;
-    gap: 3rem;
+    gap: 2.75rem;
     align-items: center;
     z-index: 1000;
     margin-top: 0.3rem;
@@ -49,8 +54,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 4.5rem;
-    min-width: 4.5rem;
+}
+
+.shortcut-item:hover {
+    scale: 1.05;
 }
 
 .shortcut-link {
@@ -67,13 +74,9 @@
     transition: transform 0.2s;
 }
 
-.shortcut-favicon:hover {
-    transform: scale(1.1);
-}
-
 .shortcut-name {
     font-size: 0.95rem;
-    color: var(--search-text);
+    color: var(--shortcut-name-color);
     max-width: 5.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -95,7 +98,7 @@
 
 .shortcut-item:hover .shortcut-menu-btn {
     display: block;
-    color: var(--search-text);
+    color: var(--shortcut-menu-button-color);
 }
 
 .shortcut-item.menu-open .shortcut-menu-btn {
@@ -145,7 +148,7 @@
 }
 
 .add-shortcut-button:hover .material-icons {
-    color: var(--search-icon-hover);
+    color: var(--add-button-hover-color);
     scale: 1.1;
 }
 
