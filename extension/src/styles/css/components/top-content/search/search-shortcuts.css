@@ -30,19 +30,29 @@
 }
 
 
+
+
 .shortcuts-list {
     position: absolute;
-    top: 100%;
-    right: 0;
-    border-radius: 1rem;
-    padding: 0.7rem 1rem;
     display: flex;
-    gap: 2.75rem;
-    align-items: center;
+    top: 4rem;
+    right: 0;
     z-index: 1000;
-    margin-top: 0.3rem;
-    height: 5rem;
+    transform-origin: top left;
+    animation: optionsEntrance 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+@keyframes optionsEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(-0.5rem);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
 
 .shortcuts-list.hidden {
     display: none;
@@ -50,14 +60,18 @@
 
 /* Shortcut Item */
 .shortcut-item {
-    position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    padding: 0.3rem 1.5rem 0.3rem 0.7rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .shortcut-item:hover {
-    scale: 1.05;
+    background: var(--grid-item-hover);
+    border-radius: 1rem;
+    transform: translateY(0.5rem);
 }
 
 .shortcut-link {
@@ -69,9 +83,20 @@
 }
 
 .shortcut-favicon {
-    width: 2rem;
-    height: 2rem;
-    transition: transform 0.2s;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--engine-icon-bg);
+    border-radius: 50%;
+    padding: 0.3rem;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    filter: grayscale(100%) brightness(0.8);
+}
+
+.shortcut-favicon:hover {
+    transform: scale(1.1);
+    filter: grayscale(0%) brightness(1);
+    box-shadow: 0 0.5rem 1rem var(--glow);
 }
 
 .shortcut-name {
@@ -87,8 +112,8 @@
 /* Shortcut Controls */
 .shortcut-menu-btn {
     position: absolute;
-    right: -1rem;
-    top: -0.5rem;
+    right: 0;
+    top: 0.5rem;
     background: none;
     border: none;
     display: none;
@@ -107,9 +132,7 @@
 
 .shortcut-menu-dropdown {
     display: none;
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     flex-direction: column;
     z-index: 1003;
 }
@@ -126,7 +149,7 @@
 }
 
 .shortcut-menu-dropdown button:hover .material-icons {
-    color: var(--search-text);
+    color: var(--add-button-hover-color);
 }
 
 .shortcut-menu-dropdown button:hover {
@@ -164,6 +187,18 @@
     justify-content: center;
     align-items: center;
     z-index: 99999;
+    animation: modalEntrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(1rem);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* Shortcut Modal Content */

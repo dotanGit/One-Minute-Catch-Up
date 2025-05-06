@@ -97,8 +97,8 @@ class ShortcutsManager {
             this.shortcutsList.appendChild(shortcutElement);
         });
 
-        // Only show the add button if there are less than 7 shortcuts
-        if (this.shortcuts.length < 7) {
+        // Only show the add button if there are less than 10 shortcuts
+        if (this.shortcuts.length < 10) {
             this.shortcutsList.appendChild(this.addShortcutButton);
         }
     }
