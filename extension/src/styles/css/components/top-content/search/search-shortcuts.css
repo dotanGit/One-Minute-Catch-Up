@@ -28,7 +28,6 @@
     position: absolute;
     top: 100%;
     right: 0;
-    backdrop-filter: blur(30px);
     background: var(--search-bg);
     border-radius: 1rem;
     padding: 0.7rem 1rem;
@@ -96,6 +95,7 @@
 
 .shortcut-item:hover .shortcut-menu-btn {
     display: block;
+    color: var(--search-text);
 }
 
 .shortcut-item.menu-open .shortcut-menu-btn {
@@ -106,26 +106,28 @@
     display: none;
     position: absolute;
     left: 50%;
-    top: 50%;
     transform: translate(-50%, -50%);
     flex-direction: column;
-    background: rgba(255, 255, 255, 1);
-    border-radius: 0.5rem;
     z-index: 1003;
 }
 
 .shortcut-menu-dropdown button {
     background: none;
     border: none;
-    padding: 0.7rem 0.7rem;
+    padding: 0.35rem 0.35rem;
     cursor: pointer;
-    font-size: 0.95rem;
+}
+
+.shortcut-menu-dropdown .material-icons {
+    color: var(--search-icon);
+}
+
+.shortcut-menu-dropdown button:hover .material-icons {
+    color: var(--search-text);
 }
 
 .shortcut-menu-dropdown button:hover {
-    background: #a8a8a8;
-    border-radius: 0.5rem;
-
+    scale: 1.1;
 }
 
 /* Add Shortcut Button */
@@ -144,6 +146,7 @@
 
 .add-shortcut-button:hover .material-icons {
     color: var(--search-icon-hover);
+    scale: 1.1;
 }
 
 

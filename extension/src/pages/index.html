@@ -94,9 +94,9 @@
         </div>
 
         <!-- Search Section -->
-        <div class="search-section" data-theme="light">
+        <div class="search-section" data-theme="dark">
             <!-- 1. Search Engine Selector -->
-            <div class="search-engine-selector" data-theme="light">
+            <div class="search-engine-selector">
                 <button class="engine-button" aria-label="Select search engine">
                     <img id="current-engine-icon" src="" alt="Current search engine" />
                 </button>
@@ -252,8 +252,12 @@
             <span class="material-icons">more_vert</span>
           </button>
           <div class="shortcut-menu-dropdown">
-            <button class="edit-shortcut">Edit</button>
-            <button class="delete-shortcut">Delete</button>
+            <button class="edit-shortcut">
+                <span class="material-icons">edit</span>
+            </button>
+            <button class="delete-shortcut">
+                <span class="material-icons">delete</span>
+            </button>
           </div>
           <a class="shortcut-link" href="" target="_blank" rel="noopener">
             <img class="shortcut-favicon" src="" alt="">
@@ -263,7 +267,7 @@
       </template>
 
     <!-- Engine Modal -->
-    <div id="selectEngineModal" class="engine-modal" style="display: none;" data-theme="light">
+    <div id="selectEngineModal" class="engine-modal" style="display: none;" data-theme="dark">
         <div class="engine-modal-content">
             <h3>Select Search Engine</h3>
             <div class="engine-grid">
