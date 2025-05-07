@@ -6,12 +6,47 @@ export class SearchSuggestionManager {
         this.suggestionsContainer = document.querySelector('.search-suggestions');
         this.listElement = this.suggestionsContainer.querySelector('.suggestion-list');
         this.searchBarContainer = this.input.closest('.search-input-container');
+        this.searchSection = this.input.closest('.search-section');
+        this.shortcutsButton = document.querySelector('.shortcuts-button');
+        this.showTimeout = null;
+        
+        // Add click outside listener
+        document.addEventListener('click', (e) => {
+            if (!this.suggestionsContainer.contains(e.target) && 
+                e.target !== this.input) {
+                this.hideSuggestions();
+            }
+        });
+
+        // Add specific handler for shortcuts button
+        if (this.shortcutsButton) {
+            this.shortcutsButton.addEventListener('click', () => {
+                this.hideSuggestions();
+            });
+        }
+
+        // Add focus handler for search input
+        this.input.addEventListener('focus', () => {
+            // First hide other elements immediately
+            const shortcutsList = document.querySelector('.shortcuts-list');
+            const engineOptions = document.querySelector('.engine-options');
+            if (shortcutsList) shortcutsList.classList.add('hidden');
+            if (engineOptions) engineOptions.hidden = true;
+            
+            // Then show suggestions with delay
+            if (this.showTimeout) {
+                clearTimeout(this.showTimeout);
+            }
+            this.showTimeout = setTimeout(() => {
+                this.showSuggestions();
+            }, 100);
+        });
     }
 
     displaySuggestions(suggestions, onSuggestionClick) {
         this.listElement.innerHTML = '';
 
-        if (suggestions.length === 0) {
+        if (!suggestions || suggestions.length === 0) {
             this.hideSuggestions();
             return;
         }
@@ -25,23 +60,14 @@ export class SearchSuggestionManager {
     }
 
     createSuggestionListItem(query, onSuggestionClick) {
-        const li = document.createElement('li');
-        li.className = 'suggestion-list-item';
-
-        const icon = document.createElement('img');
-        icon.src = '../assets/icons/history.svg';
-        icon.alt = 'History';
-        icon.className = 'history-icon';
-
-        const text = document.createElement('span');
-        text.textContent = query;
-        text.className = 'suggestion-text';
-
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-button';
-        removeBtn.innerHTML = '<img src="../assets/icons/close.svg" alt="Remove" class="remove-icon">';
-        removeBtn.title = 'Remove from history';
-
+        const template = document.getElementById('suggestion-item-template');
+        const li = template.content.cloneNode(true).querySelector('.suggestion-list-item');
+        
+        // Set the text content
+        li.querySelector('.suggestion-text').textContent = query;
+        
+        // Add click handler for the remove button
+        const removeBtn = li.querySelector('.remove-button');
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             removeFromHistory(query);
@@ -51,18 +77,19 @@ export class SearchSuggestionManager {
             }
         });
 
-        li.appendChild(icon);
-        li.appendChild(text);
-        li.appendChild(removeBtn);
-
+        // Add click handler for the entire item
         li.addEventListener('click', () => onSuggestionClick(query));
 
         return li;
     }
 
     showSuggestions() {
-        this.suggestionsContainer.hidden = false;
-        this.searchBarContainer.classList.add('showing-suggestions');
+        if (this.listElement.children.length > 0) {
+            this.suggestionsContainer.hidden = false;
+            this.searchBarContainer.classList.add('showing-suggestions');
+        } else {
+            this.hideSuggestions();
+        }
     }
 
     hideSuggestions() {

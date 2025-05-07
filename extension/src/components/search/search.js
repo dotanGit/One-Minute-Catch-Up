@@ -35,7 +35,16 @@ class SearchHandler {
         });
 
         // Handle engine selector click
-        this.engineSelector.addEventListener('click', () => {
+        this.engineSelector.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // First hide other elements immediately
+            const shortcutsList = document.querySelector('.shortcuts-list');
+            const searchSuggestions = document.querySelector('.search-suggestions');
+            if (shortcutsList) shortcutsList.classList.add('hidden');
+            if (searchSuggestions) searchSuggestions.hidden = true;
+            
+            // Then toggle engine options
             this.engineOptions.hidden = !this.engineOptions.hidden;
         });
 

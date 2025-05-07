@@ -23,9 +23,18 @@ class ShortcutsManager {
     }
 
     initializeEventListeners() {
+        const searchSuggestions = document.querySelector('.search-suggestions');
+        const engineOptions = document.querySelector('.engine-options');
+
         // Toggle shortcuts list
         this.shortcutsButton.addEventListener('click', (e) => {
             e.stopPropagation();
+            
+            // First hide other elements immediately
+            if (searchSuggestions) searchSuggestions.hidden = true;
+            if (engineOptions) engineOptions.hidden = true;
+            
+            // Then toggle shortcuts list
             this.shortcutsList.classList.toggle('hidden');
         });
 
