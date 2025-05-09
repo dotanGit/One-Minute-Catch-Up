@@ -5,7 +5,7 @@
 /* Theme Variables */
 :root {
   /* Font sizes using relative units */
-  --heading-size: clamp(2rem, 2.75vw, 10rem);
+  --heading-size: clamp(2rem, 2.5vw, 10rem);
   --summary-size: clamp(1.2rem, 1.5vw, 6rem);
   --quote-size: clamp(1.2rem, 1.5vw, 6rem);
   --quote-font: 'Crimson Text', serif;
@@ -16,13 +16,13 @@
 [data-theme="dark"] {
   --greeting-head: #000000;
   --greeting-text-summary: #000000;
-  --greeting-text-quote: #5e5e5e;
+  --greeting-text-quote: #3f3f3f;
 }
 
 [data-theme="light"] {
     --greeting-head: #ffffff;
     --greeting-text-summary: #ffffff;
-    --greeting-text-quote: #5e5e5e;
+    --greeting-text-quote: #b4b4b4;
 }
 
 /* Greeting Container */
@@ -39,8 +39,8 @@
 .greeting-heading {
   font-family: var(--main-font);
   font-size: var(--heading-size);
-  font-weight: 450;
   color: var(--greeting-head);
+  font-weight: 100;
   text-align: center;
 }
 
