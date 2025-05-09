@@ -1,7 +1,7 @@
-import { removeFromHistory } from './searchHistory.js';
+import { removeFromHistory, getSearchSuggestions, getAutocompleteSuggestions } from './searchHistory.js';
 
 export class SearchSuggestionManager {
-    constructor(inputSelector = '.search-input') {
+    constructor(inputSelector = '.search-input', onSearch) {
         this.input = document.querySelector(inputSelector);
         this.suggestionsContainer = document.querySelector('.search-suggestions');
         this.listElement = this.suggestionsContainer.querySelector('.suggestion-list');
@@ -9,7 +9,21 @@ export class SearchSuggestionManager {
         this.searchSection = this.input.closest('.search-section');
         this.shortcutsButton = document.querySelector('.shortcuts-button');
         this.showTimeout = null;
+        this.onSearch = onSearch;
         
+        // Add input event listener for real-time suggestions
+        this.input.addEventListener('input', async () => {
+            const currentInput = this.input.value.trim();
+            if (currentInput) {
+                const suggestions = await getAutocompleteSuggestions(currentInput);
+                this.displaySuggestions(suggestions);
+            } else {
+                // If input is empty, show recent searches
+                const suggestions = await getSearchSuggestions();
+                this.displaySuggestions(suggestions);
+            }
+        });
+
         // Add click outside listener
         document.addEventListener('click', (e) => {
             if (!this.suggestionsContainer.contains(e.target) && 
@@ -78,7 +92,13 @@ export class SearchSuggestionManager {
         });
 
         // Add click handler for the entire item
-        li.addEventListener('click', () => onSuggestionClick(query));
+        li.addEventListener('click', () => {
+            this.input.value = query;
+            this.hideSuggestions();
+            if (this.onSearch) {
+                this.onSearch(query);
+            }
+        });
 
         return li;
     }

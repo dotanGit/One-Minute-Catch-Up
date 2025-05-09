@@ -64,20 +64,10 @@ export function getAutocompleteSuggestions(currentInput) {
             const exactMatches = searchHistory
                 .filter(item => item.query.toLowerCase().startsWith(currentInput.toLowerCase()))
                 .sort((a, b) => b.timestamp - a.timestamp)
-                .slice(0, 3)
+                .slice(0, 8)
                 .map(item => item.query);
             
-            const relatedMatches = searchHistory
-                .filter(item => 
-                    item.query.toLowerCase().includes(currentInput.toLowerCase()) && 
-                    !item.query.toLowerCase().startsWith(currentInput.toLowerCase())
-                )
-                .sort((a, b) => b.timestamp - a.timestamp)
-                .slice(0, 5)
-                .map(item => item.query);
-            
-            const combinedSuggestions = [...exactMatches, ...relatedMatches];
-            resolve(combinedSuggestions.slice(0, 8));
+            resolve(exactMatches);
         });
     });
 }

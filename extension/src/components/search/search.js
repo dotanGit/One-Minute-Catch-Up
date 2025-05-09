@@ -11,7 +11,13 @@ class SearchHandler {
         this.currentEngineIcon = document.getElementById('current-engine-icon');
         this.engineOptions = document.querySelector('.engine-options');
         this.engineSelector = document.querySelector('.engine-button');
-        this.suggestionManager = new SearchSuggestionManager();
+        this.suggestionManager = new SearchSuggestionManager(
+            '.search-input',
+            (query) => {
+                this.searchInput.value = query;
+                this.performSearch();
+            }
+        );
 
         
         // Initialize with the first engine from the list
@@ -72,10 +78,7 @@ class SearchHandler {
         // Show suggestions when input is focused or clicked
         this.searchInput.addEventListener('focus', async () => {
             const suggestions = await getSearchSuggestions();
-            this.suggestionManager.displaySuggestions(suggestions, (query) => {
-                this.searchInput.value = query;
-                this.suggestionManager.hideSuggestions();
-            });
+            this.suggestionManager.displaySuggestions(suggestions);
         });
     }
 
