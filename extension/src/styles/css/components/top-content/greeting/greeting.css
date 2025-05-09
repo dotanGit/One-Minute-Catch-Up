@@ -1,28 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Fraunces:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
 
 
 /* Theme Variables */
 :root {
   /* Font sizes using relative units */
-  --heading-size: clamp(2rem, 2.5vw, 10rem);
-  --summary-size: clamp(1.2rem, 1.5vw, 6rem);
-  --quote-size: clamp(1.2rem, 1.5vw, 6rem);
-  --quote-font: 'Crimson Text', serif;
-  --main-font: 'Manrope', system-ui, sans-serif;
+  --heading-size: clamp(2.5rem, 3vw, 8rem);
+  --summary-size: clamp(1.1rem, 1.3vw, 4rem);
+  --quote-size: clamp(1rem, 1.2vw, 3.5rem);
+  --quote-font: 'Playfair Display', serif;
+  --main-font: 'Inter', system-ui, sans-serif;
 }
 
 /* Dark theme */
-[data-theme="dark"] {
-  --greeting-head: #000000;
-  --greeting-text-summary: #000000;
-  --greeting-text-quote: #3f3f3f;
+[data-theme="light"] {
+  --greeting-head: #ffffff;
+  --greeting-text-summary: rgba(255, 255, 255, 0.9);
+  --greeting-text-quote: rgba(255, 255, 255, 0.8);
+  --greeting-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-[data-theme="light"] {
-    --greeting-head: #ffffff;
-    --greeting-text-summary: #ffffff;
-    --greeting-text-quote: #b4b4b4;
+/* Light theme */
+[data-theme="dark"] {
+  --greeting-head: #1a1a1a;
+  --greeting-text-summary: rgba(26, 26, 26, 0.9);
+  --greeting-text-quote: rgba(26, 26, 26, 0.8);
+  --greeting-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Greeting Container */
@@ -39,27 +42,35 @@
 .greeting-heading {
   font-family: var(--main-font);
   font-size: var(--heading-size);
+  font-weight: 400;
   color: var(--greeting-head);
-  font-weight: 100;
   text-align: center;
+  letter-spacing: -0.02em;
+  text-shadow: var(--greeting-shadow);
+  margin: 0;
 }
 
 /* AI Summary */
 .greeting-summary {
   font-family: var(--main-font);
   font-size: var(--summary-size);
+  font-weight: 300;
   color: var(--greeting-text-summary);
   text-align: center;
   max-width: 90%;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
-/* Quote of the Day - Simple but elegant styling */
+/* Quote of the Day */
 .greeting-quote {
   font-family: var(--quote-font);
   font-size: var(--quote-size);
+  font-weight: 400;
   color: var(--greeting-text-quote);
   font-style: italic;
   text-align: center;
   max-width: 90%;
-  position: relative;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
 }
