@@ -1,6 +1,7 @@
 /*themes */
 [data-theme="light"] {
-    --search-bg: rgba(255, 255, 255, 1);
+    --search-bg: rgba(255, 255, 255, 0.4);
+    --search-bg-focus: rgba(255, 255, 255, 1);
     --search-text: #000000;
     --search-icon: #6b6b6b;
     --search-icon-hover: #000000;
@@ -10,7 +11,8 @@
 }
 
 [data-theme="dark"] {
-    --search-bg: rgb(38, 38, 38);
+    --search-bg: rgb(38, 38, 38,0.4);
+    --search-bg-focus: rgba(38, 38, 38,1);
     --search-text: #ffffff;
     --search-icon: #ffffff;
     --search-icon-hover: #ffffff;
@@ -75,6 +77,11 @@
 .search-input:focus {
     outline: none;
     border: none;
+}
+
+/* Change from :has(.search-input:focus) to a class */
+.search-section.focused {
+    background: var( --search-bg-focus);
 }
 
 /* 3. Search Button - Fixed size */

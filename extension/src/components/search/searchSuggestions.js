@@ -11,7 +11,32 @@ export class SearchSuggestionManager {
         this.showTimeout = null;
         this.onSearch = onSearch;
         
-        // Add input event listener for real-time suggestions
+        // Add mousedown outside listener
+        document.addEventListener('mousedown', (e) => {
+            // Only hide if clicking outside both the input and suggestions container
+            if (!this.suggestionsContainer.contains(e.target) && 
+                !this.searchBarContainer.contains(e.target)) {
+                this.hideSuggestions();
+            }
+        });
+
+        // Add focus handler for search input
+        this.input.addEventListener('focus', async () => {
+            this.keepFocused();
+            const shortcutsList = document.querySelector('.shortcuts-list');
+            const engineOptions = document.querySelector('.engine-options');
+            if (shortcutsList) shortcutsList.classList.add('hidden');
+            if (engineOptions) engineOptions.hidden = true;
+            
+            if (this.showTimeout) {
+                clearTimeout(this.showTimeout);
+            }
+            this.showTimeout = setTimeout(() => {
+                this.showSuggestions();
+            }, 100);
+        });
+
+        // Add input handler to update suggestions while typing
         this.input.addEventListener('input', async () => {
             const currentInput = this.input.value.trim();
             if (currentInput) {
@@ -24,14 +49,6 @@ export class SearchSuggestionManager {
             }
         });
 
-        // Add click outside listener
-        document.addEventListener('click', (e) => {
-            if (!this.suggestionsContainer.contains(e.target) && 
-                e.target !== this.input) {
-                this.hideSuggestions();
-            }
-        });
-
         // Add specific handler for shortcuts button
         if (this.shortcutsButton) {
             this.shortcutsButton.addEventListener('click', () => {
@@ -39,22 +56,13 @@ export class SearchSuggestionManager {
             });
         }
 
-        // Add focus handler for search input
-        this.input.addEventListener('focus', () => {
-            // First hide other elements immediately
-            const shortcutsList = document.querySelector('.shortcuts-list');
-            const engineOptions = document.querySelector('.engine-options');
-            if (shortcutsList) shortcutsList.classList.add('hidden');
-            if (engineOptions) engineOptions.hidden = true;
-            
-            // Then show suggestions with delay
-            if (this.showTimeout) {
-                clearTimeout(this.showTimeout);
-            }
-            this.showTimeout = setTimeout(() => {
-                this.showSuggestions();
-            }, 100);
+        this.input.addEventListener('blur', () => {
+            this.searchSection.classList.remove('focused');
         });
+    }
+
+    keepFocused() {
+        this.searchSection.classList.add('focused');
     }
 
     displaySuggestions(suggestions, onSuggestionClick) {
@@ -86,34 +94,39 @@ export class SearchSuggestionManager {
             e.stopPropagation();
             removeFromHistory(query);
             li.remove();
+            
+            // Check if there are still suggestions left
             if (this.listElement.children.length === 0) {
                 this.hideSuggestions();
+            } else {
+                // Keep the focused state if there are still suggestions
+                this.keepFocused();
             }
         });
 
         // Add click handler for the entire item
-        li.addEventListener('click', () => {
-            this.input.value = query;
-            this.hideSuggestions();
-            if (this.onSearch) {
-                this.onSearch(query);
-            }
-        });
+        li.addEventListener('click', () => onSuggestionClick(query));
 
         return li;
     }
 
     showSuggestions() {
+        this.keepFocused();
         if (this.listElement.children.length > 0) {
             this.suggestionsContainer.hidden = false;
             this.searchBarContainer.classList.add('showing-suggestions');
         } else {
-            this.hideSuggestions();
+            this.suggestionsContainer.hidden = true;
+            this.searchBarContainer.classList.remove('showing-suggestions');
         }
     }
 
     hideSuggestions() {
         this.suggestionsContainer.hidden = true;
         this.searchBarContainer.classList.remove('showing-suggestions');
+        // Only remove focused if input is not focused and suggestions are hidden
+        if (document.activeElement !== this.input) {
+            this.searchSection.classList.remove('focused');
+        }
     }
 }

@@ -4,7 +4,7 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--search-bg);
+    background: var(--search-bg-focus);
     border-radius: 0 0 1.5rem 1.5rem;
     padding: 0.5rem 0;
     z-index: 1000;
