@@ -143,9 +143,7 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
   const name = userName ? `, ${userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase()}` : '';
 
   // Update UI
-  container.querySelector('.greeting-heading').textContent = `${timeGreeting}${name}.`;
+  container.querySelector('.greeting-heading').textContent = `${timeGreeting}${name}`;
   container.querySelector('.greeting-summary').textContent = greeting.summary;
-  if (greeting.quote) {
-    container.querySelector('.greeting-quote').textContent = greeting.quote;
-  }
+  container.querySelector('.greeting-quote').textContent = greeting.quote;
 }

@@ -80,8 +80,9 @@
 }
 
 /* Change from :has(.search-input:focus) to a class */
-.search-section.focused {
-    background: var( --search-bg-focus);
+.search-section.focused,
+.search-section:has(.search-suggestions:not([hidden])) {
+    background: var(--search-bg-focus);
 }
 
 /* 3. Search Button - Fixed size */

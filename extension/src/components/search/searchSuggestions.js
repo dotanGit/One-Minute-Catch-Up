@@ -72,12 +72,12 @@ export class SearchSuggestionManager {
             this.hideSuggestions();
             return;
         }
-
+        
         suggestions.forEach(query => {
-            const item = this.createSuggestionListItem(query, onSuggestionClick);
+            const item = this.createSuggestionListItem(query, this.onSearch);
             this.listElement.appendChild(item);
         });
-
+        
         this.showSuggestions();
     }
 
@@ -91,8 +91,8 @@ export class SearchSuggestionManager {
         // Add click handler for the remove button
         const removeBtn = li.querySelector('.remove-button');
         removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeFromHistory(query);
+        e.stopPropagation();
+        removeFromHistory(query);
             li.remove();
             
             // Check if there are still suggestions left

@@ -27,7 +27,7 @@ class SearchHandler {
         this.searchInput.placeholder = searchEngineManager.engines[0].placeholder;
         
         this.initializeEventListeners();
-    }
+        }
 
     initializeEventListeners() {
         // Handle search button click
@@ -37,12 +37,12 @@ class SearchHandler {
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.performSearch();
-            }
-        });
+                }
+            });
 
         // Handle engine selector click
         this.engineSelector.addEventListener('click', (e) => {
-            e.stopPropagation();
+                e.stopPropagation();
             
             // First hide other elements immediately
             const shortcutsList = document.querySelector('.shortcuts-list');
@@ -65,15 +65,15 @@ class SearchHandler {
                 this.handleEditEngine(engine);
             } else {
                 this.switchSearchEngine(engine);
-            }
-        });
+        }
+    });
 
         // Close engine options when clicking outside
-        document.addEventListener('click', (e) => {
+    document.addEventListener('click', (e) => {
             if (!this.engineSelector.contains(e.target) && !this.engineOptions.contains(e.target)) {
                 this.engineOptions.hidden = true;
-            }
-        });
+        }
+    });
 
         // Show suggestions when input is focused or clicked
         this.searchInput.addEventListener('focus', async () => {
