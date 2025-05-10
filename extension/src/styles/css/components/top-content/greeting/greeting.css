@@ -6,7 +6,6 @@
 :root {
   /* Font sizes using relative units */
   --heading-size: clamp(1.3rem, 1.6vw, 5rem);
-  /* --heading-size: clamp(2.5rem, 3vw, 8rem); */
   --summary-size: clamp(1.1rem, 1.3vw, 4rem);
   --quote-size: clamp(1rem, 1.2vw, 3.5rem);
   --quote-font: 'Playfair Display', serif;
@@ -15,18 +14,16 @@
 
 /* Dark theme */
 [data-theme="light"] {
-  --greeting-head: #ffffff;
+  --greeting-head: rgba(255, 255, 255, 0.9);
   --greeting-text-summary: rgba(255, 255, 255, 0.9);
-  --greeting-text-quote: rgba(255, 255, 255, 0.8);
-  --greeting-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  --greeting-text-quote: rgba(255, 255, 255, 0.9);
 }
 
 /* Light theme */
 [data-theme="dark"] {
-  --greeting-head: #1a1a1a;
+  --greeting-head: rgba(26, 26, 26, 0.9);
   --greeting-text-summary: rgba(26, 26, 26, 0.9);
-  --greeting-text-quote: rgba(26, 26, 26, 0.8);
-  --greeting-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --greeting-text-quote: rgba(26, 26, 26, 0.9);
 }
 
 /* Greeting Container */
@@ -47,7 +44,6 @@
   color: var(--greeting-head);
   text-align: center;
   letter-spacing: -0.02em;
-  text-shadow: var(--greeting-shadow);
   margin: 0;
 }
 

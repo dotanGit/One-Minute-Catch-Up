@@ -49,7 +49,6 @@ export async function getUserSummary(date = new Date()) {
   }
 
   const finalSummary = lines.join('\n').trim();
-  console.log('[Summary Builder] Final structured summary for GPT:\n', finalSummary);
   return finalSummary;
 }
 
