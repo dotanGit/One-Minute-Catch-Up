@@ -44,7 +44,7 @@ async function generateFirstDayGreeting() {
   Style:
   • Warm, grounded, and gently motivating
   • Feel like a helpful reset — not a command
-  • If it feels like something a cool friend would say, you’re doing it right
+  • If it feels like something a cool friend would say, you're doing it right
   `.trim();
   
 
@@ -77,20 +77,67 @@ async function generateFirstDayGreeting() {
   }
 }
 
+async function getCachedFirstDayGreeting() {
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];
+  const cacheKey = `first_day_greeting_${date}`;
+  const result = await chrome.storage.local.get(cacheKey);
+  return result[cacheKey];
+}
+
+async function cacheFirstDayGreeting(greeting) {
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];
+  const cacheKey = `first_day_greeting_${date}`;
+  await chrome.storage.local.set({
+    [cacheKey]: {
+      ...greeting,
+      timestamp: Date.now()
+    }
+  });
+}
+
 export async function getFirstDayGreeting() {
-  // Generate greeting
+  console.log('[GREETING] Checking first day greeting cache...');
+  
+  // Check cache first
+  const cachedGreeting = await getCachedFirstDayGreeting();
+  if (cachedGreeting) {
+    const cacheAge = Date.now() - cachedGreeting.timestamp;
+    // Cache expires after 4 hours
+    if (cacheAge < 4 * 60 * 60 * 1000) {
+      console.log('[GREETING] ✅ Using cached first day greeting (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
+      return {
+        summary: cachedGreeting.summary,
+        quote: cachedGreeting.quote
+      };
+    } else {
+      console.log('[GREETING] ❌ First day greeting cache expired (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
+    }
+  } else {
+    console.log('[GREETING] ❌ No cached first day greeting found');
+  }
+
+  // Generate greeting if no valid cache
+  console.log('[GREETING] Generating new first day greeting...');
   const greeting = await generateFirstDayGreeting();
 
   if (!greeting) {
     return {
-      summary: "It’s a new week — time to focus on what matters and let the rest wait.",
+      summary: "It's a new week — time to focus on what matters and let the rest wait.",
       quote: '"Discipline is choosing between what you want now and what you want most." – Abraham Lincoln'
     };
   }
 
   const [summary, quote] = greeting.split('<<SEP>>');
-  return {
+  const result = {
     summary: summary?.trim(),
     quote: quote?.trim() || '"Discipline is choosing between what you want now and what you want most." – Abraham Lincoln'
   };
+
+  // Cache the new greeting
+  await cacheFirstDayGreeting(result);
+  console.log('[GREETING] 💾 Generated and cached new first day greeting');
+
+  return result;
 }

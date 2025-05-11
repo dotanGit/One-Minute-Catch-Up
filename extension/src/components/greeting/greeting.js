@@ -45,26 +45,89 @@ function isFirstDayOfWeek() {
   return day === ((lastWeekendDay + 1) % 7).toString();
 }
 
+// Add these new functions for caching
+function getGreetingCacheKey() {
+  const now = new Date();
+  const date = now.toISOString().split('T')[0];
+  const hour = now.getHours();
+  let timePeriod;
+  
+  if (hour < 12) timePeriod = 'morning';
+  else if (hour < 17) timePeriod = 'afternoon';
+  else timePeriod = 'evening';
+  
+  return `greeting_${date}_${timePeriod}`;
+}
+
+async function getCachedGreeting() {
+  const cacheKey = getGreetingCacheKey();
+  const result = await chrome.storage.local.get(cacheKey);
+  return result[cacheKey];
+}
+
+async function cacheGreeting(greeting) {
+  const cacheKey = getGreetingCacheKey();
+  await chrome.storage.local.set({
+    [cacheKey]: {
+      ...greeting,
+      timestamp: Date.now()
+    }
+  });
+}
+
 async function getGreetingForTime() {
+  console.log('[GREETING] Checking greeting type...');
+  
   // Check if it's first day of the week
   if (isFirstDayOfWeek()) {
+    console.log('[GREETING] First day of week - generating new greeting');
     return await getFirstDayGreeting();
   }
   
   // Check if it's weekend first and if we have the required weekend configuration
   if (isWeekend() && WEEKEND_DAYS && WEEKEND_PHRASE) {
+    console.log('[GREETING] Weekend - generating new greeting');
     return await getWeekendGreeting();
   }
 
-  const hour = new Date().getHours();
+  // Check cache first
+  const cacheKey = getGreetingCacheKey();
+  console.log('[GREETING] Checking cache with key:', cacheKey);
   
-  if (hour < 12) {
-    return await getMorningGreeting();
-  } else if (hour < 17) {
-    return await getAfternoonGreeting();
+  const cachedGreeting = await getCachedGreeting();
+  if (cachedGreeting) {
+    const cacheAge = Date.now() - cachedGreeting.timestamp;
+    // Cache expires after 4 hours
+    if (cacheAge < 4 * 60 * 60 * 1000) {
+      console.log('[GREETING] ✅ Using cached greeting (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
+      return {
+        summary: cachedGreeting.summary,
+        quote: cachedGreeting.quote
+      };
+    } else {
+      console.log('[GREETING] ❌ Cache expired (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
+    }
   } else {
-    return await getEveningGreeting();
+    console.log('[GREETING] ❌ No cached greeting found');
   }
+
+  const hour = new Date().getHours();
+  let greeting;
+  
+  console.log('[GREETING] Generating new greeting for hour:', hour);
+  if (hour < 12) {
+    greeting = await getMorningGreeting();
+  } else if (hour < 17) {
+    greeting = await getAfternoonGreeting();
+  } else {
+    greeting = await getEveningGreeting();
+  }
+
+  // Cache the new greeting
+  await cacheGreeting(greeting);
+  console.log('[GREETING] 💾 Generated and cached new greeting');
+
+  return greeting;
 }
 
 // UI Component
