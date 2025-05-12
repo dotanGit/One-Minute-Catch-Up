@@ -71,3 +71,17 @@
   line-height: 1.5;
   letter-spacing: 0.02em;
 }
+
+/* Authors */
+.quote-author {
+  text-decoration: none;
+  color: inherit;
+  font-weight: inherit;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.quote-author:hover {
+  text-decoration: underline;
+  color: #4a90e2; /* or any highlight color you prefer */
+}
+

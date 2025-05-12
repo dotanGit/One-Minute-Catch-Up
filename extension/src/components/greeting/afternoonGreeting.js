@@ -29,7 +29,7 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote with author - max 20 words]
+[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
 
 Style:
 • Be personal, insightful, and educational.
@@ -69,13 +69,17 @@ export async function getAfternoonGreeting() {
   if (!greeting) {
     return {
       summary: "Good afternoon! Keep up the momentum on your daily goals.",
-      quote: '"The middle of the day is when you can make the most impact." – Unknown'
+      quote: '"The middle of the day is when you can make the most impact."',
+      author: ""
     };
   }
 
-  const [summary, quote] = greeting.split('<<SEP>>');
+  const [summary, quotePart] = greeting.split('<<SEP>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
+
   return {
     summary: summary.trim(),
-    quote: quote ? quote.trim() : null
+    quote: quote.trim(),
+    author: author.trim()
   };
 } 

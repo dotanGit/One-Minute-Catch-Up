@@ -29,7 +29,7 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote with author - max 20 words]
+[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
 
 Style:
 • Be personal, insightful, and educational.
@@ -78,17 +78,17 @@ export async function getEveningGreeting() {
     console.log('No greeting generated, using default');
     return {
       summary: "Good evening! Take a moment to reflect on your progress today.",
-      quote: '"The end of the day is a time for reflection and gratitude." – Unknown'
+      quote: '"The end of the day is a time for reflection and gratitude."',
+      author: ""
     };
   }
 
-  const [summary, quote] = greeting.split('<<SEP>>');
-  console.log('=== Evening Greeting Result ===');
-  console.log('Summary:', summary?.trim());
-  console.log('Quote:', quote?.trim());
-  
+  const [summary, quotePart] = greeting.split('<<SEP>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
+
   return {
-    summary: summary?.trim() || "Good evening! Take a moment to reflect on your progress today.",
-    quote: quote?.trim() || '"The end of the day is a time for reflection and gratitude." – Unknown'
+    summary: summary.trim(),
+    quote: quote.trim(),
+    author: author.trim()
   };
 } 

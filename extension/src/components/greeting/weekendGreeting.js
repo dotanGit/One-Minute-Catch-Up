@@ -38,7 +38,7 @@ async function generateWeekendGreeting() {
   • Do NOT include greetings or names.
   
   Response Format:
-  [Contrast-driven insight - max 20 words] <<SEP>> [Simple, witty quote with author - max 20 words]
+  [Contrast-driven insight - max 20 words] <<SEP>> [Simple, witty quote - max 20 words] <<AUTHOR>> [Quote Author]
   
   Style:
   • Think “you vs. your overachiever self”
@@ -85,14 +85,18 @@ export async function getWeekendGreeting() {
   if (!greeting) {
     return {
       summary: "Take this time to rest and recharge. Your mind and body deserve this break.",
-      quote: '"Rest is not idleness, and to lie sometimes on the grass under trees on a summer\'s day, listening to the murmur of the water, or watching the clouds float across the sky, is by no means a waste of time." – John Lubbock'
+      quote: '"Rest is not idleness, and to lie sometimes on the grass under trees on a summer\'s day, listening to the murmur of the water, or watching the clouds float across the sky, is by no means a waste of time."',
+      author: ""
     };
   }
 
-  const [summary, quote] = greeting.split('<<SEP>>');
+  const [summary, quotePart] = greeting.split('<<SEP>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
+
   return {
-    summary: summary?.trim(),
-    quote: quote?.trim() || '"Rest is not idleness, and to lie sometimes on the grass under trees on a summer\'s day, listening to the murmur of the water, or watching the clouds float across the sky, is by no means a waste of time." – John Lubbock'
+    summary: summary.trim(),
+    quote: quote.trim(),
+    author: author.trim()
   };
 } 
 

@@ -102,7 +102,8 @@ async function getGreetingForTime() {
       console.log('[GREETING] ✅ Using cached greeting (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
       return {
         summary: cachedGreeting.summary,
-        quote: cachedGreeting.quote
+        quote: cachedGreeting.quote,
+        author: cachedGreeting.author
       };
     } else {
       console.log('[GREETING] ❌ Cache expired (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
@@ -152,5 +153,11 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
   container.querySelector('.greeting-summary').innerHTML = isWeekend() && WEEKEND_DAYS && WEEKEND_PHRASE
     ? greeting.summary 
     : `Week Goal: ${WEEKLY_GOAL}<br>${greeting.summary}`;
-  container.querySelector('.greeting-quote').textContent = greeting.quote;
+    const quoteElement = container.querySelector('.greeting-quote');
+    if (greeting.author) {
+      quoteElement.innerHTML = `${greeting.quote} – <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(greeting.author)}" target="_blank" class="quote-author">${greeting.author}</a>`;
+    } else {
+      quoteElement.textContent = `${greeting.quote}`;
+    }
+    
 }

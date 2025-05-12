@@ -39,7 +39,7 @@ async function generateFirstDayGreeting() {
   • Do NOT include greetings or names.
   
   Response Format:
-  [Casual, friendly nudge - max 20 words] <<SEP>> [Fresh, upbeat quote with author - max 20 words]
+  [Casual, friendly nudge - max 20 words] <<SEP>> [Fresh, upbeat quote - max 20 words] <<AUTHOR>> [Quote Author]
   
   Style:
   • Warm, grounded, and gently motivating
@@ -125,14 +125,18 @@ export async function getFirstDayGreeting() {
   if (!greeting) {
     return {
       summary: "It's a new week — time to focus on what matters and let the rest wait.",
-      quote: '"Discipline is choosing between what you want now and what you want most." – Abraham Lincoln'
+      quote: '"Discipline is choosing between what you want now and what you want most."',
+      authors: "Abraham Lincoln"
     };
   }
 
-  const [summary, quote] = greeting.split('<<SEP>>');
+  const [summary, quotePart] = greeting.split('<<SEP>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
+
   const result = {
-    summary: summary?.trim(),
-    quote: quote?.trim() || '"Discipline is choosing between what you want now and what you want most." – Abraham Lincoln'
+    summary: summary.trim(),
+    quote: quote.trim(),
+    author: author.trim()
   };
 
   // Cache the new greeting

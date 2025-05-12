@@ -29,7 +29,7 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote with author - max 20 words]
+[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
 
 Style:
 • Be personal, insightful, and educational.
@@ -73,13 +73,17 @@ export async function getMorningGreeting() {
   if (!greeting) {
     return {
       summary: "Good morning! Let's make progress on your weekly goals today.",
-      quote: '"The morning is the most important part of the day." – Unknown'
+      quote: "The morning is the most important part of the day.",
+      author: ""
     };
   }
 
-  const [summary, quote] = greeting.split('<<SEP>>');
+  const [summary, quotePart] = greeting.split('<<SEP>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
+
   return {
     summary: summary.trim(),
-    quote: quote ? quote.trim() : null
+    quote: quote.trim(),
+    author: author.trim()
   };
-} 
+}
