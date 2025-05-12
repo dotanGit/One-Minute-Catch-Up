@@ -69,7 +69,7 @@
     width: 100%;
     border: none;
     height: 2.75rem;
-    font-size: clamp(0.875rem, 1.3vw, 2rem);
+    font-size: clamp(0.875rem, 1vw, 2rem);
     background: transparent;
     color: var(--search-text);
 }
