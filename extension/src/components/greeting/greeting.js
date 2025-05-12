@@ -155,9 +155,44 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
     : `Week Goal: ${WEEKLY_GOAL}<br>${greeting.summary}`;
     const quoteElement = container.querySelector('.greeting-quote');
     if (greeting.author) {
-      quoteElement.innerHTML = `${greeting.quote} – <a href="https://en.wikipedia.org/wiki/${encodeURIComponent(greeting.author)}" target="_blank" class="quote-author">${greeting.author}</a>`;
+      quoteElement.innerHTML = `${greeting.quote} – <a href="#" class="quote-author" data-author="${greeting.author}">${greeting.author}</a>`;
+    
+      const authorLink = quoteElement.querySelector('.quote-author');
+      authorLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+    
+        const author = e.target.dataset.author;
+        const modal = document.getElementById('authorModal');
+    
+        // Fetch data from Wikipedia
+        let wikiData = {};
+        try {
+          const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(author)}`);
+          wikiData = await res.json();
+        } catch (err) {
+          console.warn('Wikipedia fetch failed:', err);
+        }
+    
+        // Fill modal
+        document.getElementById('author-name').textContent = author;
+        document.getElementById('author-image').src = wikiData?.thumbnail?.source || '';
+        document.getElementById('author-image').alt = `Photo of ${author}`;
+        document.getElementById('author-description').textContent = wikiData?.extract || 'No Wikipedia summary available.';
+        document.getElementById('author-link').href = wikiData?.content_urls?.desktop?.page || '#';
+        document.getElementById('author-link').textContent = 'View on Wikipedia';
+        
+    
+        // Show modal
+        modal.style.display = 'flex';
+      });
     } else {
       quoteElement.textContent = `${greeting.quote}`;
-    }
-    
+    }    
 }
+
+document.querySelector('.author-modal-close').addEventListener('click', () => {
+  const modal = document.getElementById('authorModal');
+  modal.style.display = 'none';
+});
+
+

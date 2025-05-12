@@ -29,7 +29,7 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
+[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author] <<BIO>> [Short 1-sentence bio] <<CONTEXT>> [Context of when/why this quote was said]
 
 Style:
 • Be personal, insightful, and educational.
@@ -61,25 +61,29 @@ Style:
 }
 
 export async function getAfternoonGreeting() {
-  // Get today's summary
   const userSummary = await getUserSummary(new Date());
-  
-  // Generate greeting
   const greeting = await generateAfternoonGreeting(userSummary);
-  if (!greeting) {
+
+  if (!greeting || !greeting.includes('<<SEP>>') || !greeting.includes('<<AUTHOR>>')) {
     return {
       summary: "Good afternoon! Keep up the momentum on your daily goals.",
-      quote: '"The middle of the day is when you can make the most impact."',
-      author: ""
+      quote: "The middle of the day is when you can make the most impact.",
+      author: "",
+      bio: "",
+      context: ""
     };
   }
 
   const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  const [quote, authorPart] = quotePart.split('<<AUTHOR>>');
+  const [author, bioPart] = authorPart.split('<<BIO>>');
+  const [bio, context] = bioPart.split('<<CONTEXT>>');
 
   return {
     summary: summary.trim(),
     quote: quote.trim(),
-    author: author.trim()
+    author: author?.trim() || "",
+    bio: bio?.trim() || "",
+    context: context?.trim() || ""
   };
-} 
+}
