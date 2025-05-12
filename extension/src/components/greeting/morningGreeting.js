@@ -1,5 +1,5 @@
 import { getUserSummary } from '../summary/userSummaryBuilder.js';
-import { OPENAI_API_KEY, WEEKLY_GOAL } from './greeting.js';
+import { OPENAI_API_KEY, WEEKLY_GOAL,DAILY_GOAL,USER_ROLE,USER_INTRESTS } from './greeting.js';
 
 async function generateMorningGreeting(userSummary) {
   const prompt = `

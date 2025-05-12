@@ -100,7 +100,7 @@
 // // SIMPLE TEST CODE
 document.addEventListener('DOMContentLoaded', function() {
     // Change this path to your image file
-    const testImage = '../components/wallpaper/13.jpg';
+    const testImage = '../components/wallpaper/10.jpg';
     
     document.body.style.backgroundImage = `url("${testImage}")`;
     document.body.style.backgroundSize = 'cover';

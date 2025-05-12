@@ -9,7 +9,7 @@ export const OPENAI_API_KEY = 'sk-proj-IDINAkfik8FYm3b5V3cPI7jFMTN5U-HmcLpGD1v7s
 
 // Goals (temporary until user input is implemented)
 export const WEEKLY_GOAL = "Complete Catch UP project";
-export const DAILY_GOAL = "Implement the new feature and review pull requests";
+export const DAILY_GOAL = "Working out, job interview, school";
 export const USER_ROLE = "Computer Science Student";
 export const USER_INTRESTS = "Math, Physics , AI";
 export const WEEKEND_DAYS = ['5', '6'];
