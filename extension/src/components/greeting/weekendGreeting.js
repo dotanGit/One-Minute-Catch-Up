@@ -13,18 +13,28 @@ const THEME_CONTRAST = {
   "making progress": "not making progress"
 };
 
+
 const THEMES = Object.keys(THEME_CONTRAST);
 const weekNumber = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7)); 
 const weeklyTheme = THEMES[weekNumber % THEMES.length];
 const weeklyContrast = THEME_CONTRAST[weeklyTheme];
 
 async function generateWeekendGreeting() {
+
+  const roleText = USER_ROLE
+    ? `You are a personal mentor giving a weekend message to a highly driven ${USER_ROLE}.`
+    : `You are a personal mentor giving a weekend message to a highly driven individual.`;
+
+  const interestsLine = USER_INTRESTS
+    ? `• Interests: ${USER_INTRESTS}`
+    : '';
+
   const prompt = `
   Role:
-  You are a personal mentor giving a weekend message to a highly driven ${USER_ROLE}. The goal is to encourage a thoughtful pause — something they usually forget.
+  ${roleText} The goal is to encourage a thoughtful pause — something they usually forget.
   
   Context:
-  • Interests: ${USER_INTRESTS}
+  ${interestsLine}
   • Theme this weekend: "${weeklyTheme}" vs. their usual: "${weeklyContrast}"
   
   Task:
@@ -46,11 +56,6 @@ async function generateWeekendGreeting() {
   • Be fresh, light, and surprisingly real
   `.trim();
   
-  
-  
-
-  console.log('=== Weekend Greeting Generation ===');
-  console.log('Sending prompt to GPT:', prompt);
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -68,7 +73,6 @@ async function generateWeekendGreeting() {
     });
 
     const data = await response.json();
-    console.log('GPT API Response:', data);
     
     const content = data?.choices?.[0]?.message?.content?.trim() || null;
     return content;

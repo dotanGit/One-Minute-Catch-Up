@@ -27,7 +27,6 @@ function getTimeBasedGreeting() {
 }
 
 function isWeekend() {
-  // Only consider it weekend if both WEEKEND_DAYS and WEEKEND_PHRASE are defined
   if (!WEEKEND_DAYS || !WEEKEND_PHRASE) return false;
   
   const day = new Date().getDay().toString();
@@ -35,17 +34,14 @@ function isWeekend() {
 }
 
 function isFirstDayOfWeek() {
-  // Only check for first day if WEEKEND_DAYS is defined
   if (!WEEKEND_DAYS) return false;
   
   const day = new Date().getDay().toString();
-  // Get the last weekend day
   const lastWeekendDay = Math.max(...WEEKEND_DAYS.map(Number));
-  // Check if current day is the day after the last weekend day
   return day === ((lastWeekendDay + 1) % 7).toString();
 }
 
-// Add these new functions for caching
+// Cache Handle 
 function getGreetingCacheKey() {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
@@ -76,30 +72,24 @@ async function cacheGreeting(greeting) {
 }
 
 async function getGreetingForTime() {
-  console.log('[GREETING] Checking greeting type...');
-  
   // Check if it's first day of the week
   if (isFirstDayOfWeek()) {
-    console.log('[GREETING] First day of week - generating new greeting');
     return await getFirstDayGreeting();
   }
   
   // Check if it's weekend first and if we have the required weekend configuration
   if (isWeekend() && WEEKEND_DAYS && WEEKEND_PHRASE) {
-    console.log('[GREETING] Weekend - generating new greeting');
     return await getWeekendGreeting();
   }
 
   // Check cache first
   const cacheKey = getGreetingCacheKey();
-  console.log('[GREETING] Checking cache with key:', cacheKey);
   
   const cachedGreeting = await getCachedGreeting();
   if (cachedGreeting) {
     const cacheAge = Date.now() - cachedGreeting.timestamp;
     // Cache expires after 4 hours
     if (cacheAge < 4 * 60 * 60 * 1000) {
-      console.log('[GREETING] ✅ Using cached greeting (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
       return {
         summary: cachedGreeting.summary,
         quote: cachedGreeting.quote,
@@ -115,7 +105,6 @@ async function getGreetingForTime() {
   const hour = new Date().getHours();
   let greeting;
   
-  console.log('[GREETING] Generating new greeting for hour:', hour);
   if (hour < 12) {
     greeting = await getMorningGreeting();
   } else if (hour < 17) {
@@ -126,8 +115,6 @@ async function getGreetingForTime() {
 
   // Cache the new greeting
   await cacheGreeting(greeting);
-  console.log('[GREETING] 💾 Generated and cached new greeting');
-
   return greeting;
 }
 
@@ -150,9 +137,25 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
     : isFirstDayOfWeek()
     ? `Good Week ${name}!`
     : `${timeGreeting}, ${name}`;
-  container.querySelector('.greeting-summary').innerHTML = isWeekend() && WEEKEND_DAYS && WEEKEND_PHRASE
-    ? greeting.summary 
-    : `Week Goal: ${WEEKLY_GOAL}<br>${greeting.summary}`;
+
+
+    const hour = new Date().getHours();
+    let summaryContent;
+    
+    if (isWeekend() && WEEKEND_DAYS && WEEKEND_PHRASE) {
+      summaryContent = greeting.summary;
+    } else if (hour < 12) {
+      summaryContent = WEEKLY_GOAL
+        ? `Week Goal: ${WEEKLY_GOAL}<br>${greeting.summary}`
+        : greeting.summary;
+    } else {
+      summaryContent = DAILY_GOAL
+        ? `Today's Goal: ${DAILY_GOAL}<br>${greeting.summary}`
+        : greeting.summary;
+    }    
+    container.querySelector('.greeting-summary').innerHTML = summaryContent;
+    
+
     const quoteElement = container.querySelector('.greeting-quote');
     if (greeting.author) {
       quoteElement.innerHTML = `${greeting.quote} – <a href="#" class="quote-author" data-author="${greeting.author}">${greeting.author}</a>`;

@@ -13,18 +13,28 @@ const THEME_CONTRAST = {
   "making progress": "not making progress"
 };
 
+
 const THEMES = Object.keys(THEME_CONTRAST);
 const weekNumber = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
 const weeklyTheme = THEMES[weekNumber % THEMES.length];
 const weeklyContrast = THEME_CONTRAST[weeklyTheme];
 
 async function generateFirstDayGreeting() {
+
+  const roleText = USER_ROLE
+  ? `You are a personal mentor speaking to a motivated ${USER_ROLE} on the first day of the week.`
+  : `You are a personal mentor helping someone get back into focus on the first day of the week.`;
+
+  const interestsLine = USER_INTRESTS
+    ? `• Interests: ${USER_INTRESTS}`
+    : '';
+
   const prompt = `
   Role:
-  You are a personal mentor speaking to a motivated ${USER_ROLE} on the first day of the week. Your job is to help them gently switch back into focus — not with pressure, but with clarity and encouragement.
+  ${roleText} Your job is to help them gently switch back into focus — not with pressure, but with clarity and encouragement.
   
   Context:
-  • Interests: ${USER_INTRESTS}
+  ${interestsLine}
   • Weekly focus: "${weeklyContrast}" (what to lean into)
   • Weekly distraction: "${weeklyTheme}" (what to be mindful of)
   
@@ -48,9 +58,6 @@ async function generateFirstDayGreeting() {
   `.trim();
   
 
-  console.log('=== First Day Greeting Generation ===');
-  console.log('Sending prompt to GPT:', prompt);
-
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -67,7 +74,6 @@ async function generateFirstDayGreeting() {
     });
 
     const data = await response.json();
-    console.log('GPT API Response:', data);
 
     const content = data?.choices?.[0]?.message?.content?.trim() || null;
     return content;
@@ -98,10 +104,7 @@ async function cacheFirstDayGreeting(greeting) {
 }
 
 export async function getFirstDayGreeting() {
-  console.log('[GREETING] Checking first day greeting cache...');
-  
-  // Check cache first
-  const cachedGreeting = await getCachedFirstDayGreeting();
+    const cachedGreeting = await getCachedFirstDayGreeting();
   if (cachedGreeting) {
     const cacheAge = Date.now() - cachedGreeting.timestamp;
     // Cache expires after 4 hours
@@ -119,7 +122,6 @@ export async function getFirstDayGreeting() {
   }
 
   // Generate greeting if no valid cache
-  console.log('[GREETING] Generating new first day greeting...');
   const greeting = await generateFirstDayGreeting();
 
   if (!greeting) {
@@ -141,7 +143,6 @@ export async function getFirstDayGreeting() {
 
   // Cache the new greeting
   await cacheFirstDayGreeting(result);
-  console.log('[GREETING] 💾 Generated and cached new first day greeting');
 
   return result;
 }

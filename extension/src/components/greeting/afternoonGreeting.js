@@ -1,40 +1,59 @@
 import { getUserSummary } from '../summary/userSummaryBuilder.js';
 import { OPENAI_API_KEY, WEEKLY_GOAL,DAILY_GOAL,USER_ROLE,USER_INTRESTS } from './greeting.js';
 
+
 async function generateAfternoonGreeting(userSummary) {
+
+  const contextLines = [];
+
+  if (WEEKLY_GOAL) contextLines.push(`Weekly Goal: ${WEEKLY_GOAL}`);
+  if (DAILY_GOAL) contextLines.push(`Daily Goal: ${DAILY_GOAL}`);
+
+  const contextSection = contextLines.length
+    ? `Context:\n${contextLines.join('\n')}`
+    : '';
+
+  const profileLines = [];
+
+  if (USER_ROLE) profileLines.push(`• Role: ${USER_ROLE}`);
+  if (USER_INTRESTS) profileLines.push(`• Interests: ${USER_INTRESTS}`);
+
+  const userProfileSection = profileLines.length
+    ? `User Profile:\n${profileLines.join('\n')}`
+    : '';
+
   const prompt = `
 Role:
-You are a personal AI mentor. You review the user’s recent digital activity (emails, browsing, calendar, files) to:
-1. Infer what the user was studying, searching, learning, or curious about.
-2. Teach them one short, high-quality insight related to that topic.
-3. Pair it with a thoughtful quote that fits the same theme.
+You are a personal AI assistant. You analyze the user's digital activity from today (emails, calendar, files, browsing) to:
+1. Identify what they *actually* did — in clear, concrete terms.
+2. Reflect that back to them with a short sentence that helps them stay aware and grounded.
+3. Add a relevant quote — something subtle and thoughtful that connects to their effort or direction, without being motivational fluff.
 
-Context:
-Weekly Goal: ${WEEKLY_GOAL}
-Daily Goal: ${DAILY_GOAL}
+${contextSection}
 
-User Profile:
-• Role: ${USER_ROLE}
-• Interests: ${USER_INTRESTS}
+${userProfileSection}
 
 Today's Activities:
 ${userSummary}
 
 Constraints:
-• Do NOT include greetings (e.g., “Good morning”) or the user's name.
-• Do NOT summarize the activity or refer to the data source.
-• Do NOT use cliché praise or overly common quotes.
-• Insight must be meaningful, not generic.
-• Quote must feel fresh, thoughtful, and emotionally aligned.
-
+• Focus on facts — clearly state what the user did or worked on.
+• Do NOT invent things or make assumptions — stay grounded in the activity summary.
+• Do NOT summarize the activity vaguely (e.g., “you explored tech topics”).
+• Do NOT use generic or motivational language.
+• Quote should be human, relevant, and gentle — not deep, dramatic, or overused.
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author] <<BIO>> [Short 1-sentence bio] <<CONTEXT>> [Context of when/why this quote was said]
+[Concise factual reflection - max 20 words] <<SEP>> [Light, thoughtful quote - max 20 words] <<AUTHOR>> [Quote Author]
+Do NOT skip <<SEP>> or <<AUTHOR>> — if missing, the output is invalid.
+Do NOT replace <<AUTHOR>> with a dash or quotation marks.
+Output must be on one line, exactly as described.
 
 Style:
-• Be personal, insightful, and educational.
-• Use plain, emotionally intelligent language.
-• The message should feel natural and tailored — not robotic or motivational filler.
+• Neutral, self-aware, slightly observant
+• Like a reflection from someone who knows what you did, not someone cheering you on
+• Be calm, smart, and practical — not motivational or vague
+
 `.trim();
 
   try {
@@ -64,26 +83,23 @@ export async function getAfternoonGreeting() {
   const userSummary = await getUserSummary(new Date());
   const greeting = await generateAfternoonGreeting(userSummary);
 
-  if (!greeting || !greeting.includes('<<SEP>>') || !greeting.includes('<<AUTHOR>>')) {
+  console.log('[DEBUG] GPT Afternoon Greeting Response:', greeting);
+
+
+  if (!greeting) {
     return {
-      summary: "Good afternoon! Keep up the momentum on your daily goals.",
-      quote: "The middle of the day is when you can make the most impact.",
-      author: "",
-      bio: "",
-      context: ""
+      summary: "Hey big BOSS, Keep up the momentum on your daily goals.",
+      quote: "The middle of the day is when you can make the most impact",
+      author: ""
     };
   }
 
   const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, authorPart] = quotePart.split('<<AUTHOR>>');
-  const [author, bioPart] = authorPart.split('<<BIO>>');
-  const [bio, context] = bioPart.split('<<CONTEXT>>');
+  const [quote, author] = quotePart.split('<<AUTHOR>>');
 
   return {
     summary: summary.trim(),
     quote: quote.trim(),
-    author: author?.trim() || "",
-    bio: bio?.trim() || "",
-    context: context?.trim() || ""
+    author: author.trim()
   };
 }

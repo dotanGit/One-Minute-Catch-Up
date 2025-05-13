@@ -1,7 +1,26 @@
 import { getUserSummary } from '../summary/userSummaryBuilder.js';
 import { OPENAI_API_KEY, WEEKLY_GOAL,DAILY_GOAL,USER_ROLE,USER_INTRESTS } from './greeting.js';
 
+
 async function generateMorningGreeting(userSummary) {
+  const contextLines = [];
+
+  if (WEEKLY_GOAL) contextLines.push(`Weekly Goal: ${WEEKLY_GOAL}`);
+  if (DAILY_GOAL) contextLines.push(`Daily Goal: ${DAILY_GOAL}`);
+  
+  const contextSection = contextLines.length
+    ? `Context:\n${contextLines.join('\n')}`
+    : '';
+  
+  const profileLines = [];
+  
+  if (USER_ROLE) profileLines.push(`• Role: ${USER_ROLE}`);
+  if (USER_INTRESTS) profileLines.push(`• Interests: ${USER_INTRESTS}`);
+  
+  const userProfileSection = profileLines.length
+    ? `User Profile:\n${profileLines.join('\n')}`
+    : '';
+
   const prompt = `
 Role:
 You are a personal AI mentor. You review the user’s recent digital activity (emails, browsing, calendar, files) to:
@@ -9,15 +28,11 @@ You are a personal AI mentor. You review the user’s recent digital activity (e
 2. Teach them one short, high-quality insight related to that topic.
 3. Pair it with a thoughtful quote that fits the same theme.
 
-Context:
-Weekly Goal: ${WEEKLY_GOAL}
-Daily Goal: ${DAILY_GOAL}
+${contextSection}
 
-User Profile:
-• Role: ${USER_ROLE}
-• Interests: ${USER_INTRESTS}
+${userProfileSection}
 
-Today's Activities:
+Yesterday's Activities:
 ${userSummary}
 
 Constraints:
@@ -70,6 +85,7 @@ export async function getMorningGreeting() {
   
   // Generate greeting
   const greeting = await generateMorningGreeting(userSummary);
+
   if (!greeting) {
     return {
       summary: "Good morning! Let's make progress on your weekly goals today.",
