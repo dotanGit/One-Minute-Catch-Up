@@ -44,7 +44,11 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
+1) [Concise factual reflection - max 20 words]
+2) [Quote - max 20 words] - [Author]
+Do not omit the numbers.
+Author must follow a dash with one space.
+
 
 Style:
 • Be personal, insightful, and educational.
@@ -75,31 +79,45 @@ Style:
   }
 }
 
+
+const DEFAULT_MORNING_GREETING = {
+  summary: "Good morning! Let's make progress on your weekly goals today.",
+  quote: "The morning is the most important part of the day.",
+  author: ""
+};
+
 export async function getMorningGreeting() {
-  // Get yesterday's date
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   
-  // Get yesterday's summary
   const userSummary = await getUserSummary(yesterday);
-  
-  // Generate greeting
-  const greeting = await generateMorningGreeting(userSummary);
+  let greeting = await generateMorningGreeting(userSummary);
 
-  if (!greeting) {
-    return {
-      summary: "Good morning! Let's make progress on your weekly goals today.",
-      quote: "The morning is the most important part of the day.",
-      author: ""
-    };
+  console.log('[DEBUG] GPT Morning Greeting Response:', greeting);
+
+  const isValid = (g) =>
+    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
+
+  if (!isValid(greeting)) {
+    greeting = await generateMorningGreeting(userSummary);
   }
 
-  const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  if (!isValid(greeting)) {
+    return DEFAULT_MORNING_GREETING;
+  }
 
-  return {
-    summary: summary.trim(),
-    quote: quote.trim(),
-    author: author.trim()
-  };
+  try {
+    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
+    const quoteAuthorLine = greeting.split('2)')[1].trim();
+    const [quote, author] = quoteAuthorLine.split(' - ');
+
+    return {
+      summary: summaryLine || DEFAULT_MORNING_GREETING.summary,
+      quote: quote?.trim() || DEFAULT_MORNING_GREETING.quote,
+      author: author?.trim() || DEFAULT_MORNING_GREETING.author
+    };
+  } catch (err) {
+    return DEFAULT_MORNING_GREETING;
+  }
 }
+

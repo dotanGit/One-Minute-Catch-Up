@@ -48,8 +48,12 @@ async function generateWeekendGreeting() {
   • Do NOT include greetings or names.
   
   Response Format:
-  [Contrast-driven insight - max 20 words] <<SEP>> [Simple, witty quote - max 20 words] <<AUTHOR>> [Quote Author]
-  
+  1) [Concise factual reflection - max 20 words]
+  2) [Quote - max 20 words] - [Author]
+  Do not omit the numbers.
+  Author must follow a dash with one space.
+
+
   Style:
   • Think “you vs. your overachiever self”
   • Encourage joy, pausing, and human connection
@@ -82,26 +86,44 @@ async function generateWeekendGreeting() {
   }
 }
 
+const DEFAULT_WEEKEND_GREETING = {
+  summary: "Take this time to rest and recharge. Your mind and body deserve this break.",
+  quote: "Rest is not idleness, and to lie sometimes under trees, watching the clouds, is no waste of time.",
+  author: ""
+};
+
 export async function getWeekendGreeting() {
-  // Generate greeting
-  const greeting = await generateWeekendGreeting();
-  
-  if (!greeting) {
-    return {
-      summary: "Take this time to rest and recharge. Your mind and body deserve this break.",
-      quote: '"Rest is not idleness, and to lie sometimes on the grass under trees on a summer\'s day, listening to the murmur of the water, or watching the clouds float across the sky, is by no means a waste of time."',
-      author: ""
-    };
+  let greeting = await generateWeekendGreeting();
+
+  console.log('[DEBUG] GPT Weekend Greeting Response:', greeting);
+
+  const isValid = (g) =>
+    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
+
+  if (!isValid(greeting)) {
+    greeting = await generateWeekendGreeting();
+    console.log('[DEBUG] GPT Retry Response (weekend):', greeting);
   }
 
-  const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  if (!isValid(greeting)) {
+    return DEFAULT_WEEKEND_GREETING;
+  }
 
-  return {
-    summary: summary.trim(),
-    quote: quote.trim(),
-    author: author.trim()
-  };
-} 
+  try {
+    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
+    const quoteAuthorLine = greeting.split('2)')[1].trim();
+    const [quote, author] = quoteAuthorLine.split(' - ');
+
+    return {
+      summary: summaryLine || DEFAULT_WEEKEND_GREETING.summary,
+      quote: quote?.trim() || DEFAULT_WEEKEND_GREETING.quote,
+      author: author?.trim() || DEFAULT_WEEKEND_GREETING.author
+    };
+  } catch (err) {
+    console.error('[GPT] Weekend parsing failed:', err);
+    return DEFAULT_WEEKEND_GREETING;
+  }
+}
+
 
 

@@ -45,7 +45,10 @@ Constraints:
 
 
 Response Format:
-[Concise, specific insight based on activity - max 20 words] <<SEP>> [Thoughtful, matching quote - max 20 words] <<AUTHOR>> [Quote Author]
+1) [Concise factual reflection - max 20 words]
+2) [Quote - max 20 words] - [Author]
+Do not omit the numbers.
+Author must follow a dash with one space.
 
 Style:
 • Be personal, insightful, and educational.
@@ -79,26 +82,42 @@ Style:
   }
 }
 
+const DEFAULT_EVENING_GREETING = {
+  summary: "Good evening! Take a moment to reflect on your progress today.",
+  quote: "The end of the day is a time for reflection and gratitude.",
+  author: ""
+};
+
 export async function getEveningGreeting() {
-  // Get today's summary
   const userSummary = await getUserSummary(new Date());
-  
-  const greeting = await generateEveningGreeting(userSummary);
-  
-  if (!greeting) {
-    return {
-      summary: "Good evening! Take a moment to reflect on your progress today.",
-      quote: '"The end of the day is a time for reflection and gratitude."',
-      author: ""
-    };
+  let greeting = await generateEveningGreeting(userSummary);
+
+  console.log('[DEBUG] GPT Evening Greeting Response:', greeting);
+
+  const isValid = (g) =>
+    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
+
+  if (!isValid(greeting)) {
+    greeting = await generateEveningGreeting(userSummary);
+    console.log('[DEBUG] GPT Retry Response (evening):', greeting);
   }
 
-  const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  if (!isValid(greeting)) {
+    return DEFAULT_EVENING_GREETING;
+  }
 
-  return {
-    summary: summary.trim(),
-    quote: quote.trim(),
-    author: author.trim()
-  };
-} 
+  try {
+    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
+    const quoteAuthorLine = greeting.split('2)')[1].trim();
+    const [quote, author] = quoteAuthorLine.split(' - ');
+
+    return {
+      summary: summaryLine || DEFAULT_EVENING_GREETING.summary,
+      quote: quote?.trim() || DEFAULT_EVENING_GREETING.quote,
+      author: author?.trim() || DEFAULT_EVENING_GREETING.author
+    };
+  } catch (err) {
+    console.error('[GPT] Evening parsing failed:', err);
+    return DEFAULT_EVENING_GREETING;
+  }
+}

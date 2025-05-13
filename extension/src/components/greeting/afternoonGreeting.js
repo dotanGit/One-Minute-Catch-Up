@@ -44,10 +44,10 @@ Constraints:
 • Quote should be human, relevant, and gentle — not deep, dramatic, or overused.
 
 Response Format:
-[Concise factual reflection - max 20 words] <<SEP>> [Light, thoughtful quote - max 20 words] <<AUTHOR>> [Quote Author]
-Do NOT skip <<SEP>> or <<AUTHOR>> — if missing, the output is invalid.
-Do NOT replace <<AUTHOR>> with a dash or quotation marks.
-Output must be on one line, exactly as described.
+1) [Concise factual reflection - max 20 words]
+2) [Quote - max 20 words] - [Author]
+Do not omit the numbers.
+Author must follow a dash with one space.
 
 Style:
 • Neutral, self-aware, slightly observant
@@ -79,27 +79,41 @@ Style:
   }
 }
 
+const DEFAULT_AFTERNOON_GREETING = {
+  summary: "You're halfway through the day — good time to check where you're at.",
+  quote: "Momentum is a mindset, not a moment.",
+  author: ""
+};
+
 export async function getAfternoonGreeting() {
   const userSummary = await getUserSummary(new Date());
-  const greeting = await generateAfternoonGreeting(userSummary);
+  let greeting = await generateAfternoonGreeting(userSummary);
 
   console.log('[DEBUG] GPT Afternoon Greeting Response:', greeting);
 
+  const isValid = (g) =>
+    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
 
-  if (!greeting) {
-    return {
-      summary: "Hey big BOSS, Keep up the momentum on your daily goals.",
-      quote: "The middle of the day is when you can make the most impact",
-      author: ""
-    };
+  if (!isValid(greeting)) {
+    greeting = await generateAfternoonGreeting(userSummary);
   }
 
-  const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  if (!isValid(greeting)) {
+    return DEFAULT_AFTERNOON_GREETING;
+  }
 
-  return {
-    summary: summary.trim(),
-    quote: quote.trim(),
-    author: author.trim()
-  };
+  try {
+    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
+    const quoteAuthorLine = greeting.split('2)')[1].trim();
+    const [quote, author] = quoteAuthorLine.split(' - ');
+
+    return {
+      summary: summaryLine || DEFAULT_AFTERNOON_GREETING.summary,
+      quote: quote?.trim() || DEFAULT_AFTERNOON_GREETING.quote,
+      author: author?.trim() || DEFAULT_AFTERNOON_GREETING.author
+    };
+  } catch (err) {
+    console.error('[GPT] Afternoon parsing failed:', err);
+    return DEFAULT_AFTERNOON_GREETING;
+  }
 }

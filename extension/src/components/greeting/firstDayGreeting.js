@@ -49,7 +49,11 @@ async function generateFirstDayGreeting() {
   • Do NOT include greetings or names.
   
   Response Format:
-  [Casual, friendly nudge - max 20 words] <<SEP>> [Fresh, upbeat quote - max 20 words] <<AUTHOR>> [Quote Author]
+  1) [Concise factual reflection - max 20 words]
+  2) [Quote - max 20 words] - [Author]
+  Do not omit the numbers.
+  Author must follow a dash with one space. 
+  
   
   Style:
   • Warm, grounded, and gently motivating
@@ -103,16 +107,22 @@ async function cacheFirstDayGreeting(greeting) {
   });
 }
 
+const DEFAULT_FIRST_DAY_GREETING = {
+  summary: "It's a new week — time to focus on what matters and let the rest wait.",
+  quote: "Discipline is choosing between what you want now and what you want most.",
+  author: "Abraham Lincoln"
+};
+
 export async function getFirstDayGreeting() {
-    const cachedGreeting = await getCachedFirstDayGreeting();
+  const cachedGreeting = await getCachedFirstDayGreeting();
   if (cachedGreeting) {
     const cacheAge = Date.now() - cachedGreeting.timestamp;
-    // Cache expires after 4 hours
     if (cacheAge < 4 * 60 * 60 * 1000) {
       console.log('[GREETING] ✅ Using cached first day greeting (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
       return {
         summary: cachedGreeting.summary,
-        quote: cachedGreeting.quote
+        quote: cachedGreeting.quote,
+        author: cachedGreeting.author
       };
     } else {
       console.log('[GREETING] ❌ First day greeting cache expired (age:', Math.round(cacheAge / 1000 / 60), 'minutes)');
@@ -121,29 +131,37 @@ export async function getFirstDayGreeting() {
     console.log('[GREETING] ❌ No cached first day greeting found');
   }
 
-  // Generate greeting if no valid cache
-  const greeting = await generateFirstDayGreeting();
+  // Generate greeting
+  let greeting = await generateFirstDayGreeting();
+  console.log('[DEBUG] GPT First Day Greeting Response:', greeting);
 
-  if (!greeting) {
-    return {
-      summary: "It's a new week — time to focus on what matters and let the rest wait.",
-      quote: '"Discipline is choosing between what you want now and what you want most."',
-      authors: "Abraham Lincoln"
-    };
+  const isValid = (g) =>
+    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
+
+  if (!isValid(greeting)) {
+    greeting = await generateFirstDayGreeting();
   }
 
-  const [summary, quotePart] = greeting.split('<<SEP>>');
-  const [quote, author] = quotePart.split('<<AUTHOR>>');
+  if (!isValid(greeting)) {
+    return DEFAULT_FIRST_DAY_GREETING;
+  }
 
-  const result = {
-    summary: summary.trim(),
-    quote: quote.trim(),
-    author: author.trim()
-  };
+  try {
+    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
+    const quoteAuthorLine = greeting.split('2)')[1].trim();
+    const [quote, author] = quoteAuthorLine.split(' - ');
 
-  // Cache the new greeting
-  await cacheFirstDayGreeting(result);
+    const result = {
+      summary: summaryLine || DEFAULT_FIRST_DAY_GREETING.summary,
+      quote: quote?.trim() || DEFAULT_FIRST_DAY_GREETING.quote,
+      author: author?.trim() || DEFAULT_FIRST_DAY_GREETING.author
+    };
 
-  return result;
+    await cacheFirstDayGreeting(result);
+    return result;
+  } catch (err) {
+    return DEFAULT_FIRST_DAY_GREETING;
+  }
 }
+
  
