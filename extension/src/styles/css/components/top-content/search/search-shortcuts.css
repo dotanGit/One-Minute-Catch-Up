@@ -1,13 +1,7 @@
 [data-theme="light"] {
-    --shortcutModal-bg: linear-gradient(145deg, #ffffff, #f5f5f5);
     --shortcutModal-text: #000000;
-    --shortcutModal-overlay: rgba(0, 0, 0, 0.7);
     --shortcutModal-input-bg: #d1d1d1;
     --shortcutModal-btn-primary: #005db4;
-    --shortcutModal-btn-primary-hover: #c5e2fd;
-    --shortcutModal-btn-primary-text: #000000;
-    --shortcutModal-btn-secondary: #cccccc;
-    --shortcutModal-btn-secondary-hover: #bbbbbb;
     --shortcut-name-color: #ffffff;
     --shortcut-menu-button-color: #ffffff;
     --add-button-hover-color: #ffffff;
@@ -15,15 +9,9 @@
 
 
 [data-theme="dark"] {
-    --shortcutModal-bg: linear-gradient(145deg, #1e1e1e, #2b2b2b);
     --shortcutModal-text: #ffffff;
-    --shortcutModal-overlay: rgba(0, 0, 0, 0.7);
     --shortcutModal-input-bg: #3f3f3f;
     --shortcutModal-btn-primary: #004379;
-    --shortcutModal-btn-primary-hover: #00223d;
-    --shortcutModal-btn-primary-text: #ffffff;
-    --shortcutModal-btn-secondary: #555555;
-    --shortcutModal-btn-secondary-hover: #666666;
     --shortcut-name-color: #000000;
     --shortcut-menu-button-color: #000000;
     --add-button-hover-color: #000000;
@@ -178,53 +166,22 @@
 }
 
 
-/* Shortcut Modal Overlay */
-.shortcut-modal {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--shortcutModal-overlay);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
-    animation: modalEntrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Shortcut Modal Specific Custom Content */
+#addShortcutModal .shortcut-modal-content {
+    margin: 0 auto;
 }
 
-@keyframes modalEntrance {
-    0% {
-        opacity: 0;
-        transform: scale(0.95) translateY(1rem);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-/* Shortcut Modal Content */
 .shortcut-modal-content {
-    background: var(--shortcutModal-bg);
+    position: relative;
     color: var(--shortcutModal-text);
-    padding: 2rem;
     border-radius: 1rem;
-    width: 30rem;
-    z-index: 100000;
+    width: 80%;
 }
 
-.shortcut-modal-content h3 {
-    font-size: 2rem;
-    margin-bottom: 1.75rem;
-    text-align: center;
-    font-weight: 600;
-    color: var(--shortcutModal-text);
-}
 
 .form-group {
     margin-bottom: 1.2rem;
 }
-
 
 .shortcut-modal-content input {
     background: var(--shortcutModal-input-bg);
@@ -235,7 +192,6 @@
     border: 1px solid transparent;
     border-radius: 0.6rem;
     font-size: 1.3rem;
-    z-index: 100001;
 }
 
 .shortcut-modal-content input:focus {
@@ -244,44 +200,6 @@
     box-shadow: none; /* Ensures no glow or shadow appears */
 }
 
-
-/* Modal Buttons Row */
-.shortcut-modal-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    z-index: 100001;
-}
-
-/* Buttons */
-.shortcut-modal-buttons button {
-    padding: 0.7rem 1.4rem;
-    border: none;
-    cursor: pointer;
-    font-size: 1.05rem;
-    border-radius: 0.6rem;
-    transition: background 0.2s, color 0.2s;
-    z-index: 100001;
-}
-
-
-.btn-primary {
-    background: var(--shortcutModal-btn-primary);
-    color: var(--shortcutModal-btn-primary-text);;
-}
-
-.btn-primary:hover {
-    background: var(--shortcutModal-btn-primary-hover);
-}
-
-.btn-secondary {
-    background: var(--shortcutModal-btn-secondary);
-    color: var(--shortcutModal-text);
-}
-
-.btn-secondary:hover {
-    background: var(--shortcutModal-btn-secondary-hover);
-}
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
