@@ -17,6 +17,7 @@
   --greeting-head: rgba(255, 255, 255, 0.9);
   --greeting-text-summary: rgba(255, 255, 255, 0.9);
   --greeting-text-quote: rgba(255, 255, 255, 0.9);
+  --author-description-color: rgba(26, 26, 26, 0.9);
 }
 
 /* Light theme */
@@ -24,6 +25,7 @@
   --greeting-head: rgba(26, 26, 26, 0.9);
   --greeting-text-summary: rgba(26, 26, 26, 0.9);
   --greeting-text-quote: rgba(26, 26, 26, 0.9);
+  --author-description-color: rgba(255, 255, 255, 0.9);
 }
 
 /* Greeting Container */
@@ -86,14 +88,32 @@
 }
 
 
-/* Testing Authors Modal*/
-.author-modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
+/* Author Modal Specific Styling */
+#authorModal .main-modal-content {
   text-align: center;
-  width: 300px;
-  position: relative;
 }
 
+#authorModal #author-image {
+  width: 120px;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem auto;
+  display: block;
+}
 
+#authorModal #author-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-family: var(--main-font);
+  color: var(--author-description-color);
+}
+
+#author-link{
+  text-decoration: none;
+}
+
+#authorModal .main-modal-buttons {
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
