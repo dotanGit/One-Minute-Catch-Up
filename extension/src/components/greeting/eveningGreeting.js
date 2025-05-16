@@ -1,62 +1,37 @@
+import { greetingPhrases } from './greetingPhrases.js';
+import { getDailyQuote } from './quoteUtils.js';
+import { OPENAI_API_KEY } from './greeting.js';
 import { getUserSummary } from '../summary/userSummaryBuilder.js';
-import { OPENAI_API_KEY, WEEKLY_GOAL,DAILY_GOAL,USER_ROLE,USER_INTRESTS } from './greeting.js';
 
+const EVENING_INDEX_KEY = 'eveningHeadingIndex';
 
-async function generateEveningGreeting(userSummary) {
+export async function getEveningGreeting() {
+  // --- Heading ---
+  const headings = greetingPhrases.evening;
+  const { [EVENING_INDEX_KEY]: index = 0 } = await chrome.storage.local.get([EVENING_INDEX_KEY]);
+  const heading = headings[index % headings.length];
+  await chrome.storage.local.set({ [EVENING_INDEX_KEY]: (index + 1) % headings.length });
 
-  const contextLines = [];
-
-  if (WEEKLY_GOAL) contextLines.push(`Weekly Goal: ${WEEKLY_GOAL}`);
-  if (DAILY_GOAL) contextLines.push(`Daily Goal: ${DAILY_GOAL}`);
-
-  const contextSection = contextLines.length
-    ? `Context:\n${contextLines.join('\n')}`
-    : '';
-
-  const profileLines = [];
-
-  if (USER_ROLE) profileLines.push(`• Role: ${USER_ROLE}`);
-  if (USER_INTRESTS) profileLines.push(`• Interests: ${USER_INTRESTS}`);
-
-  const userProfileSection = profileLines.length
-    ? `User Profile:\n${profileLines.join('\n')}`
-    : '';
-
+  // --- Summary from GPT ---
+  const userSummary = await getUserSummary(new Date());
   const prompt = `
-Role:
-You are a personal AI mentor. You review the user’s recent digital activity (emails, browsing, calendar, files) to:
-1. Infer what the user was studying, searching, learning, or curious about.
-2. Teach them one short, high-quality insight related to that topic.
-3. Pair it with a thoughtful quote that fits the same theme.
+  You're an assistant that gives short, witty evening updates. Based on the following user data, summarize one highlight from today — fun, motivating, and under 20 words.
 
-${contextSection}
+  USER DATA:
+  ${userSummary}
 
-${userProfileSection}
+  OUTPUT ONLY THE TEXT. No titles or labels.
+  `.trim();
 
-Today's Activities:
-${userSummary}
+  const summary = await fetchOpenAISummary(prompt);
 
-Constraints:
-• Do NOT include greetings (e.g., “Good morning”) or the user's name.
-• Do NOT summarize the activity or refer to the data source.
-• Do NOT use cliché praise or overly common quotes.
-• Insight must be meaningful, not generic.
-• Quote must feel fresh, thoughtful, and emotionally aligned.
+  const { quote, author } = await getDailyQuote();
 
+  return { heading, summary, quote, author };
+}
 
-Response Format:
-1) [Concise factual reflection - max 20 words]
-2) [Quote - max 20 words] - [Author]
-Do not omit the numbers.
-Author must follow a dash with one space.
-
-Style:
-• Be personal, insightful, and educational.
-• Use plain, emotionally intelligent language.
-• The message should feel natural and tailored — not robotic or motivational filler.
-`.trim();
-
-
+// GPT helper
+async function fetchOpenAISummary(prompt) {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -65,59 +40,17 @@ Style:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 150,
-        temperature: 0.2
+        temperature: 0.7,
+        max_tokens: 50
       })
     });
 
     const data = await response.json();
-    
-    const content = data?.choices?.[0]?.message?.content?.trim() || null;
-    return content;
-  } catch (error) {
-    console.error('Failed to generate evening greeting:', error);
-    return null;
-  }
-}
-
-const DEFAULT_EVENING_GREETING = {
-  summary: "Good evening! Take a moment to reflect on your progress today.",
-  quote: "The end of the day is a time for reflection and gratitude.",
-  author: ""
-};
-
-export async function getEveningGreeting() {
-  const userSummary = await getUserSummary(new Date());
-  let greeting = await generateEveningGreeting(userSummary);
-
-  console.log('[DEBUG] GPT Evening Greeting Response:', greeting);
-
-  const isValid = (g) =>
-    typeof g === 'string' && g.includes('1)') && g.includes('2)') && g.includes(' - ');
-
-  if (!isValid(greeting)) {
-    greeting = await generateEveningGreeting(userSummary);
-    console.log('[DEBUG] GPT Retry Response (evening):', greeting);
-  }
-
-  if (!isValid(greeting)) {
-    return DEFAULT_EVENING_GREETING;
-  }
-
-  try {
-    const summaryLine = greeting.split('1)')[1].split('2)')[0].trim();
-    const quoteAuthorLine = greeting.split('2)')[1].trim();
-    const [quote, author] = quoteAuthorLine.split(' - ');
-
-    return {
-      summary: summaryLine || DEFAULT_EVENING_GREETING.summary,
-      quote: quote?.trim() || DEFAULT_EVENING_GREETING.quote,
-      author: author?.trim() || DEFAULT_EVENING_GREETING.author
-    };
+    return data.choices?.[0]?.message?.content?.trim() || 'Winding down right, as always.';
   } catch (err) {
-    console.error('[GPT] Evening parsing failed:', err);
-    return DEFAULT_EVENING_GREETING;
+    console.warn('[EveningGreeting] ChatGPT failed:', err);
+    return 'Winding down right, as always.';
   }
 }
