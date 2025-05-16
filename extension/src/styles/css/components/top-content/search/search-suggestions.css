@@ -103,3 +103,8 @@
 .search-input-container.showing-suggestions {
     border-radius: 1.5rem 1.5rem 0 0;
 }
+
+/* keyboard click up/down */
+.suggestion-list-item.highlighted {
+    background-color: var(--suggestion-hover);
+}

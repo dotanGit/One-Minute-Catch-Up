@@ -10,6 +10,9 @@ export class SearchSuggestionManager {
         this.shortcutsButton = document.querySelector('.shortcuts-button');
         this.showTimeout = null;
         this.onSearch = onSearch;
+        this.highlightedIndex = -1;
+        this.suggestions = [];
+
         
         // Add mousedown outside listener
         document.addEventListener('mousedown', (e) => {
@@ -59,6 +62,8 @@ export class SearchSuggestionManager {
         this.input.addEventListener('blur', () => {
             this.searchSection.classList.remove('focused');
         });
+
+        this.input.addEventListener('keydown', (e) => this.handleKeyDown(e));
     }
 
     keepFocused() {
@@ -67,6 +72,8 @@ export class SearchSuggestionManager {
 
     displaySuggestions(suggestions, onSuggestionClick) {
         this.listElement.innerHTML = '';
+        this.suggestions = suggestions;
+        this.highlightedIndex = -1;
 
         if (!suggestions || suggestions.length === 0) {
             this.hideSuggestions();
@@ -127,6 +134,33 @@ export class SearchSuggestionManager {
         // Only remove focused if input is not focused and suggestions are hidden
         if (document.activeElement !== this.input) {
             this.searchSection.classList.remove('focused');
+        }
+    }
+
+    handleKeyDown(e) {
+        const items = this.listElement.querySelectorAll('.suggestion-list-item');
+        if (!items.length) return;
+    
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.highlightedIndex = (this.highlightedIndex + 1) % items.length;
+            this.updateHighlight(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.highlightedIndex = (this.highlightedIndex - 1 + items.length) % items.length;
+            this.updateHighlight(items);
+        } else if (e.key === 'Enter') {
+            if (this.highlightedIndex >= 0 && this.highlightedIndex < this.suggestions.length) {
+                this.onSearch(this.suggestions[this.highlightedIndex]);
+            }
+        }
+    }
+    
+    updateHighlight(items) {
+        items.forEach(item => item.classList.remove('highlighted'));
+        if (this.highlightedIndex >= 0) {
+            items[this.highlightedIndex].classList.add('highlighted');
+            items[this.highlightedIndex].scrollIntoView({ block: 'nearest' });
         }
     }
 }
