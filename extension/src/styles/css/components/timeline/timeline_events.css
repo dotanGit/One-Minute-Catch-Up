@@ -7,15 +7,15 @@
 
 .timeline-event-time {
     position: absolute;
-    top: -30px;
+    top: -1.875rem;
     left: 50%;
     transform: translateX(-50%);
     color: rgba(255, 255, 255, 0.9);
-    font-size: 11px;
+    font-size: 0.6875rem;
     white-space: nowrap;
     background: rgba(0, 0, 0, 0.5);
-    padding: 3px 8px;
-    border-radius: 12px;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 0.75rem;
     pointer-events: none;
     z-index: 2;
 }
@@ -40,11 +40,11 @@
 }
 
 .timeline-dot {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 100px;
-    border: 2px dashed #c4d2e2;
+    border-radius: 6.25rem;
+    border: 0.125rem dashed #c4d2e2;
     position: relative;
     z-index: 2;
     transition: transform 0.2s ease;
@@ -55,15 +55,15 @@
 
 .timeline-dot .close-button {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 20px;
-    height: 20px;
+    top: -0.5rem;
+    right: -0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 0.0625rem solid rgba(0, 0, 0, 0.2);
     color: #333;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1;
     padding: 0;
     cursor: pointer;
@@ -75,15 +75,15 @@
 
 .timeline-dot .mark-button {
     position: absolute;
-    top: -8px;
-    left: -8px;
-    width: 20px;
-    height: 20px;
+    top: -0.5rem;
+    left: -0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.2);
+    border: 0.0625rem solid rgba(0, 0, 0, 0.2);
     color: #333;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1;
     padding: 0;
     cursor: pointer;
@@ -162,10 +162,10 @@
     left: 50%;
     transform: translateX(-50%);
     margin-inline: var(--inlineP);
-    width: 230px;
+    width: 14.375rem;
     font-family: "Poppins", sans-serif;
     z-index: 100;
-    max-height: 200px; /* Adjust as you like */
+    max-height: 12.5rem;
 }
 
 /* Update category-specific accent colors */
@@ -204,7 +204,7 @@
     border-radius: calc(var(--dateH) / 2) 0 0 calc(var(--dateH) / 2);
     padding: 0 1rem;          /* Added padding for text */
     white-space: nowrap;      /* Keep text on one line */
-    height: 30px;
+    height: 1.875rem;
 }
 
 /* Add the date flap */
@@ -292,7 +292,7 @@
 
 /* Update action buttons */
 .event-popup .event-actions {
-    padding: 0.75rem 1rem;
+    padding: 0.375rem 0.75rem;
     background: var(--bgColor, rgba(245, 245, 245));
     display: flex;
     gap: 8px;
@@ -302,8 +302,8 @@
     background: var(--accent-color);
     border: none;
     color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
     font-size: 0.8rem;       /* Reduce button text size */
     font-weight: 500;
     opacity: 0.8;
@@ -486,40 +486,40 @@
 /* Add icons for each category */
 .timeline-event[data-category="gmail"] .timeline-dot::before {
     content: '';
-    width: 30px;        
-    height: 30px;       
+    width: 1.875rem;        
+    height: 1.875rem;       
     background: url('../../../../assets/icons/gmail.png') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="browser"] .timeline-dot::before {
     content: '';
-    width: 25px;        
-    height: 25px;       
+    width: 1.5625rem;        
+    height: 1.5625rem;       
     background: var(--favicon-url, url('../../../../assets/icons/explore.svg')) no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="calendar"] .timeline-dot::before {
     content: '';
-    width: 30px;        
-    height: 30px;       
+    width: 1.875rem;        
+    height: 1.875rem;       
     background: url('../../../../assets/icons/google-calendar.png') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="drive"] .timeline-dot::before {
     content: '';
-    width: 30px;        
-    height: 30px;       
+    width: 1.875rem;        
+    height: 1.875rem;       
     background: url('../../../../assets/icons/google-drive.png') no-repeat center center;
     background-size: contain;
 }
 
 .timeline-event[data-category="download"] .timeline-dot::before {
     content: '';
-    width: 22px;        
-    height: 22px;       
+    width: 1.375rem;        
+    height: 1.375rem;       
     background: url('../../../../assets/icons/download.svg') no-repeat center center;
     background-size: contain;
 }

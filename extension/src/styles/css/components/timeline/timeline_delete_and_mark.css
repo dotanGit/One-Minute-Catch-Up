@@ -16,19 +16,19 @@
 /* Update the delete-marked-button styles */
 .delete-marked-button {
     position: fixed;
-    bottom: 20px;
-    right: 65px; /* Position to the left of filter button */
+    bottom: 1.25rem; /* Changed from 20px */
+    right: 4.0625rem; /* Changed from 65px */
     background: linear-gradient(135deg, #ff6464, #f83838);
     color: white;
     border: none;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem; /* Changed from 40px */
+    height: 2.5rem; /* Changed from 40px */
     border-radius: 50%;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.2); /* Changed from 2px 10px */
     transition: all 0.2s ease;
     z-index: 1000;
 }
@@ -43,8 +43,8 @@
 
 .delete-marked-button::before {
     content: '';
-    width: 24px;
-    height: 24px;
+    width: 1.5rem; /* Changed from 24px */
+    height: 1.5rem; /* Changed from 24px */
     background: url('../../../../assets/icons/delete.svg') no-repeat center center;
     background-size: contain;
     filter: brightness(0) invert(1);
@@ -53,19 +53,19 @@
 /* Update the clear-marked-button styles */
 .clear-marked-button {
     position: fixed;
-    bottom: 20px;
-    right: 110px; /* Position to the left of delete button */
+    bottom: 1.25rem; /* Changed from 20px */
+    right: 6.875rem; /* Changed from 110px */
     background: linear-gradient(135deg, #6ba5fb, #4a91fb);
     color: white;
     border: none;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem; /* Changed from 40px */
+    height: 2.5rem; /* Changed from 40px */
     border-radius: 50%;
     cursor: pointer;
     display: none;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.2); /* Changed from 2px 10px */
     transition: all 0.2s ease;
     z-index: 1000;
 }
@@ -80,8 +80,8 @@
 
 .clear-marked-button::before {
     content: '';
-    width: 24px;
-    height: 24px;
+    width: 1.5rem; /* Changed from 24px */
+    height: 1.5rem; /* Changed from 24px */
     background: url('../../../../assets/icons/refresh.svg') no-repeat center center;
     background-size: contain;
     filter: brightness(0) invert(1);
