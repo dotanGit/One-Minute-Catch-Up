@@ -1,0 +1,10 @@
+.wallpaper-button{
+    position: fixed;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: var(--timeline-button-bg);
+    backdrop-filter: blur(12px);
+}

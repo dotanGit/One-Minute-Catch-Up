@@ -25,80 +25,6 @@ body {
     margin: 0 auto;
 }
 
-.wallpaper-selector {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-}
-
-.wallpaper-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    transition: background 0.3s;
-}
-
-.wallpaper-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.wallpaper-dropdown {
-    position: absolute;
-    right: 0;
-    top: 50px;
-    background: rgba(0, 0, 0, 0.75);
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    display: none;
-    width: 300px;
-    max-height: 400px;
-    overflow-y: auto;
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 1001;
-}
-
-.wallpaper-dropdown.show {
-    display: block;
-}
-
-.wallpaper-category {
-    margin-bottom: 15px;
-}
-
-.wallpaper-category h3 {
-    color: white;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.wallpaper-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-}
-
-.wallpaper-thumbnail {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.wallpaper-thumbnail:hover {
-    transform: scale(1.05);
-}
-
 /* Top Right Buttons Container */
 .top-right-buttons {
     position: fixed;
@@ -111,67 +37,7 @@ body {
     align-items: flex-end;
 }
 
-/* Button Selectors */
-.wallpaper-selector {
-    position: relative;
-}
 
-/* Common Button Styles */
-.wallpaper-button {
-    background: rgba(255, 255, 255, 0.15);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: white;
-    backdrop-filter: blur(8px);
-}
-
-.wallpaper-button:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-}
-
-.wallpaper-button .material-icons {
-    font-size: 20px;
-}
-
-
-
-/* Wallpaper Dropdown Specific Styles */
-.wallpaper-category {
-    margin-bottom: 15px;
-}
-
-.wallpaper-category h3 {
-    color: white;
-    margin-bottom: 10px;
-    font-size: 14px;
-}
-
-.wallpaper-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-}
-
-.wallpaper-thumbnail {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.wallpaper-thumbnail:hover {
-    transform: scale(1.05);
-}
 
 
 

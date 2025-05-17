@@ -1,0 +1,53 @@
+{
+  "wallpaperSets": {
+    "above_clouds": {
+      "name": "Above the Clouds",
+      "description": "Beautiful cloudscapes throughout the day",
+      "timeRanges": {
+        "sunrise": {
+          "start": 5,
+          "end": 8,
+          "images": [
+            "sunrise_1.jpeg",
+            "sunrise_2.jpeg",
+            "sunrise_3.jpeg",
+            "sunrise_4.jpeg",
+            "sunrise_5.jpeg"
+          ]
+        },
+        "day": {
+          "start": 8,
+          "end": 17,
+          "images": [
+            "day_1.jpeg",
+            "day_2.jpeg",
+            "day_3.jpeg",
+            "day_4.jpeg"
+          ]
+        },
+        "sunset": {
+          "start": 17,
+          "end": 20,
+          "images": [
+            "sunset_1.jpeg",
+            "sunset_2.jpeg",
+            "sunset_3.jpeg",
+            "sunset_4.jpeg",
+            "sunset_5.jpeg"
+          ]
+        },
+        "night": {
+          "start": 20,
+          "end": 5,
+          "images": [
+            "night_1.jpeg",
+            "night_2.jpeg",
+            "night_3.jpeg",
+            "night_4.jpeg"
+          ]
+        }
+      }
+    }
+  },
+  "defaultSet": "above_clouds"
+} 

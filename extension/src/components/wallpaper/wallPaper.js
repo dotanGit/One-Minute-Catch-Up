@@ -1,110 +1,101 @@
-//Original code - commented out for testing
-// import { wallpaperImages } from '../../assets/data/wallpaperImages.js';
-
-// let isChangingBackground = false;
-
-// // Create and populate the dropdown
-// function createDropdown() {
-//     const dropdown = document.getElementById('wallpaperDropdown');
-    
-//     Object.entries(wallpaperImages).forEach(([category, data]) => {
-//         const categoryDiv = document.createElement('div');
-//         categoryDiv.className = 'wallpaper-category';
-        
-//         const title = document.createElement('h3');
-//         title.textContent = data.name;
-//         categoryDiv.appendChild(title);
-        
-//         const grid = document.createElement('div');
-//         grid.className = 'wallpaper-grid';
-        
-//         data.images.forEach(imageUrl => {
-//             const img = document.createElement('img');
-//             img.className = 'wallpaper-thumbnail';
-//             const thumbnailUrl = imageUrl.replace('/full/', '/thumbnails/');
-//             img.src = thumbnailUrl;
-//             img.loading = 'lazy';
-//             img.dataset.fullUrl = imageUrl;
-
-//             img.alt = `${data.name} Wallpaper`;
-            
-//             img.addEventListener('click', function() {
-//                 if (!isChangingBackground) {
-//                     // Use the stored URL instead of the event
-//                     setBackground(this.dataset.fullUrl);
-//                     dropdown.classList.remove('show');
-//                 }
-//             });
-            
-//             grid.appendChild(img);
-//         });
-        
-//         categoryDiv.appendChild(grid);
-//         dropdown.appendChild(categoryDiv);
-//     });
-// }
-
-// // Toggle dropdown visibility
-// document.getElementById('changeWallpaper').addEventListener('click', function(e) {
-//     e.preventDefault();
-//     const dropdown = document.getElementById('wallpaperDropdown');
-//     dropdown.classList.toggle('show');
-// });
-
-// // Close dropdown when clicking outside
-// document.addEventListener('click', function(e) {
-//     const dropdown = document.getElementById('wallpaperDropdown');
-//     const button = document.getElementById('changeWallpaper');
-    
-//     if (!dropdown.contains(e.target) && !button.contains(e.target)) {
-//         dropdown.classList.remove('show');
-//     }
-// });
-
-// function setBackground(imageUrl) {
-//     if (isChangingBackground) return;
-    
-//     console.log('Setting background with URL:', imageUrl);
-//     isChangingBackground = true;
-    
-//     // Create a temporary image to preload
-//     const tempImg = new Image();
-//     tempImg.src = imageUrl;
-    
-//     tempImg.onload = function() {
-//         console.log('Image loaded successfully:', imageUrl);
-//         document.body.style.backgroundImage = `url("${imageUrl}")`;
-//         document.body.style.backgroundSize = 'cover';
-//         document.body.style.backgroundPosition = 'center';
-//         document.body.style.backgroundRepeat = 'no-repeat';
-//         document.body.style.backgroundAttachment = 'fixed';
-//         isChangingBackground = false;
-//     };
-    
-//     tempImg.onerror = function() {
-//         console.error('Failed to load image:', imageUrl);
-//         isChangingBackground = false;
-//     };
-// }
-
-// // Initialize
-// document.addEventListener('DOMContentLoaded', function() {
-//     createDropdown();
-//     // Set initial background with first nature image
-//     if (wallpaperImages.nature.images.length > 0) {
-//         setBackground(wallpaperImages.nature.images[0]);
-//     }
-// });
-
-
-// // SIMPLE TEST CODE
+// Time-based wallpaper changer
 document.addEventListener('DOMContentLoaded', function() {
-    // Change this path to your image file
-    const testImage = '../components/wallpaper/10.jpg';
+    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format';
+    const CONFIG_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format/config_above_clouds.json';
     
-    document.body.style.backgroundImage = `url("${testImage}")`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundPosition = 'center';
-    document.body.style.backgroundRepeat = 'no-repeat';
-    document.body.style.backgroundAttachment = 'fixed';
+    let wallpaperConfig = null;
+    let currentWallpaperSet = null;
+
+    async function loadConfig() {
+        try {
+            console.log('Fetching config from:', CONFIG_URL);
+            const response = await fetch(CONFIG_URL);
+            wallpaperConfig = await response.json();
+            console.log('Loaded config:', wallpaperConfig);
+            currentWallpaperSet = wallpaperConfig.defaultSet;
+            console.log('Current wallpaper set:', currentWallpaperSet);
+        } catch (error) {
+            console.error('Failed to load wallpaper configuration:', error);
+        }
+    }
+
+    function getTimeOfDay() {
+        if (!wallpaperConfig || !currentWallpaperSet) {
+            console.log('Config or wallpaper set not loaded');
+            return null;
+        }
+        
+        const hour = new Date().getHours();
+        console.log('Current hour:', hour);
+        const timeRanges = wallpaperConfig.wallpaperSets[currentWallpaperSet].timeRanges;
+        
+        // Check each time range
+        for (const [period, range] of Object.entries(timeRanges)) {
+            if (range.start <= range.end) {
+                // Normal range (e.g., 8-17)
+                if (hour >= range.start && hour < range.end) {
+                    console.log('Selected time period:', period);
+                    return period;
+                }
+            } else {
+                // Wrapping range (e.g., 20-5)
+                if (hour >= range.start || hour < range.end) {
+                    console.log('Selected time period:', period);
+                    return period;
+                }
+            }
+        }
+        console.log('No matching time period found');
+        return null;
+    }
+
+    function getRandomImage(timeOfDay) {
+        if (!wallpaperConfig || !currentWallpaperSet || !timeOfDay) {
+            console.log('Cannot get random image - missing config, set, or time of day');
+            return null;
+        }
+        
+        const images = wallpaperConfig.wallpaperSets[currentWallpaperSet].timeRanges[timeOfDay].images;
+        console.log('Available images for', timeOfDay, ':', images);
+        const randomIndex = Math.floor(Math.random() * images.length);
+        const selectedImage = images[randomIndex];
+        console.log('Selected image:', selectedImage);
+        return selectedImage;
+    }
+
+    async function updateWallpaper() {
+        console.log('Updating wallpaper...');
+        if (!wallpaperConfig) {
+            console.log('Config not loaded, loading now...');
+            await loadConfig();
+        }
+        
+        const timeOfDay = getTimeOfDay();
+        if (!timeOfDay) {
+            console.log('No time of day determined');
+            return;
+        }
+        
+        const imageName = getRandomImage(timeOfDay);
+        if (!imageName) {
+            console.log('No image selected');
+            return;
+        }
+        
+        const imageUrl = `${GITHUB_RAW_URL}/${imageName}`;
+        console.log('Final image URL:', imageUrl);
+        
+        document.body.style.backgroundImage = `url("${imageUrl}")`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.backgroundAttachment = 'fixed';
+    }
+
+    // Load config and update wallpaper immediately
+    loadConfig().then(() => {
+        updateWallpaper();
+        // Update wallpaper every hour
+        setInterval(updateWallpaper, 3600000);
+    });
 });
