@@ -1,3 +1,4 @@
+/* Base nav button styles */
 .nav-button {
     cursor: pointer;
     background: transparent;
@@ -14,29 +15,32 @@
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
+.nav-button:hover img {
+    transform: translateY(0.0625rem) scale(1.3);
+    filter: grayscale(0%) brightness(0); /* black */
+}
+
+/* Specific button positions */
+#scroll-left {
+    position: absolute;
+    right: 2rem;
+}
+
+#scroll-right {
+    position: absolute;
+    left: 4rem;
+}
 
 #scroll-latest {
     position: absolute;
     left: 0;
+    color: var(--timeline-scroll-latest-color);
 }
+
 
 #scroll-latest img {
     width: 2.3125rem;
     height: 2.3125rem;
 }
 
-.nav-button:hover img {
-    transform: translateY(0.0625rem) scale(1.3);
-    filter: grayscale(0%) brightness(0); /* black */
-}
 
-
-#scroll-left {
-    position: absolute;
-    right: 2rem; 
-}
-
-#scroll-right {
-    position: absolute;
-    left: 4rem; 
-}
