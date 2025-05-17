@@ -1,50 +1,65 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap");
 
-.timeline-wrapper {
+.timeline-layout {
     position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: -5px;
-    width: 100%;
-    max-width: 80%;
-    z-index: 999; /* ensures it's on top of other content */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 25rem;
+    display: flex;
+    align-items: center;
+    z-index: 999;
 }
 
+.timeline-nav-left,
+.timeline-nav-right {
+    width: 3.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+}
+
+.timeline-center {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .timeline-container {
     position: relative;
-    width: 100%;
-    height: 400px;               
-    overflow-x: auto;    
+    width: 90%;
+    height: 100%;
+    overflow-x: auto;
     direction: rtl;
+    margin: 0 auto;
 }
-
 
 .timeline-line {
     position: absolute;
     top: 50%;
     left: 0;
     right: 0;
-    height: 1px;
+    height: 0.0625rem;
     background: #00000037;
     transform: translateY(-50%);
     z-index: 1;
 }
 
-
-
 .timeline-events {
     position: absolute;
     top: 50%;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     transform: translateY(-50%);
     height: auto;
     display: flex;
     align-items: center;
     z-index: 2;
 }
-
 
 /* Remove scrollbar default view*/
 .timeline-container::-webkit-scrollbar {
@@ -57,4 +72,40 @@
 
 .timeline-container::-webkit-scrollbar-thumb {
     display: none;
+}
+
+/* Timeline action buttons */
+.timeline-action-btn {
+    position: fixed;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(0.5rem);
+}
+
+.timeline-action-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-0.125rem);
+}
+
+.timeline-action-btn .material-icons {
+    font-size: 1.5rem;
+}
+
+.timeline-action-btn.bottom-left {
+    bottom: 1.25rem;
+    left: 1.25rem;
+}
+
+.timeline-action-btn.bottom-right {
+    bottom: 1.25rem;
+    right: 1.25rem;
 }

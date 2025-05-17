@@ -53,7 +53,6 @@ export function initTimelineScroll() {
     });
 }
 
-
 function startScroll(direction) {
     stopScroll();
     const scrollAmount = scrollSpeed * direction;

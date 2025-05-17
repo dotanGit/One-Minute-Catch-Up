@@ -1,21 +1,21 @@
 export async function initTimelineMinimize() {
     const minimizeBtn = document.getElementById('minimizeTimeline');
-    const timelineWrapper = document.querySelector('.timeline-wrapper');
+    const timelineContainer = document.querySelector('.timeline-container');
     
     // Load saved state
     chrome.storage.local.get('timelineMinimized', ({ timelineMinimized }) => {
         if (timelineMinimized) {
-            timelineWrapper.classList.add('minimized');
+            timelineContainer.classList.add('minimized');
             minimizeBtn.querySelector('.material-icons').textContent = 'unfold_more';
         }
     });
 
     minimizeBtn.addEventListener('click', () => {
-        const isMinimized = timelineWrapper.classList.toggle('minimized');
+        const isMinimized = timelineContainer.classList.toggle('minimized');
         
         // Force immediate hide of all popups when minimizing
         if (isMinimized) {
-            const popups = timelineWrapper.querySelectorAll('.event-popup');
+            const popups = timelineContainer.querySelectorAll('.event-popup');
             popups.forEach(popup => popup.classList.add('force-hide'));
             // Remove the force-hide class after animation completes
             setTimeout(() => {

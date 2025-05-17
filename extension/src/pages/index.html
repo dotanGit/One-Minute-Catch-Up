@@ -204,33 +204,43 @@
             </div>
     </section>
 
-    <!-- Timeline Section -->
-    <section class="timeline-section">
-        <button id="minimizeTimeline" class="minimize-button">
-            <span class="material-icons">unfold_less</span>
-        </button>
-
-        <div class="timeline-wrapper">
+    <!-- Timeline Section - New Structure -->
+    <section class="timeline-section timeline-layout">
+        <!-- Left Nav Column -->
+        <div class="timeline-nav-left">
+            <button id="scroll-left" class="nav-button">
+                <img src="../assets/icons/arrow_back.svg" alt="Scroll Left" />
+            </button>
+        </div>
+    
+        <!-- Center Timeline Scrollable -->
+        <div class="timeline-center">
             <div class="timeline-container">
                 <div class="timeline-line"></div>
                 <div class="timeline-events" id="timeline-events"></div>
             </div>
         </div>
-        
-        <div class="timeline-navigation">
-        <button id="scroll-left" class="nav-button">
-            <img src="../assets/icons/arrow_back.svg" alt="Scroll Left" />
-          </button>
-          
-          <button id="scroll-latest" class="nav-button">
-            <img src="../assets/icons/now-clock.png" alt="Go to Latest" />
-          </button>
-          
-          <button id="scroll-right" class="nav-button">
-            <img src="../assets/icons/arrow_forward.svg" alt="Scroll Right" />
-          </button>
+    
+        <!-- Right Nav Column -->
+        <div class="timeline-nav-right">
+            <button id="scroll-latest" class="nav-button">
+                <img src="../assets/icons/now-clock.png" alt="Go to Latest" />
+            </button>
+            <button id="scroll-right" class="nav-button">
+                <img src="../assets/icons/arrow_forward.svg" alt="Scroll Right" />
+            </button>
         </div>
+    
+        <!-- Fixed Action Buttons -->
+        <button id="minimizeTimeline" class="timeline-action-btn bottom-left">
+            <span class="material-icons">unfold_less</span>
+        </button>
+    
+        <button id="filterTimeline" class="timeline-action-btn bottom-right">
+            <span class="material-icons">filter_list</span>
+        </button>
     </section>
+  
           
     <!-- Templates -->
     <template id="event-template">

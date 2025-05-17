@@ -20,7 +20,7 @@ import {
   // ===== Global Variables =====
   const loadingSection = document.getElementById('loading');
   const timelineEvents = document.getElementById('timeline-events');
-  const timelineWrapper = document.querySelector('.timeline-wrapper');
+  const timelineLayout = document.querySelector('.timeline-layout');
   window.globalStartTime = null;
   
   export let currentDate = normalizeDateToStartOfDay(new Date());
@@ -52,7 +52,7 @@ import {
 export function showTimeline(isFirstLogin = false) {
     const loginSection = document.getElementById('login-section');
     const loadingSection = document.getElementById('loading');
-    const timelineWrapper = document.querySelector('.timeline-wrapper');
+    const timelineLayout = document.querySelector('.timeline-layout');
     const container = document.querySelector('.timeline-container');
     
     if (loginSection) loginSection.style.display = 'none';
@@ -61,9 +61,9 @@ export function showTimeline(isFirstLogin = false) {
         // After 10 seconds, hide loading and show timeline
         setTimeout(() => {
             if (loadingSection) loadingSection.style.display = 'none';
-            if (timelineWrapper) {
-                timelineWrapper.style.display = 'block';
-                timelineWrapper.style.visibility = 'visible';
+            if (timelineLayout) {
+                timelineLayout.style.display = 'flex';
+                timelineLayout.style.visibility = 'visible';
             }
             if (container) {
                 container.scrollLeft = container.scrollWidth;
@@ -72,9 +72,9 @@ export function showTimeline(isFirstLogin = false) {
     } else {
         // For regular loads, just show timeline immediately
         if (loadingSection) loadingSection.style.display = 'none';
-        if (timelineWrapper) {
-            timelineWrapper.style.display = 'block';
-            timelineWrapper.style.visibility = 'visible';
+        if (timelineLayout) {
+            timelineLayout.style.display = 'flex';
+            timelineLayout.style.visibility = 'visible';
         }
         if (container) {
             container.scrollLeft = container.scrollWidth;
