@@ -9,9 +9,7 @@
 
 .nav-button img {
     width: 2rem;
-    height: 2rem;
-    display: block;
-    filter: grayscale(100%) brightness(0.6); /* gray look */
+    filter: invert(var(--timeline-icon-color));
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
@@ -34,13 +32,13 @@
 #scroll-latest {
     position: absolute;
     left: 0;
-    color: var(--timeline-scroll-latest-color);
 }
 
 
 #scroll-latest img {
-    width: 2.3125rem;
-    height: 2.3125rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    filter: invert(var(--timeline-NOW-color));
 }
 
 

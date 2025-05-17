@@ -22,7 +22,6 @@
         opacity 0.3s ease-out;
 }
 
-/* Minimize button styles are now handled by timeline-action-btn in base.css */
 
 /* Ensure popups stay visible while being interacted with */
 .timeline-container.minimized .event-popup:hover {
@@ -30,3 +29,15 @@
     opacity: 1;
     transition: opacity 0.2s ease-in;
 }
+
+.minimize-icon {
+    width: 24px;
+    height: 24px;
+    transition: all 0.3s ease;
+    filter: invert(var(--timeline-icon-color));
+}
+
+.timeline-container.minimized .minimize-icon {
+    transform: rotate(180deg);
+}
+

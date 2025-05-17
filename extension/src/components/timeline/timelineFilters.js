@@ -111,12 +111,36 @@ export async function initTimelineFilterUI(onFilterChange) {
     optionsContainer.classList.toggle('active');
   });
 
+  // Add debug logging
+  const debugTransition = (action) => {
+    console.log(`[Filter Menu] ${action}`, {
+      isActive: filterMenu.classList.contains('active'),
+      buttons: document.querySelectorAll('.expanded-filter-buttons .filter-button').length,
+      transitions: Array.from(document.querySelectorAll('.expanded-filter-buttons .filter-button'))
+        .map(btn => window.getComputedStyle(btn).transition)
+    });
+  };
+
   // Toggle expansion when clicking main button
   mainButton.addEventListener('click', (e) => {
-    e.stopPropagation(); // prevent window click from closing immediately
+    e.stopPropagation();
     const isActive = filterMenu.classList.toggle('active');
     mainButton.classList.toggle('rotated', isActive);
-    if (!isActive) datePicker.classList.add('hidden');
+    
+    debugTransition('Button Click');
+
+    if (!isActive) {
+      // Reset all button transitions
+      const buttons = document.querySelectorAll('.expanded-filter-buttons .filter-button');
+      buttons.forEach(button => {
+        button.style.transition = 'none';
+        // Force reflow
+        void button.offsetWidth;
+        button.style.transition = '';
+      });
+      
+      datePicker.classList.add('hidden');
+    }
   });
 
   // Handle category button clicks
@@ -152,25 +176,20 @@ export async function initTimelineFilterUI(onFilterChange) {
 
   // Click outside to close everything
   document.addEventListener('click', (e) => {
-    const filterMenu = document.querySelector('.filter-menu');
-    const mainButton = document.getElementById('filter-button');
-    const datePicker = document.getElementById('date-picker');
-  
     if (!filterMenu.contains(e.target)) {
-      // Start reverse animation
+      debugTransition('Outside Click');
+      
+      // Reset all button transitions
       const buttons = document.querySelectorAll('.expanded-filter-buttons .filter-button');
-      buttons.forEach((btn, index) => {
-        btn.style.transitionDelay = `${(buttons.length - index - 1) * 0.05}s`;
+      buttons.forEach(button => {
+        button.style.transition = 'none';
+        // Force reflow
+        void button.offsetWidth;
+        button.style.transition = '';
       });
-  
+
       filterMenu.classList.remove('active');
       mainButton.classList.remove('rotated');
-      
-      // Reset instantly, no delay
-      buttons.forEach((btn) => {
-        btn.style.transitionDelay = '0s';
-      });
-  
       datePicker.classList.add('hidden');
     }
   });

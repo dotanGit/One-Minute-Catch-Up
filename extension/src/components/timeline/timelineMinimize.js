@@ -1,12 +1,13 @@
 export async function initTimelineMinimize() {
     const minimizeBtn = document.getElementById('minimizeTimeline');
     const timelineContainer = document.querySelector('.timeline-container');
+    const minimizeIcon = minimizeBtn.querySelector('.minimize-icon');
     
     // Load saved state
     chrome.storage.local.get('timelineMinimized', ({ timelineMinimized }) => {
         if (timelineMinimized) {
             timelineContainer.classList.add('minimized');
-            minimizeBtn.querySelector('.material-icons').textContent = 'unfold_more';
+            minimizeIcon.src = '../assets/icons/timeline/unfold_more.svg';
         }
     });
 
@@ -24,8 +25,9 @@ export async function initTimelineMinimize() {
         }
         
         // Update icon
-        minimizeBtn.querySelector('.material-icons').textContent = 
-            isMinimized ? 'unfold_more' : 'unfold_less';
+        minimizeIcon.src = isMinimized 
+            ? '../assets/icons/timeline/unfold_more.svg'
+            : '../assets/icons/timeline/unfold_less.svg';
         
         // Save state
         chrome.storage.local.set({ timelineMinimized: isMinimized });
