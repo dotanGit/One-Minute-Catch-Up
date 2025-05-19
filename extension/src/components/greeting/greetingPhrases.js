@@ -33,7 +33,6 @@ export const greetingPhrases = {
       "Afternoon ${name}, pace looks solid."
     ],
     "evening": [
-      [
         "Good evening champ, what’s still on deck?",
         "Evening boss",
         "Good evening, ${name}.",
@@ -47,8 +46,7 @@ export const greetingPhrases = {
         "Evening ${name}, still rolling?",
         "Evening boss ,keeping it steady?",
         "Evening legend, staying locked in?",
-        "Good evening ${name}, no new tabs"
-      ]      
+        "Good evening ${name}, no new tabs"   
     ],
     "weekend": [
         "Take a break this weekend instead of your usual hustle. Even the fastest car needs to stop for gas.",
