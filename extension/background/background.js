@@ -3,16 +3,7 @@ import { getDriveActivity } from '../src/services/driveService.js';
 import { getCalendarEvents } from '../src/services/calendarService.js';
 import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
-import {
-  getHiddenIdsSet,
-  filterHiddenEvents,
-  filterAllByDate,
-  getIncrementalDataSince,
-  mergeTimelineData,
-  mergeUniqueById,
-  filterBrowserBySession,
-  getDateKey
-} from '../src/components/timeline/timelineDataUtils.js';
+import {getHiddenIdsSet,filterHiddenEvents,filterAllByDate,getIncrementalDataSince,mergeTimelineData,mergeUniqueById,filterBrowserBySession,getDateKey} from '../src/components/timeline/timelineDataUtils.js';
 import { timelineCache } from '../src/components/timeline/cache.js';
 import { updateWallpaper } from '../src/components/wallpaper/wallPaper.js';
 
