@@ -1,101 +1,190 @@
 // Time-based wallpaper changer
-document.addEventListener('DOMContentLoaded', function() {
-    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format';
-    const CONFIG_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format/config_above_clouds.json';
-    
-    let wallpaperConfig = null;
-    let currentWallpaperSet = null;
+const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format';
+const CONFIG_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format/wallpaper-config.json';
+const CURRENT_IMAGE_KEY = 'current_wallpaper';
 
-    async function loadConfig() {
-        try {
-            console.log('Fetching config from:', CONFIG_URL);
-            const response = await fetch(CONFIG_URL);
-            wallpaperConfig = await response.json();
-            console.log('Loaded config:', wallpaperConfig);
-            currentWallpaperSet = wallpaperConfig.defaultSet;
-            console.log('Current wallpaper set:', currentWallpaperSet);
-        } catch (error) {
-            console.error('Failed to load wallpaper configuration:', error);
-        }
+let wallpaperConfig = null;
+const WALLPAPER_SET = 'above_clouds';
+
+async function loadConfig() {
+    try {
+        console.log('Fetching config from:', CONFIG_URL);
+        const response = await fetch(CONFIG_URL);
+        wallpaperConfig = await response.json();
+        console.log('Loaded config:', wallpaperConfig);
+    } catch (error) {
+        console.error('Failed to load wallpaper configuration:', error);
     }
+}
 
-    function getTimeOfDay() {
-        if (!wallpaperConfig || !currentWallpaperSet) {
-            console.log('Config or wallpaper set not loaded');
-            return null;
-        }
-        
-        const hour = new Date().getHours();
-        console.log('Current hour:', hour);
-        const timeRanges = wallpaperConfig.wallpaperSets[currentWallpaperSet].timeRanges;
-        
-        // Check each time range
-        for (const [period, range] of Object.entries(timeRanges)) {
-            if (range.start <= range.end) {
-                // Normal range (e.g., 8-17)
-                if (hour >= range.start && hour < range.end) {
-                    console.log('Selected time period:', period);
-                    return period;
-                }
-            } else {
-                // Wrapping range (e.g., 20-5)
-                if (hour >= range.start || hour < range.end) {
-                    console.log('Selected time period:', period);
-                    return period;
-                }
+function getTimeOfDay() {
+    if (!wallpaperConfig) {
+        console.log('Config not loaded');
+        return null;
+    }
+    
+    const now = new Date();
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    console.log('Current time:', `${hour}:${minutes.toString().padStart(2, '0')}`);
+    
+    // Define time periods and their ranges
+    const timePeriods = {
+        'sunrise': [6, 10],
+        'day': [10, 17],
+        'sunset': [17, 21],
+        'night': [21, 6]
+    };
+    
+    // Determine the current period
+    for (const [period, [start, end]] of Object.entries(timePeriods)) {
+        if (start <= end) {
+            if (hour >= start && hour < end) {
+                return period;
+            }
+        } else {
+            // Handle wrapping periods (like night: 21-6)
+            if (hour >= start || hour < end) {
+                return period;
             }
         }
-        console.log('No matching time period found');
+    }
+    
+    console.log('No matching time period found');
+    return null;
+}
+
+function getImageForTimeRange(timeOfDay) {
+    if (!wallpaperConfig || !timeOfDay) {
+        console.log('Cannot get image - missing config or time of day');
+        return null;
+    }
+    
+    const periodImages = wallpaperConfig[WALLPAPER_SET][timeOfDay];
+    if (!periodImages) {
+        console.log('No images found for period:', timeOfDay);
         return null;
     }
 
-    function getRandomImage(timeOfDay) {
-        if (!wallpaperConfig || !currentWallpaperSet || !timeOfDay) {
-            console.log('Cannot get random image - missing config, set, or time of day');
-            return null;
-        }
+    const now = new Date();
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTime = `${hour}:${minutes.toString().padStart(2, '0')}`;
+    console.log('Current time:', currentTime);
+    
+    // Find the matching time range
+    for (const [timeRange, imageName] of Object.entries(periodImages)) {
+        const [startTime, endTime] = timeRange.split('-');
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
         
-        const images = wallpaperConfig.wallpaperSets[currentWallpaperSet].timeRanges[timeOfDay].images;
-        console.log('Available images for', timeOfDay, ':', images);
-        const randomIndex = Math.floor(Math.random() * images.length);
-        const selectedImage = images[randomIndex];
-        console.log('Selected image:', selectedImage);
-        return selectedImage;
+        // Convert current time to minutes since midnight for easier comparison
+        const currentMinutes = hour * 60 + minutes;
+        const startMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+        
+        // Handle wrapping ranges (like 23:30-0:00)
+        if (startMinutes > endMinutes) {
+            if (currentMinutes >= startMinutes || currentMinutes < endMinutes) {
+                console.log('Selected image for time range', timeRange, ':', imageName);
+                return imageName;
+            }
+        } else {
+            if (currentMinutes >= startMinutes && currentMinutes < endMinutes) {
+                console.log('Selected image for time range', timeRange, ':', imageName);
+                return imageName;
+            }
+        }
     }
+    
+    console.log('No matching time range found');
+    return null;
+}
 
-    async function updateWallpaper() {
-        console.log('Updating wallpaper...');
-        if (!wallpaperConfig) {
-            console.log('Config not loaded, loading now...');
-            await loadConfig();
+async function getImageFromStorage(imageName) {
+    try {
+        // Get the current stored image
+        const result = await chrome.storage.local.get(CURRENT_IMAGE_KEY);
+        
+        // If we already have this image stored, use it
+        if (result[CURRENT_IMAGE_KEY] && result[CURRENT_IMAGE_KEY].name === imageName) {
+            console.log('Using cached image:', imageName);
+            return result[CURRENT_IMAGE_KEY].data;
         }
         
-        const timeOfDay = getTimeOfDay();
-        if (!timeOfDay) {
-            console.log('No time of day determined');
-            return;
-        }
+        // If not, fetch the new image
+        console.log('Fetching new image:', imageName);
+        const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
+        const blob = await response.blob();
+        const base64 = await blobToBase64(blob);
         
-        const imageName = getRandomImage(timeOfDay);
-        if (!imageName) {
-            console.log('No image selected');
-            return;
-        }
+        // Store only the current image
+        await chrome.storage.local.set({ 
+            [CURRENT_IMAGE_KEY]: {
+                name: imageName,
+                data: base64
+            }
+        });
         
-        const imageUrl = `${GITHUB_RAW_URL}/${imageName}`;
-        console.log('Final image URL:', imageUrl);
-        
-        document.body.style.backgroundImage = `url("${imageUrl}")`;
+        return base64;
+    } catch (error) {
+        console.error('Storage operation failed:', error);
+        // Fallback to direct fetch if storage fails
+        const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
+        const blob = await response.blob();
+        return blobToBase64(blob);
+    }
+}
+
+function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+export async function updateWallpaper() {
+    console.log('Updating wallpaper...');
+    if (!wallpaperConfig) {
+        console.log('Config not loaded, loading now...');
+        await loadConfig();
+    }
+    
+    const timeOfDay = getTimeOfDay();
+    if (!timeOfDay) {
+        console.log('No time of day determined');
+        return;
+    }
+    
+    const imageName = getImageForTimeRange(timeOfDay);
+    if (!imageName) {
+        console.log('No image selected');
+        return;
+    }
+    
+    try {
+        const imageData = await getImageFromStorage(imageName);
+        document.body.style.backgroundImage = `url("${imageData}")`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundRepeat = 'no-repeat';
         document.body.style.backgroundAttachment = 'fixed';
+    } catch (error) {
+        console.error('Failed to update wallpaper:', error);
     }
+}
 
-    // Load config and update wallpaper immediately
+document.addEventListener('DOMContentLoaded', function() {
     loadConfig().then(() => {
-        updateWallpaper();
-        // Update wallpaper every hour
-        setInterval(updateWallpaper, 3600000);
+        updateWallpaper();  // Just do the initial update
     });
+});
+
+// Listen for update messages from background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'updateWallpaper') {
+        updateWallpaper();
+    }
 });

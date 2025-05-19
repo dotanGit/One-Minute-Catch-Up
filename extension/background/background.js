@@ -14,6 +14,7 @@ import {
   getDateKey
 } from '../src/components/timeline/timelineDataUtils.js';
 import { timelineCache } from '../src/components/timeline/cache.js';
+import { updateWallpaper } from '../src/components/wallpaper/wallPaper.js';
 
 
 // === CONFIG ===
@@ -233,6 +234,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'getBrowserHistory':
       getBrowserHistoryService(new Date(msg.date)).then(sendResponse);
       return true;
+    case 'updateWallpaper':
+      updateWallpaper();
     case 'runDeltaNow':
       runDeltaFetchForToday();
       return true;
@@ -265,3 +268,17 @@ setInterval(() => {
     });
   }
 }, SIXTY_MIN);
+
+
+
+// == Wallpaper ==
+chrome.runtime.onInstalled.addListener(() => {
+  // Initialize wallpaper update cycle
+  setInterval(async () => {
+      // Update all open tabs
+      const tabs = await chrome.tabs.query({});
+      for (const tab of tabs) {
+          chrome.tabs.sendMessage(tab.id, { action: 'updateWallpaper' });
+      }
+  }, 1800000);
+});
