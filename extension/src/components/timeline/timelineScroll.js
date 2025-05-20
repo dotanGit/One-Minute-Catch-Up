@@ -4,10 +4,36 @@ let isHoveringLeft = false;
 let isHoveringRight = false;
 const scrollSpeed = 1;
 const scrollAmountOnClick = 1000;
+let lastScrollPosition = 0;
+const SCROLL_THRESHOLD = 1000; // Switch wallpaper every 1000px of scroll
+let scrollDebounceTimer = null;
+const DEBOUNCE_DELAY = 300; // Wait 300ms after scrolling stops
 
 export function initTimelineScroll() {
     container = document.querySelector('.timeline-container');
     if (!container) return;
+
+    // Add scroll event listener with debounce
+    container.addEventListener('scroll', () => {
+        const currentScroll = container.scrollLeft;
+        const scrollDelta = Math.abs(currentScroll - lastScrollPosition);
+        
+        // Clear any existing timer
+        if (scrollDebounceTimer) {
+            clearTimeout(scrollDebounceTimer);
+        }
+        
+        // Set new timer
+        scrollDebounceTimer = setTimeout(() => {
+            if (scrollDelta >= SCROLL_THRESHOLD) {
+                lastScrollPosition = currentScroll;
+                // Import and call the wallpaper switch function
+                import('../wallpaper/wallPaper.js').then(module => {
+                    module.switchWallpaperTemporarily();
+                });
+            }
+        }, DEBOUNCE_DELAY);
+    });
 
     // Hover scroll
     document.getElementById('scroll-left').addEventListener('mouseenter', () => {

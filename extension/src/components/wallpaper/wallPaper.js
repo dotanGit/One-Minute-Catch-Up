@@ -194,6 +194,33 @@ export async function updateWallpaper() {
     }
 }
 
+// Function to temporarily switch wallpaper during scroll
+export async function switchWallpaperTemporarily() {
+    try {
+        // Get a random time period
+        const timePeriods = ['sunrise', 'day', 'sunset', 'night'];
+        const randomPeriod = timePeriods[Math.floor(Math.random() * timePeriods.length)];
+        
+        // Get a random image from that period
+        const periodImages = wallpaperConfig[WALLPAPER_SET][randomPeriod];
+        const imageNames = Object.values(periodImages);
+        const randomImage = imageNames[Math.floor(Math.random() * imageNames.length)];
+        
+        // Fetch and display the image
+        const response = await fetch(`${GITHUB_RAW_URL}/${randomImage}`);
+        const blob = await response.blob();
+        const base64 = await blobToBase64(blob);
+        
+        // Apply the transition
+        document.body.style.transition = 'background-image 0.5s ease-in-out';
+        document.body.style.backgroundImage = `url("${base64}")`;
+        
+        console.log('🖼️ [Wallpaper] Temporary switch completed');
+    } catch (error) {
+        console.error('❌ [Wallpaper] Failed to switch wallpaper temporarily:', error);
+    }
+}
+
 // Listen for update messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'updateWallpaper') {
