@@ -148,34 +148,36 @@ function blobToBase64(blob) {
 
 
 export async function updateWallpaper() {
-    console.log('Updating wallpaper...');
+    console.log('🖼️ [Wallpaper] Update triggered...');
     
     if (!wallpaperConfig) {
-        console.log('Config not loaded, loading now...');
+        console.log('🔄 [Wallpaper] Config not loaded, loading now...');
         await loadConfig();
     }
     
     const timeOfDay = getTimeOfDay();
     if (!timeOfDay) {
-        console.log('No time of day determined');
+        console.log('⚠️ [Wallpaper] No time of day determined');
         return;
     }
     
     const imageName = getImageForTimeRange(timeOfDay);
     if (!imageName) {
-        console.log('No image selected');
+        console.log('⚠️ [Wallpaper] No image selected');
         return;
     }
     
     try {
+        console.log(`🖼️ [Wallpaper] Loading image: ${imageName}`);
         const imageData = await getImageFromStorage(imageName);
         document.body.style.backgroundImage = `url("${imageData}")`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundRepeat = 'no-repeat';
         document.body.style.backgroundAttachment = 'fixed';
+        console.log('✅ [Wallpaper] Update completed successfully');
     } catch (error) {
-        console.error('Failed to update wallpaper:', error);
+        console.error('❌ [Wallpaper] Failed to update wallpaper:', error);
     }
 }
 

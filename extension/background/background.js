@@ -261,9 +261,8 @@ setInterval(() => {
 
 // === Wallpaper Updates ===
 setInterval(async () => {
-    // Update all open tabs
-    const tabs = await chrome.tabs.query({});
-    for (const tab of tabs) {
-        chrome.tabs.sendMessage(tab.id, { action: 'updateWallpaper' });
-    }
+    console.log('[BG] 🖼️ Starting wallpaper sync check...');
+    // Broadcast the update message to all extension contexts
+    chrome.runtime.sendMessage({ action: 'updateWallpaper' });
+    console.log('[BG] ✅ Wallpaper sync cycle completed');
 }, 1800000); // 30 minutes
