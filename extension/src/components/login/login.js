@@ -6,47 +6,38 @@ import { getAuthToken } from '../../utils/auth.js';
 
 export function initLogin() {
   return new Promise((resolve) => {
-    console.log('[UI] 🚀 initLogin started');
 
     const loginButton = document.getElementById('login-button');
     const loadingSection = document.getElementById('loading');
 
     chrome.storage.local.get(['isLoggedIn'], function(result) {
       if (result.isLoggedIn) {
-        console.log('[UI] ✅ Already logged in → loading timeline');
         loadTimeline(false).then(resolve);
         chrome.runtime.sendMessage({ action: 'startFetchListeners' });
         chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
       } else {
-        console.log('[UI] 👋 No login → showing login screen');
         showLogin();
         // Attach to login button
         if (loginButton) {
           loginButton.addEventListener('click', function handler() {
             loginButton.removeEventListener('click', handler); // prevent double
-            console.log('[UI] 🔐 Login button clicked');
             if (loadingSection) loadingSection.style.display = 'block';
             loginButton.disabled = true;
 
             chrome.runtime.sendMessage({ action: 'login' }, async function (response) {
               if (response && response.success) {
-                console.log('[UI] ✅ Login response received');
 
                 chrome.storage.local.clear(async function () {
-                  console.log('[UI] 🧹 Local storage cleared');
 
                   await chrome.storage.local.set({ isLoggedIn: true });
-                  console.log('[UI] 📥 isLoggedIn saved');
 
                   await fetchAndStoreUserName();
 
                   const loginSection = document.getElementById('login-section');
                   if (loginSection) loginSection.style.display = 'none';
 
-                  console.log('[UI] 🧱 Loading timeline...');
                   await loadTimeline(true);
 
-                  console.log('[UI] 🔄 Sending messages to start listeners & sync');
                   chrome.runtime.sendMessage({ action: 'startFetchListeners' });
                   chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
                   resolve(); // resolve after login and timeline load
@@ -76,7 +67,6 @@ export async function loadTimeline(withAnimation) {
   await initTimeline();
   onTimelineInitialized();
   showTimeline(withAnimation);
-  console.log('[UI] ✅ Timeline loaded');
 }
 
 
@@ -101,14 +91,7 @@ export async function fetchAndStoreUserName() {
 document.getElementById('login-button').addEventListener('click', async () => {
   try {
     const token = await getAuthToken();
-
-    // ✅ Fetch and store the name
     await fetchAndStoreUserName();
-
-    // continue with your other logic, e.g.
-    // await initTimeline();
-    // hide login UI, show dashboard, etc.
-
   } catch (err) {
     console.error('[Login] Login failed:', err);
   }

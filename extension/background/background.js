@@ -5,7 +5,6 @@ import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
 import {getHiddenIdsSet,filterHiddenEvents,filterAllByDate,getIncrementalDataSince,mergeTimelineData,mergeUniqueById,filterBrowserBySession,getDateKey} from '../src/components/timeline/timelineDataUtils.js';
 import { timelineCache } from '../src/components/timeline/cache.js';
-import { updateWallpaper } from '../src/components/wallpaper/wallPaper.js';
 
 
 // === CONFIG ===
@@ -225,8 +224,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'getBrowserHistory':
       getBrowserHistoryService(new Date(msg.date)).then(sendResponse);
       return true;
-    case 'updateWallpaper':
-      updateWallpaper();
     case 'runDeltaNow':
       runDeltaFetchForToday();
       return true;
@@ -262,14 +259,11 @@ setInterval(() => {
 
 
 
-// == Wallpaper ==
-chrome.runtime.onInstalled.addListener(() => {
-  // Initialize wallpaper update cycle
-  setInterval(async () => {
-      // Update all open tabs
-      const tabs = await chrome.tabs.query({});
-      for (const tab of tabs) {
-          chrome.tabs.sendMessage(tab.id, { action: 'updateWallpaper' });
-      }
-  }, 1800000);
-});
+// === Wallpaper Updates ===
+setInterval(async () => {
+    // Update all open tabs
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+        chrome.tabs.sendMessage(tab.id, { action: 'updateWallpaper' });
+    }
+}, 1800000); // 30 minutes

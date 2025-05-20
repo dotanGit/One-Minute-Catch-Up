@@ -6,8 +6,6 @@ const CURRENT_IMAGE_KEY = 'current_wallpaper';
 let wallpaperConfig = null;
 const WALLPAPER_SET = 'above_clouds';
 
-// Add this at the very top of your file, before any other code
-document.body.style.backgroundColor = '#1a1a1a'; // Match your theme color
 
 async function loadConfig() {
     try {
@@ -181,31 +179,16 @@ export async function updateWallpaper() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    // Immediately check cache first, before anything else
-    try {
-        const result = await chrome.storage.local.get(CURRENT_IMAGE_KEY);
-        if (result[CURRENT_IMAGE_KEY]) {
-            // Apply cached image immediately
-            document.body.style.backgroundImage = `url("${result[CURRENT_IMAGE_KEY].data}")`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundPosition = 'center';
-            document.body.style.backgroundRepeat = 'no-repeat';
-            document.body.style.backgroundAttachment = 'fixed';
-        }
-    } catch (error) {
-        console.error('Failed to get cached image:', error);
-    }
-
-    // Then proceed with normal initialization
-    loadConfig().then(() => {
-        updateWallpaper();
-    });
-});
-
 // Listen for update messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'updateWallpaper') {
         updateWallpaper();
     }
+});
+
+// Initial load
+document.addEventListener('DOMContentLoaded', async function() {
+    loadConfig().then(() => {
+        updateWallpaper();
+    });
 });
