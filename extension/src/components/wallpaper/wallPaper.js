@@ -170,11 +170,24 @@ export async function updateWallpaper() {
     try {
         console.log(`🖼️ [Wallpaper] Loading image: ${imageName}`);
         const imageData = await getImageFromStorage(imageName);
+        
+        // Create a new image element to preload
+        const newImage = new Image();
+        newImage.src = imageData;
+        
+        // Wait for the new image to load
+        await new Promise((resolve) => {
+            newImage.onload = resolve;
+        });
+        
+        // Apply the transition
+        document.body.style.transition = 'background-image 1s ease-in-out';
         document.body.style.backgroundImage = `url("${imageData}")`;
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundRepeat = 'no-repeat';
         document.body.style.backgroundAttachment = 'fixed';
+        
         console.log('✅ [Wallpaper] Update completed successfully');
     } catch (error) {
         console.error('❌ [Wallpaper] Failed to update wallpaper:', error);

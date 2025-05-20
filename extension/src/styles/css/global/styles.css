@@ -15,6 +15,11 @@ body {
     padding: 10px 20px;
     color: #ffffff;
     overflow: hidden;
+    transition: background-image 1s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .container {
