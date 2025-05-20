@@ -5,7 +5,8 @@ const CURRENT_IMAGE_KEY = 'current_wallpaper';
 
 let wallpaperConfig = null;
 const WALLPAPER_SET = 'above_clouds';
-
+let orderedWallpapers = [];
+let currentWallpaperIndex = 0;
 
 async function loadConfig() {
     try {
@@ -13,6 +14,19 @@ async function loadConfig() {
         const response = await fetch(CONFIG_URL);
         wallpaperConfig = await response.json();
         console.log('Loaded config:', wallpaperConfig);
+        
+        // Create ordered list of wallpapers
+        orderedWallpapers = [];
+        const timeOrder = ['sunrise', 'day', 'sunset', 'night'];
+        
+        timeOrder.forEach(period => {
+            const periodImages = wallpaperConfig[WALLPAPER_SET][period];
+            Object.values(periodImages).forEach(imageName => {
+                orderedWallpapers.push(imageName);
+            });
+        });
+        
+        console.log('Created ordered wallpaper list:', orderedWallpapers);
     } catch (error) {
         console.error('Failed to load wallpaper configuration:', error);
     }
@@ -195,19 +209,29 @@ export async function updateWallpaper() {
 }
 
 // Function to temporarily switch wallpaper during scroll
-export async function switchWallpaperTemporarily() {
+export async function switchWallpaperTemporarily(direction) {
     try {
-        // Get a random time period
-        const timePeriods = ['sunrise', 'day', 'sunset', 'night'];
-        const randomPeriod = timePeriods[Math.floor(Math.random() * timePeriods.length)];
+        if (!wallpaperConfig) {
+            await loadConfig();
+        }
         
-        // Get a random image from that period
-        const periodImages = wallpaperConfig[WALLPAPER_SET][randomPeriod];
-        const imageNames = Object.values(periodImages);
-        const randomImage = imageNames[Math.floor(Math.random() * imageNames.length)];
+        if (orderedWallpapers.length === 0) {
+            console.error('No wallpapers available');
+            return;
+        }
+        
+        // Update index based on scroll direction
+        if (direction === 'forward') {
+            currentWallpaperIndex = (currentWallpaperIndex + 1) % orderedWallpapers.length;
+        } else {
+            currentWallpaperIndex = (currentWallpaperIndex - 1 + orderedWallpapers.length) % orderedWallpapers.length;
+        }
+        
+        const imageName = orderedWallpapers[currentWallpaperIndex];
+        console.log(`Switching to wallpaper ${currentWallpaperIndex}: ${imageName}`);
         
         // Fetch and display the image
-        const response = await fetch(`${GITHUB_RAW_URL}/${randomImage}`);
+        const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
         const blob = await response.blob();
         const base64 = await blobToBase64(blob);
         

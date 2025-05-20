@@ -17,6 +17,7 @@ export function initTimelineScroll() {
     container.addEventListener('scroll', () => {
         const currentScroll = container.scrollLeft;
         const scrollDelta = Math.abs(currentScroll - lastScrollPosition);
+        const direction = currentScroll > lastScrollPosition ? 'forward' : 'backward';
         
         // Clear any existing timer
         if (scrollDebounceTimer) {
@@ -27,9 +28,9 @@ export function initTimelineScroll() {
         scrollDebounceTimer = setTimeout(() => {
             if (scrollDelta >= SCROLL_THRESHOLD) {
                 lastScrollPosition = currentScroll;
-                // Import and call the wallpaper switch function
+                // Import and call the wallpaper switch function with direction
                 import('../wallpaper/wallPaper.js').then(module => {
-                    module.switchWallpaperTemporarily();
+                    module.switchWallpaperTemporarily(direction);
                 });
             }
         }, DEBOUNCE_DELAY);
