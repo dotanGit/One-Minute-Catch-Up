@@ -14,7 +14,6 @@ async function loadConfig() {
         const response = await fetch(CONFIG_URL);
         wallpaperConfig = await response.json();
         console.log('Loaded config:', wallpaperConfig);
-        
         // Create ordered list of wallpapers
         orderedWallpapers = [];
         const timeOrder = ['sunrise', 'day', 'sunset', 'night'];
