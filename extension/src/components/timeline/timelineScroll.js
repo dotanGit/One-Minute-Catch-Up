@@ -5,36 +5,20 @@ let isHoveringRight = false;
 const scrollSpeed = 1;
 const scrollAmountOnClick = 1000;
 let lastScrollPosition = 0;
+let lastScrollTime = 0;
 const SCROLL_THRESHOLD = 1000; // Switch wallpaper every 1000px of scroll
 let scrollDebounceTimer = null;
 const DEBOUNCE_DELAY = 300; // Wait 300ms after scrolling stops
+let isScrollingToLatest = false;
+let isScrollAnimationActive = false;  // Add this to track animation state
+let animationTimeout = null;  // Add this for safety timeout
 
 export function initTimelineScroll() {
     container = document.querySelector('.timeline-container');
     if (!container) return;
 
     // Add scroll event listener with debounce
-    container.addEventListener('scroll', () => {
-        const currentScroll = container.scrollLeft;
-        const scrollDelta = Math.abs(currentScroll - lastScrollPosition);
-        const direction = currentScroll > lastScrollPosition ? 'forward' : 'backward';
-        
-        // Clear any existing timer
-        if (scrollDebounceTimer) {
-            clearTimeout(scrollDebounceTimer);
-        }
-        
-        // Set new timer
-        scrollDebounceTimer = setTimeout(() => {
-            if (scrollDelta >= SCROLL_THRESHOLD) {
-                lastScrollPosition = currentScroll;
-                // Import and call the wallpaper switch function with direction
-                import('../wallpaper/wallPaper.js').then(module => {
-                    module.switchWallpaperTemporarily(direction);
-                });
-            }
-        }, DEBOUNCE_DELAY);
-    });
+    container.addEventListener('scroll', handleScroll);
 
     // Hover scroll
     document.getElementById('scroll-left').addEventListener('mouseenter', () => {
@@ -47,6 +31,7 @@ export function initTimelineScroll() {
     });
 
     document.getElementById('scroll-right').addEventListener('mouseenter', () => {
+        if (isScrollingToLatest || isScrollAnimationActive) return;
         isHoveringRight = true;
         startScroll(1);
     });
@@ -73,14 +58,42 @@ export function initTimelineScroll() {
     });
 
     // Jump to latest
-    document.getElementById('scroll-latest').addEventListener('click', () => {
-        container.style.scrollBehavior = 'smooth';
-        container.scrollLeft = container.scrollWidth;
-        setTimeout(() => container.style.scrollBehavior = 'auto', 500);
+    document.getElementById('scroll-latest').addEventListener('click', async () => {
+        if (isScrollingToLatest || isScrollAnimationActive) {
+            resetScrollState();
+            return;
+        }
+
+        isScrollingToLatest = true;
+        
+        if (isHoveringRight) {
+            stopScroll();
+            isHoveringRight = false;
+        }
+        
+        if (scrollDebounceTimer) {
+            clearTimeout(scrollDebounceTimer);
+            scrollDebounceTimer = null;
+        }
+        
+        container.removeEventListener('scroll', handleScroll);
+        
+        const wallpaperModule = await import('../wallpaper/wallPaper.js');
+        wallpaperModule.forceResetToTimeBasedWallpaper();
+        
+        lastScrollPosition = container.scrollWidth;
+        
+        try {
+            await smoothScrollTo(container.scrollWidth);
+        } catch (error) {
+            resetScrollState();
+        }
     });
 }
 
 function startScroll(direction) {
+    if (isScrollAnimationActive) return;
+    
     stopScroll();
     const scrollAmount = scrollSpeed * direction;
 
@@ -97,4 +110,81 @@ function stopScroll() {
         cancelAnimationFrame(scrollAnimationFrame);
         scrollAnimationFrame = null;
     }
+}
+
+function resetScrollState() {
+    isScrollingToLatest = false;
+    isScrollAnimationActive = false;
+    if (scrollAnimationFrame) {
+        cancelAnimationFrame(scrollAnimationFrame);
+        scrollAnimationFrame = null;
+    }
+    if (animationTimeout) {
+        clearTimeout(animationTimeout);
+        animationTimeout = null;
+    }
+    container.addEventListener('scroll', handleScroll);
+}
+
+// Smooth scroll function
+function smoothScrollTo(targetPosition, duration = 600) {
+    return new Promise((resolve) => {
+        if (isScrollAnimationActive) {
+            resetScrollState();
+        }
+
+        isScrollAnimationActive = true;
+        const startPosition = container.scrollLeft;
+        const distance = targetPosition - startPosition;
+        const startTime = performance.now();
+        
+        function scrollStep(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            const easeInOutCubic = progress => {
+                return progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+            };
+            
+            container.scrollLeft = startPosition + (distance * easeInOutCubic(progress));
+            
+            if (progress < 1) {
+                scrollAnimationFrame = requestAnimationFrame(scrollStep);
+            } else {
+                resetScrollState();
+                resolve();
+            }
+        }
+        
+        scrollAnimationFrame = requestAnimationFrame(scrollStep);
+        
+        animationTimeout = setTimeout(() => {
+            resetScrollState();
+            resolve();
+        }, duration + 100);
+    });
+}
+
+// Scroll handler
+function handleScroll() {
+    if (isScrollingToLatest) return;
+    
+    const currentScroll = container.scrollLeft;
+    const scrollDelta = Math.abs(currentScroll - lastScrollPosition);
+    const direction = currentScroll < lastScrollPosition ? 'backward' : 'forward';
+    
+    if (scrollDebounceTimer) {
+        clearTimeout(scrollDebounceTimer);
+    }
+    
+    scrollDebounceTimer = setTimeout(() => {
+        if (scrollDelta >= SCROLL_THRESHOLD) {
+            lastScrollPosition = currentScroll;
+            import('../wallpaper/wallPaper.js').then(module => {
+                module.switchWallpaperTemporarily(direction);
+            });
+        }
+    }, DEBOUNCE_DELAY);
 }
