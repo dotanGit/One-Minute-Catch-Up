@@ -18,6 +18,17 @@
     filter: grayscale(0%) brightness(0); /* black */
 }
 
+/* Disabled state for navigation buttons */
+.nav-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-button.disabled img {
+    filter: invert(var(--timeline-icon-color)) opacity(0.5);
+}
+
 /* Specific button positions */
 #scroll-left {
     position: absolute;
@@ -33,7 +44,6 @@
     position: absolute;
     left: 0;
 }
-
 
 #scroll-latest img {
     width: 2.5rem;

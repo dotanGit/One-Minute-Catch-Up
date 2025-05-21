@@ -66,6 +66,9 @@ export function initTimelineScroll() {
 
         isScrollingToLatest = true;
         
+        // Disable the scroll buttons
+        disableScrollButtons();
+        
         if (isHoveringRight) {
             stopScroll();
             isHoveringRight = false;
@@ -87,6 +90,9 @@ export function initTimelineScroll() {
             await smoothScrollTo(container.scrollWidth);
         } catch (error) {
             resetScrollState();
+        } finally {
+            // Re-enable the scroll buttons
+            enableScrollButtons();
         }
     });
 }
@@ -124,6 +130,8 @@ function resetScrollState() {
         animationTimeout = null;
     }
     container.addEventListener('scroll', handleScroll);
+    // Re-enable the scroll buttons
+    enableScrollButtons();
 }
 
 // Smooth scroll function
@@ -187,4 +195,18 @@ function handleScroll() {
             });
         }
     }, DEBOUNCE_DELAY);
+}
+
+function disableScrollButtons() {
+    const leftButton = document.getElementById('scroll-left');
+    const rightButton = document.getElementById('scroll-right');
+    leftButton.classList.add('disabled');
+    rightButton.classList.add('disabled');
+}
+
+function enableScrollButtons() {
+    const leftButton = document.getElementById('scroll-left');
+    const rightButton = document.getElementById('scroll-right');
+    leftButton.classList.remove('disabled');
+    rightButton.classList.remove('disabled');
 }
