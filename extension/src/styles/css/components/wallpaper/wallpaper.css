@@ -8,3 +8,42 @@
     background: var(--timeline-button-bg);
     backdrop-filter: blur(12px);
 }
+
+/* Wallpaper transition container */
+#wallpaper-transition-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+    background-color: #000;
+}
+
+/* Wallpaper slide elements */
+.wallpaper-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    transition: opacity 1000ms ease-in-out;
+}
+
+/* Initial state for new wallpaper */
+.wallpaper-slide.new {
+    opacity: 0;
+}
+
+/* Initial state for current wallpaper */
+.wallpaper-slide.current {
+    opacity: 1;
+}
+
+/* Final state for wallpaper */
+.wallpaper-slide.final {
+    opacity: 1;
+}

@@ -172,15 +172,15 @@ function handleScroll() {
     if (isScrollingToLatest) return;
     
     const currentScroll = container.scrollLeft;
-    const scrollDelta = Math.abs(currentScroll - lastScrollPosition);
-    const direction = currentScroll < lastScrollPosition ? 'backward' : 'forward';
+    const scrollDelta = currentScroll - lastScrollPosition;
+    const direction = scrollDelta > 0 ? 'forward' : 'backward';
     
     if (scrollDebounceTimer) {
         clearTimeout(scrollDebounceTimer);
     }
     
     scrollDebounceTimer = setTimeout(() => {
-        if (scrollDelta >= SCROLL_THRESHOLD) {
+        if (Math.abs(scrollDelta) >= SCROLL_THRESHOLD) {
             lastScrollPosition = currentScroll;
             import('../wallpaper/wallPaper.js').then(module => {
                 module.switchWallpaperTemporarily(direction);

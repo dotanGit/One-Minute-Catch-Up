@@ -11,6 +11,9 @@ let isTemporaryWallpaperActive = false;
 let temporaryWallpaperTimeout = null;
 let currentMode = 'time-based';  // 'time-based' or 'temporary'
 
+const TRANSITION_DURATION = 1000;
+const TRANSITION_EASING = 'ease-in-out';
+
 async function loadConfig() {
     try {
         const response = await fetch(CONFIG_URL);
@@ -131,14 +134,68 @@ function blobToBase64(blob) {
 }
 
 // Main function to set wallpaper
-async function setWallpaper(imageName) {
+async function setWallpaper(imageName, direction = 'forward') {
     try {
         const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
         const blob = await response.blob();
         const base64 = await blobToBase64(blob);
         
-        document.body.style.transition = 'background-image 0.5s ease-in-out';
-        document.body.style.backgroundImage = `url("${base64}")`;
+        // Create a new image element for the transition
+        const newImage = new Image();
+        newImage.src = base64;
+        
+        // Wait for the image to load
+        await new Promise((resolve) => {
+            newImage.onload = resolve;
+        });
+        
+        // Create or get the transition container
+        let transitionContainer = document.getElementById('wallpaper-transition-container');
+        if (!transitionContainer) {
+            transitionContainer = document.createElement('div');
+            transitionContainer.id = 'wallpaper-transition-container';
+            document.body.appendChild(transitionContainer);
+        }
+
+        // Get the current wallpaper if it exists
+        const currentWallpaper = transitionContainer.querySelector('.wallpaper-slide');
+        const currentImage = currentWallpaper ? currentWallpaper.style.backgroundImage : 'none';
+
+        // Create the current wallpaper div
+        const currentDiv = document.createElement('div');
+        currentDiv.className = 'wallpaper-slide current';
+        currentDiv.style.backgroundImage = currentImage;
+
+        // Create the new wallpaper div
+        const newDiv = document.createElement('div');
+        newDiv.className = 'wallpaper-slide new';
+        newDiv.style.backgroundImage = `url("${base64}")`;
+
+        // Clear the container and add both divs
+        transitionContainer.innerHTML = '';
+        transitionContainer.appendChild(currentDiv);
+        transitionContainer.appendChild(newDiv);
+
+        // Force a reflow
+        currentDiv.offsetHeight;
+        newDiv.offsetHeight;
+
+        // Start the transition
+        requestAnimationFrame(() => {
+            currentDiv.style.opacity = '0';
+            newDiv.style.opacity = '1';
+        });
+
+        // Clean up after transition
+        setTimeout(() => {
+            // Keep only the new wallpaper
+            const finalWallpaper = document.createElement('div');
+            finalWallpaper.className = 'wallpaper-slide final';
+            finalWallpaper.style.backgroundImage = `url("${base64}")`;
+            transitionContainer.innerHTML = '';
+            transitionContainer.appendChild(finalWallpaper);
+        }, TRANSITION_DURATION);
+
     } catch (error) {
         console.error('Failed to set wallpaper:', error);
     }
@@ -174,7 +231,7 @@ export async function setTemporaryWallpaper(direction) {
     }
     
     const imageName = orderedWallpapers[currentWallpaperIndex];
-    await setWallpaper(imageName);
+    await setWallpaper(imageName, direction);
 }
 
 // Public API
