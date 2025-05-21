@@ -7,12 +7,9 @@ let wallpaperConfig = null;
 const WALLPAPER_SET = 'above_clouds';
 let orderedWallpapers = [];
 let currentWallpaperIndex = 0;
-let isTemporaryWallpaperActive = false;
-let temporaryWallpaperTimeout = null;
 let currentMode = 'time-based';  // 'time-based' or 'temporary'
 
 const TRANSITION_DURATION = 1000;
-const TRANSITION_EASING = 'ease-in-out';
 
 async function loadConfig() {
     try {
