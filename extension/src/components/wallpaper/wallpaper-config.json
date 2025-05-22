@@ -1,28 +1,18 @@
-{
-  "above_clouds": {
-    "sunrise": {
-      "6:00-7:30": "sunrise_1.jpeg",
-      "7:30-8:00": "sunrise_2.jpeg",
-      "8:00-8:30": "sunrise_3.jpeg",
-      "8:30-10:00": "sunrise_4.jpeg"
-    },
-    "day": {
-      "10:00-12:00": "day_1.jpeg",
-      "12:00-14:00": "day_2.jpeg",
-      "14:00-16:00": "day_3.jpeg",
-      "16:00-17:00": "day_4.jpeg"
-    },
-    "sunset": {
-      "17:00-18:00": "sunset_1.jpeg",
-      "18:00-18:30": "sunset_2.jpeg",
-      "18:30-19:00": "sunset_3.jpeg",
-      "19:00-19:30": "sunset_4.jpeg"
-    },
-    "night": {
-      "19:30-20:00": "night_1.jpeg",
-      "20:00-20:30": "night_2.jpeg",
-      "20:30-21:00": "night_3.jpeg",
-      "21:00-6:00": "night_4.jpeg"
-    }
-  }
-} 
+[
+  { "time": "06:00", "image": "sunrise_1.jpeg" },
+  { "time": "07:30", "image": "sunrise_2.jpeg" },
+  { "time": "08:00", "image": "sunrise_3.jpeg" },
+  { "time": "08:30", "image": "sunrise_4.jpeg" },
+  { "time": "10:00", "image": "day_1.jpeg" },
+  { "time": "12:00", "image": "day_2.jpeg" },
+  { "time": "14:00", "image": "day_3.jpeg" },
+  { "time": "16:00", "image": "day_4.jpeg" },
+  { "time": "17:00", "image": "sunset_1.jpeg" },
+  { "time": "18:00", "image": "sunset_2.jpeg" },
+  { "time": "18:30", "image": "sunset_3.jpeg" },
+  { "time": "19:00", "image": "sunset_4.jpeg" },
+  { "time": "19:30", "image": "night_1.jpeg" },
+  { "time": "20:00", "image": "night_2.jpeg" },
+  { "time": "20:30", "image": "night_3.jpeg" },
+  { "time": "21:00", "image": "night_4.jpeg" }
+]
