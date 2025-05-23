@@ -5,9 +5,9 @@
 /* Theme Variables */
 :root {
   /* Font sizes using relative units */
-  --heading-size: clamp(1.3rem, 1.6vw, 5rem);
-  --summary-size: clamp(1.1rem, 1.3vw, 4rem);
-  --quote-size: clamp(1rem, 1.2vw, 3.5rem);
+  --heading-size: clamp(1.3rem, 2vw, 5rem);
+  --summary-size: clamp(1.1rem, 1.4vw, 4rem);
+  --quote-size: clamp(1rem, 1.4vw, 3.5rem);
   --quote-font: 'Playfair Display', serif;
   --main-font: 'Inter', system-ui, sans-serif;
 }
@@ -42,7 +42,7 @@
 .greeting-heading {
   font-family: var(--main-font);
   font-size: var(--heading-size);
-  font-weight: 300;
+  font-weight: 500;
   color: var(--greeting-head);
   text-align: center;
   letter-spacing: -0.02em;

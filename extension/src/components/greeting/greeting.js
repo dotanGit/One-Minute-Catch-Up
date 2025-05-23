@@ -45,8 +45,8 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
   container.querySelector('.greeting-summary').innerHTML = summary;
   container.querySelector('.greeting-quote').innerHTML =
     author
-      ? `${quote} – <a href="#" class="quote-author" data-author="${author}">${author}</a>`
-      : quote;
+      ? `"${quote}" – <a href="#" class="quote-author" data-author="${author}">${author}</a>`
+      : `"${quote}"`;
 }
 
 
