@@ -13,10 +13,14 @@ import {
 
 import { setWallpaperByName } from './wallpaperRenderer.js';
 
+let baseWallpaperIndex = 0;
+
+
 export async function initWallpaperSystem() {
     await loadWallpaperData();
 
     const index = findIndexForCurrentTime();
+    setBaseWallpaperIndex(index); // ✅ add this
     setTimeBasedIndex(index);
     setCurrentIndex(index);
     setMode('time-based');
@@ -27,6 +31,7 @@ export async function initWallpaperSystem() {
         console.log(`🌅 Initialized to time-based wallpaper: ${imageName}`);
     }
 }
+
 
 export async function updateWallpaperToCurrentTime() {
     if (getCurrentMode() !== 'time-based') return;
@@ -74,6 +79,14 @@ export async function resetWallpaper() {
     }
 }
 
+
+export function setBaseWallpaperIndex(index) {
+  baseWallpaperIndex = index;
+}
+
+export function getBaseWallpaperIndex() {
+  return baseWallpaperIndex;
+}
 
 
 chrome.runtime.onMessage.addListener((message) => {

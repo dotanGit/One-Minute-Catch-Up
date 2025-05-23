@@ -1,58 +1,132 @@
-import { switchWallpaper, resetWallpaper } from '../wallpaper/wallpaperController.js';
+import { findIndexForCurrentTime, getImageNameAtIndex } from '../wallpaper/wallpaperData.js';
+import { setWallpaperByName } from '../wallpaper/wallpaperRenderer.js';
+import { getBaseWallpaperIndex, setBaseWallpaperIndex } from '../wallpaper/wallpaperController.js';
+import { getWallpaperList } from '../wallpaper/wallpaperData.js';
+
 
 let container;
-let lastScrollLeft = 0;
-let lastWallpaperSwitchPosition = 0;  // Track last scroll point where wallpaper changed
-const SCROLL_THRESHOLD = 1000;        // Change wallpaper every 1000px of scroll
+let scrollSteps = 0;
+let pendingIndex = 0;
+let switchTimer = null;
+let isHovering = false;
+const SCROLL_THRESHOLD = 1000;
+const CLICK_SCROLL_STEP = 1000;
+const HOVER_SCROLL_SPEED = 1;
 let hoverScrollFrame = null;
 let hoverDirection = 0;
-const HOVER_SCROLL_SPEED = 1;
-const CLICK_SCROLL_STEP = 1000;
-
+let lastRenderedIndex = null;
+let lastScrollStep = 0; // 👈 add this
 
 export function initTimelineScroll() {
   container = document.querySelector('.timeline-container');
   if (!container) return;
 
-  // Native scroll (mouse wheel, drag)
+  // SCROLL HANDLER
   container.addEventListener('scroll', () => {
-    const currentScroll = container.scrollLeft;
-    const scrollDelta = Math.abs(currentScroll - lastWallpaperSwitchPosition);
+    const baseIndex = getBaseWallpaperIndex();
+    const offset = container.scrollLeft;
+    scrollSteps = Math.floor(offset / SCROLL_THRESHOLD);
+    pendingIndex = baseIndex + scrollSteps;
   
-    if (scrollDelta >= SCROLL_THRESHOLD) {
-      const direction = currentScroll > lastWallpaperSwitchPosition ? 'forward' : 'backward';
-      lastWallpaperSwitchPosition = currentScroll;
-      switchWallpaper(direction);
+    console.log('-----[SCROLL TRIGGERED]-----');
+    console.log('scrollLeft:', offset);
+    console.log('SCROLL_THRESHOLD:', SCROLL_THRESHOLD);
+    console.log('scrollSteps:', scrollSteps);
+    console.log('lastScrollStep:', lastScrollStep);
+    console.log('baseIndex:', baseIndex);
+    console.log('pendingIndex:', pendingIndex);
+  
+    if (scrollSteps === lastScrollStep) {
+      console.log('[SCROLL] No movement beyond threshold — skipped');
+      return;
     }
   
-    lastScrollLeft = currentScroll;
+    lastScrollStep = scrollSteps;
+  
+    if (switchTimer) clearTimeout(switchTimer);
+    switchTimer = setTimeout(() => {
+      if (!isHovering) {
+        const list = getWallpaperList();
+        const listLength = list.length;
+        let normalizedIndex = ((pendingIndex % listLength) + listLength) % listLength;
+  
+        console.log('[TIMER FIRED]');
+        console.log('normalizedIndex:', normalizedIndex);
+        console.log('lastRenderedIndex:', lastRenderedIndex);
+  
+        if (normalizedIndex === lastRenderedIndex) {
+          console.log('[WALLPAPER] Skipped — same image already shown:', normalizedIndex);
+          return;
+        }
+  
+        const imageName = getImageNameAtIndex(normalizedIndex);
+        console.log('[WALLPAPER] Fetching image at index:', normalizedIndex, '→', imageName);
+  
+        if (imageName) {
+          lastRenderedIndex = normalizedIndex;
+          console.log('[WALLPAPER] setWallpaperByName:', imageName);
+          setWallpaperByName(imageName);
+        } else {
+          console.warn('[WALLPAPER] No image found for index:', normalizedIndex);
+        }
+      } else {
+        console.log('[WALLPAPER] Skipped switch (hovering)');
+      }
+    }, 300);
   });
+  
+
+  // Hover flag (to pause switching while hovering)
+  document.getElementById('scroll-left')?.addEventListener('mouseenter', () => {
+    isHovering = true;
+    console.log('[HOVER] entered scroll-left');
+  });
+  document.getElementById('scroll-left')?.addEventListener('mouseleave', () => {
+    isHovering = false;
+    console.log('[HOVER] left scroll-left');
+  });
+  
+  document.getElementById('scroll-right')?.addEventListener('mouseenter', () => {
+    isHovering = true;
+    console.log('[HOVER] entered scroll-right');
+  });
+  document.getElementById('scroll-right')?.addEventListener('mouseleave', () => {
+    isHovering = false;
+    console.log('[HOVER] left scroll-right');
+  });
+  
   
 
   // Button click scroll
   document.getElementById('scroll-left')?.addEventListener('click', () => {
-    console.log('[DEBUG] scroll-left click');
     smoothScroll({ by: -CLICK_SCROLL_STEP });
   });
-  
-  
+
   document.getElementById('scroll-right')?.addEventListener('click', () => {
-    console.log('[DEBUG] scroll-right click');
     smoothScroll({ by: CLICK_SCROLL_STEP });
   });
-  
-  
+
   // Hover scroll
   document.getElementById('scroll-left')?.addEventListener('mouseenter', () => startHoverScroll(-1));
   document.getElementById('scroll-left')?.addEventListener('mouseleave', stopHoverScroll);
-
   document.getElementById('scroll-right')?.addEventListener('mouseenter', () => startHoverScroll(1));
   document.getElementById('scroll-right')?.addEventListener('mouseleave', stopHoverScroll);
 
-  // Scroll to latest
+  // Reset scroll and wallpaper to base
   document.getElementById('scroll-latest')?.addEventListener('click', () => {
-    smoothScroll({ to: container.scrollWidth });
-    resetWallpaper();
+    container.scrollLeft = 1;
+    const index = findIndexForCurrentTime();
+    setBaseWallpaperIndex(index);
+    scrollSteps = 0;
+    pendingIndex = index;
+    lastScrollStep = 0;
+    lastRenderedIndex = index;
+    const imageName = getImageNameAtIndex(index);
+    console.log('imageName:', imageName);
+    if (imageName) {
+      setWallpaperByName(imageName);
+      console.log('setWallpaperByName:', imageName);
+    }
   });
 }
 
@@ -70,7 +144,6 @@ function scrollStep() {
   container.scrollLeft += HOVER_SCROLL_SPEED * hoverDirection;
   hoverScrollFrame = requestAnimationFrame(scrollStep);
 }
-
 
 function smoothScroll({ by = null, to = null, duration = 750 }) {
   const start = container.scrollLeft;
@@ -93,4 +166,3 @@ function smoothScroll({ by = null, to = null, duration = 750 }) {
 
   requestAnimationFrame(animate);
 }
-
