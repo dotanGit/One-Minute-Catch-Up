@@ -24,9 +24,9 @@ export function initTimelineScroll() {
   // SCROLL HANDLER
   container.addEventListener('scroll', () => {
     const baseIndex = getBaseWallpaperIndex();
-    const offset = container.scrollLeft;
+    const offset = Math.abs(container.scrollLeft);
     scrollSteps = Math.floor(offset / SCROLL_THRESHOLD);
-    pendingIndex = baseIndex + scrollSteps;
+    pendingIndex = getBaseWallpaperIndex() - scrollSteps;
   
     console.log('-----[SCROLL TRIGGERED]-----');
     console.log('scrollLeft:', offset);
@@ -120,14 +120,27 @@ export function initTimelineScroll() {
     scrollSteps = 0;
     pendingIndex = index;
     lastScrollStep = 0;
-    lastRenderedIndex = index;
-    const imageName = getImageNameAtIndex(index);
-    console.log('imageName:', imageName);
+  
+    const normalizedIndex = index % getWallpaperList().length;
+    if (normalizedIndex === lastRenderedIndex) {
+      console.log('[LATEST] Skipped — already showing image at index:', normalizedIndex);
+      return;
+    }
+  
+    const imageName = getImageNameAtIndex(normalizedIndex);
+    console.log('[LATEST] Fetching image at index:', normalizedIndex, '→', imageName);
     if (imageName) {
+      lastRenderedIndex = normalizedIndex;
       setWallpaperByName(imageName);
-      console.log('setWallpaperByName:', imageName);
+      console.log('[LATEST] setWallpaperByName:', imageName);
+    } else {
+      console.warn('[LATEST] No image found at index:', normalizedIndex);
     }
   });
+  
+  const initialIndex = getBaseWallpaperIndex();
+  lastRenderedIndex = ((initialIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
+
 }
 
 function startHoverScroll(direction) {
