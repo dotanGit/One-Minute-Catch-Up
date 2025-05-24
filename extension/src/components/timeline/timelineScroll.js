@@ -40,7 +40,7 @@ function scheduleWallpaperUpdate() {
 
     lastRenderedIndex = normalizedIndex;
     isTransitioning = true;
-    setWallpaperByName(imageName).then(() => {
+    setWallpaperByName(imageName, { cache: false }).then(() => {
       isTransitioning = false;
       if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
         const queuedImage = getImageNameAtIndex(queuedIndex);
@@ -48,7 +48,7 @@ function scheduleWallpaperUpdate() {
           lastRenderedIndex = queuedIndex;
           queuedIndex = null;
           isTransitioning = true;
-          setWallpaperByName(queuedImage).then(() => {
+          setWallpaperByName(queuedImage, { cache: false }).then(() => {
             isTransitioning = false;
           });
         }
@@ -112,7 +112,7 @@ export function initTimelineScroll() {
       if (imageName) {
         lastRenderedIndex = normalizedIndex;
         isTransitioning = true;
-        setWallpaperByName(imageName).then(() => {
+        setWallpaperByName(imageName, { cache: false }).then(() => {
           isTransitioning = false;
           if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
             const queuedImage = getImageNameAtIndex(queuedIndex);
@@ -120,7 +120,7 @@ export function initTimelineScroll() {
               lastRenderedIndex = queuedIndex;
               queuedIndex = null;
               isTransitioning = true;
-              setWallpaperByName(queuedImage).then(() => {
+              setWallpaperByName(queuedImage, { cache: false }).then(() => {
                 isTransitioning = false;
               });
             }

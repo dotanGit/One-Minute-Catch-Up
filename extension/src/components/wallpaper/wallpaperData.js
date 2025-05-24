@@ -11,7 +11,24 @@ function timeToMinutes(timeStr) {
 }
 
 export async function loadWallpaperData() {
+    const CACHE_KEY = 'wallpaper_config';
+
     try {
+        const result = await chrome.storage.local.get(CACHE_KEY);
+        const cachedData = result[CACHE_KEY];
+
+        if (cachedData) {
+            wallpaperList = cachedData.map((entry, index) => ({
+                ...entry,
+                minutes: timeToMinutes(entry.time),
+                index
+            }));
+            wallpaperList.sort((a, b) => a.minutes - b.minutes);
+            console.log('🗂️ Loaded wallpaper config from cache');
+            return;
+        }
+
+        // If not cached, fetch from network
         const response = await fetch(CONFIG_URL);
         const data = await response.json();
 
@@ -22,10 +39,17 @@ export async function loadWallpaperData() {
         }));
 
         wallpaperList.sort((a, b) => a.minutes - b.minutes);
+
+        await chrome.storage.local.set({
+            [CACHE_KEY]: data
+        });
+
+        console.log('🌐 Fetched and cached wallpaper config from network');
     } catch (err) {
         console.error('❌ Failed to load wallpaper config:', err);
     }
 }
+
 
 export function getWallpaperList() {
     return wallpaperList;

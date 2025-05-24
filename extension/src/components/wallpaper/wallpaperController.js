@@ -11,12 +11,16 @@ import {
     getImageNameAtIndex
 } from './wallpaperData.js';
 
-import { setWallpaperByName } from './wallpaperRenderer.js';
+import { setWallpaperByName, renderCachedWallpaperInstantly } from './wallpaperRenderer.js';
 
 let baseWallpaperIndex = 0;
 
 
 export async function initWallpaperSystem() {
+
+    // Show instantly from cache
+    await renderCachedWallpaperInstantly();
+
     await loadWallpaperData();
 
     const index = findIndexForCurrentTime();
@@ -27,8 +31,11 @@ export async function initWallpaperSystem() {
 
     const imageName = getImageNameAtIndex(index);
     if (imageName) {
-        await setWallpaperByName(imageName);
-        console.log(`🌅 Initialized to time-based wallpaper: ${imageName}`);
+        const result = await chrome.storage.local.get('current_wallpaper');
+        const cached = result.current_wallpaper?.name;
+        const useImmediate = cached === imageName;
+
+        await setWallpaperByName(imageName, { immediate: useImmediate });
     }
 }
 
