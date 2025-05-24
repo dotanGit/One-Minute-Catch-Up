@@ -3,106 +3,88 @@ import { setWallpaperByName } from '../wallpaper/wallpaperRenderer.js';
 import { getBaseWallpaperIndex, setBaseWallpaperIndex } from '../wallpaper/wallpaperController.js';
 import { getWallpaperList } from '../wallpaper/wallpaperData.js';
 
-
 let container;
-let scrollSteps = 0;
 let pendingIndex = 0;
-let switchTimer = null;
 let isHovering = false;
+let debounceTimer = null;
+let isTransitioning = false;
+let queuedIndex = null;
+
 const SCROLL_THRESHOLD = 1000;
 const CLICK_SCROLL_STEP = 1000;
+const CHANGE_WALLPAPER_TIMEOUT = 50;
 const HOVER_SCROLL_SPEED = 1;
 let hoverScrollFrame = null;
 let hoverDirection = 0;
 let lastRenderedIndex = null;
-let lastScrollStep = 0; // 👈 add this
+
+// Debounced update with transition lock + queue
+function scheduleWallpaperUpdate() {
+  if (debounceTimer) clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(() => {
+    if (isHovering) return;
+
+    const list = getWallpaperList();
+    const normalizedIndex = ((pendingIndex % list.length) + list.length) % list.length;
+
+    if (normalizedIndex === lastRenderedIndex) return;
+
+    const imageName = getImageNameAtIndex(normalizedIndex);
+    if (!imageName) return;
+
+    if (isTransitioning) {
+      queuedIndex = normalizedIndex;
+      return;
+    }
+
+    lastRenderedIndex = normalizedIndex;
+    isTransitioning = true;
+    setWallpaperByName(imageName).then(() => {
+      isTransitioning = false;
+      if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
+        const queuedImage = getImageNameAtIndex(queuedIndex);
+        if (queuedImage) {
+          lastRenderedIndex = queuedIndex;
+          queuedIndex = null;
+          isTransitioning = true;
+          setWallpaperByName(queuedImage).then(() => {
+            isTransitioning = false;
+          });
+        }
+      } else {
+        queuedIndex = null;
+      }
+    });
+  }, CHANGE_WALLPAPER_TIMEOUT);
+}
 
 export function initTimelineScroll() {
   container = document.querySelector('.timeline-container');
   if (!container) return;
 
-  // SCROLL HANDLER
+  const baseIndex = getBaseWallpaperIndex();
+  lastRenderedIndex = ((baseIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
+  pendingIndex = baseIndex;
+
   container.addEventListener('scroll', () => {
-    const baseIndex = getBaseWallpaperIndex();
     const offset = Math.abs(container.scrollLeft);
-    scrollSteps = Math.floor(offset / SCROLL_THRESHOLD);
-    pendingIndex = getBaseWallpaperIndex() - scrollSteps;
-  
-    console.log('-----[SCROLL TRIGGERED]-----');
-    console.log('scrollLeft:', offset);
-    console.log('SCROLL_THRESHOLD:', SCROLL_THRESHOLD);
-    console.log('scrollSteps:', scrollSteps);
-    console.log('lastScrollStep:', lastScrollStep);
-    console.log('baseIndex:', baseIndex);
-    console.log('pendingIndex:', pendingIndex);
-  
-    if (scrollSteps === lastScrollStep) {
-      console.log('[SCROLL] No movement beyond threshold — skipped');
-      return;
-    }
-  
-    lastScrollStep = scrollSteps;
-  
-    if (switchTimer) clearTimeout(switchTimer);
-    switchTimer = setTimeout(() => {
-      if (!isHovering) {
-        const list = getWallpaperList();
-        const listLength = list.length;
-        let normalizedIndex = ((pendingIndex % listLength) + listLength) % listLength;
-  
-        console.log('[TIMER FIRED]');
-        console.log('normalizedIndex:', normalizedIndex);
-        console.log('lastRenderedIndex:', lastRenderedIndex);
-  
-        if (normalizedIndex === lastRenderedIndex) {
-          console.log('[WALLPAPER] Skipped — same image already shown:', normalizedIndex);
-          return;
-        }
-  
-        const imageName = getImageNameAtIndex(normalizedIndex);
-        console.log('[WALLPAPER] Fetching image at index:', normalizedIndex, '→', imageName);
-  
-        if (imageName) {
-          lastRenderedIndex = normalizedIndex;
-          console.log('[WALLPAPER] setWallpaperByName:', imageName);
-          setWallpaperByName(imageName);
-        } else {
-          console.warn('[WALLPAPER] No image found for index:', normalizedIndex);
-        }
-      } else {
-        console.log('[WALLPAPER] Skipped switch (hovering)');
-      }
-    }, 300);
+    const steps = Math.floor(offset / SCROLL_THRESHOLD);
+    pendingIndex = getBaseWallpaperIndex() - steps;
+    scheduleWallpaperUpdate();
   });
-  
 
-  // Hover flag (to pause switching while hovering)
-  document.getElementById('scroll-left')?.addEventListener('mouseenter', () => {
-    isHovering = true;
-    console.log('[HOVER] entered scroll-left');
-  });
-  document.getElementById('scroll-left')?.addEventListener('mouseleave', () => {
-    isHovering = false;
-    console.log('[HOVER] left scroll-left');
-  });
-  
-  document.getElementById('scroll-right')?.addEventListener('mouseenter', () => {
-    isHovering = true;
-    console.log('[HOVER] entered scroll-right');
-  });
-  document.getElementById('scroll-right')?.addEventListener('mouseleave', () => {
-    isHovering = false;
-    console.log('[HOVER] left scroll-right');
-  });
-  
-  
+  document.getElementById('scroll-left')?.addEventListener('mouseenter', () => { isHovering = true; });
+  document.getElementById('scroll-left')?.addEventListener('mouseleave', () => { isHovering = false; });
+  document.getElementById('scroll-right')?.addEventListener('mouseenter', () => { isHovering = true; });
+  document.getElementById('scroll-right')?.addEventListener('mouseleave', () => { isHovering = false; });
 
-  // Button click scroll
   document.getElementById('scroll-left')?.addEventListener('click', () => {
+    isHovering = false;
     smoothScroll({ by: -CLICK_SCROLL_STEP });
   });
-
   document.getElementById('scroll-right')?.addEventListener('click', () => {
+    isHovering = false;
     smoothScroll({ by: CLICK_SCROLL_STEP });
   });
 
@@ -112,35 +94,43 @@ export function initTimelineScroll() {
   document.getElementById('scroll-right')?.addEventListener('mouseenter', () => startHoverScroll(1));
   document.getElementById('scroll-right')?.addEventListener('mouseleave', stopHoverScroll);
 
-  // Reset scroll and wallpaper to base
+  // Scroll-latest with queue
   document.getElementById('scroll-latest')?.addEventListener('click', () => {
-    container.scrollLeft = 1;
+    smoothScroll({ to: 0 })
     const index = findIndexForCurrentTime();
     setBaseWallpaperIndex(index);
-    scrollSteps = 0;
     pendingIndex = index;
-    lastScrollStep = 0;
-  
+
     const normalizedIndex = index % getWallpaperList().length;
-    if (normalizedIndex === lastRenderedIndex) {
-      console.log('[LATEST] Skipped — already showing image at index:', normalizedIndex);
+    if (isTransitioning) {
+      queuedIndex = normalizedIndex;
       return;
     }
-  
-    const imageName = getImageNameAtIndex(normalizedIndex);
-    console.log('[LATEST] Fetching image at index:', normalizedIndex, '→', imageName);
-    if (imageName) {
-      lastRenderedIndex = normalizedIndex;
-      setWallpaperByName(imageName);
-      console.log('[LATEST] setWallpaperByName:', imageName);
-    } else {
-      console.warn('[LATEST] No image found at index:', normalizedIndex);
+
+    if (normalizedIndex !== lastRenderedIndex) {
+      const imageName = getImageNameAtIndex(normalizedIndex);
+      if (imageName) {
+        lastRenderedIndex = normalizedIndex;
+        isTransitioning = true;
+        setWallpaperByName(imageName).then(() => {
+          isTransitioning = false;
+          if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
+            const queuedImage = getImageNameAtIndex(queuedIndex);
+            if (queuedImage) {
+              lastRenderedIndex = queuedIndex;
+              queuedIndex = null;
+              isTransitioning = true;
+              setWallpaperByName(queuedImage).then(() => {
+                isTransitioning = false;
+              });
+            }
+          } else {
+            queuedIndex = null;
+          }
+        });
+      }
     }
   });
-  
-  const initialIndex = getBaseWallpaperIndex();
-  lastRenderedIndex = ((initialIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
-
 }
 
 function startHoverScroll(direction) {

@@ -20,7 +20,7 @@
     "newtab": "src/pages/index.html"
   },
   "oauth2": {
-    "client_id": "1050975138446-29tihvpg99901h8a29k3oslj5jvai8mm.apps.googleusercontent.com",
+    "client_id": "1050975138446-jl3te0872n0mhs2srmsfkrvqp07lpiji.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",

@@ -49,7 +49,6 @@ export async function setWallpaperByName(imageName) {
         document.body.appendChild(container);
     }
 
-    // Create and fade transition
     const oldSlide = container.querySelector('.wallpaper-slide');
     const oldBg = oldSlide ? oldSlide.style.backgroundImage : 'none';
 
@@ -75,12 +74,16 @@ export async function setWallpaperByName(imageName) {
         newDiv.style.opacity = '1';
     });
 
-    // Final state
-    setTimeout(() => {
-        const finalDiv = document.createElement('div');
-        finalDiv.className = 'wallpaper-slide final';
-        finalDiv.style.backgroundImage = `url("${base64}")`;
-        container.innerHTML = '';
-        container.appendChild(finalDiv);
-    }, TRANSITION_DURATION);
+    // Return a Promise that resolves after the transition
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const finalDiv = document.createElement('div');
+            finalDiv.className = 'wallpaper-slide final';
+            finalDiv.style.backgroundImage = `url("${base64}")`;
+            container.innerHTML = '';
+            container.appendChild(finalDiv);
+            resolve();
+        }, TRANSITION_DURATION);
+    });
 }
+
