@@ -1,10 +1,9 @@
 import { getWallpaperList } from './wallpaperData.js'; 
 
-const GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/oregon_mthood';
+let GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/oregon_mthood';
 const CURRENT_IMAGE_KEY = 'current_wallpaper';
 const TRANSITION_DURATION = 1000;
 let hasPreloaded = false;
-
 
 function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
@@ -23,7 +22,7 @@ async function getImageBase64(imageName, cache = true) {
             return result[CURRENT_IMAGE_KEY].data;
         }
 
-        const url = `${GITHUB_RAW_URL}/${imageName}`;
+        const url = await getFullImageUrl(imageName);
         console.time(`[FETCH] ${imageName}`);
         const response = await fetch(url);
         const blob = await response.blob();
@@ -135,11 +134,23 @@ export function preloadAllWallpapers() {
     hasPreloaded = true;
   
     const list = getWallpaperList();
-    for (const item of list) {
-      const url = `${GITHUB_RAW_URL}/${item.image}`;
+    list.forEach(async (item) => {
+      const url = await getFullImageUrl(item.image);
       fetch(url, { mode: 'no-cors' }).catch(() => {});
-    }
+    });    
   }
+
+
+  function getFullImageUrl(imageName) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get('wallpaper_set').then(({ wallpaper_set }) => {
+        const set = wallpaper_set || 'oregon_mthood';
+        resolve(`https://catch-up-f6fa1.web.app/${set}/${imageName}`);
+      });
+    });
+  }
+  
+  
   
 
 
