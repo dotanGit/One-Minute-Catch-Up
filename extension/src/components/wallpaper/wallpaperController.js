@@ -11,7 +11,7 @@ import {
     getImageNameAtIndex
 } from './wallpaperData.js';
 
-import { setWallpaperByName, renderCachedWallpaperInstantly } from './wallpaperRenderer.js';
+import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers } from './wallpaperRenderer.js';
 
 let baseWallpaperIndex = 0;
 
@@ -37,6 +37,7 @@ export async function initWallpaperSystem() {
 
         await setWallpaperByName(imageName, { immediate: useImmediate });
     }
+    preloadAllWallpapers();
 }
 
 
@@ -94,7 +95,7 @@ export function setBaseWallpaperIndex(index) {
 export function getBaseWallpaperIndex() {
   return baseWallpaperIndex;
 }
-
+  
 
 chrome.runtime.onMessage.addListener((message) => {
     if (message.action === 'updateWallpaper') {
@@ -105,3 +106,5 @@ chrome.runtime.onMessage.addListener((message) => {
 document.addEventListener('DOMContentLoaded', () => {
     initWallpaperSystem();
 });
+
+

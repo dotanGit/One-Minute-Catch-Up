@@ -1,4 +1,4 @@
-const CONFIG_URL = 'https://catch-up-f6fa1.web.app/above_clouds/wallpaper-config.json';
+const CONFIG_URL = 'https://catch-up-f6fa1.web.app/oregon_mthood/wallpaper-config.json';
 
 let wallpaperList = [];
 let currentIndex = 0;

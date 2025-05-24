@@ -1,6 +1,10 @@
-const GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/above_clouds';
+import { getWallpaperList } from './wallpaperData.js'; 
+
+const GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/oregon_mthood';
 const CURRENT_IMAGE_KEY = 'current_wallpaper';
 const TRANSITION_DURATION = 1000;
+let hasPreloaded = false;
+
 
 function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
@@ -123,5 +127,20 @@ export async function renderCachedWallpaperInstantly() {
     container.innerHTML = '';
     container.appendChild(finalDiv);
 }
+
+
+
+export function preloadAllWallpapers() {
+    if (hasPreloaded) return;
+    hasPreloaded = true;
+  
+    const list = getWallpaperList();
+    for (const item of list) {
+      const url = `${GITHUB_RAW_URL}/${item.image}`;
+      fetch(url, { mode: 'no-cors' }).catch(() => {});
+    }
+  }
+  
+
 
 
