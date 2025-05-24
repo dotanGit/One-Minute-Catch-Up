@@ -1,4 +1,4 @@
-const CONFIG_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format/wallpaper-config.json';
+const CONFIG_URL = 'https://catch-up-f6fa1.web.app/above_clouds/wallpaper-config.json';
 
 let wallpaperList = [];
 let currentIndex = 0;

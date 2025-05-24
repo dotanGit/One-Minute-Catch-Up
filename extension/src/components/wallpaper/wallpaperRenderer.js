@@ -1,4 +1,4 @@
-const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/dotanGit/chrome-extension-images/main/jpg-format';
+const GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/above_clouds';
 const CURRENT_IMAGE_KEY = 'current_wallpaper';
 const TRANSITION_DURATION = 1000;
 
@@ -15,12 +15,16 @@ async function getImageBase64(imageName, cache = true) {
     try {
         const result = await chrome.storage.local.get(CURRENT_IMAGE_KEY);
         if (result[CURRENT_IMAGE_KEY]?.name === imageName) {
+            console.log(`[CACHE] Using cached image: ${imageName}`);
             return result[CURRENT_IMAGE_KEY].data;
         }
 
-        const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
+        const url = `${GITHUB_RAW_URL}/${imageName}`;
+        console.time(`[FETCH] ${imageName}`);
+        const response = await fetch(url);
         const blob = await response.blob();
         const base64 = await blobToBase64(blob);
+        console.timeEnd(`[FETCH] ${imageName}`);
 
         if (cache) {
             await chrome.storage.local.set({
@@ -33,12 +37,13 @@ async function getImageBase64(imageName, cache = true) {
 
         return base64;
     } catch (err) {
-        console.error('Failed to fetch/cached image:', err);
+        console.error(`[ERROR] Failed to fetch image: ${imageName}`, err);
         const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
         const blob = await response.blob();
         return blobToBase64(blob);
     }
 }
+
 
 
 export async function setWallpaperByName(imageName, { cache = true, immediate = false } = {}) {
