@@ -18,9 +18,9 @@ export function isFirstDayOfWeek() {
 
 export function getTimeBlock() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'morning';
-  if (hour < 17) return 'afternoon';
-  return 'evening';
+  if (hour >= 4 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  return 'evening'; // This will cover 18:00-23:59 and 00:00-03:59
 }
 
 
