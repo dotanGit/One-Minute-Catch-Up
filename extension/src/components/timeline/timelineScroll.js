@@ -18,6 +18,20 @@ let hoverScrollFrame = null;
 let hoverDirection = 0;
 let lastRenderedIndex = null;
 
+function resetTimelineScrollState() {
+  pendingIndex = 0;
+  isHovering = false;
+  if (debounceTimer) clearTimeout(debounceTimer);
+  isTransitioning = false;
+  queuedIndex = null;
+  if (hoverScrollFrame) {
+    cancelAnimationFrame(hoverScrollFrame);
+    hoverScrollFrame = null;
+  }
+  hoverDirection = 0;
+  lastRenderedIndex = null;
+}
+
 // Debounced update with transition lock + queue
 function scheduleWallpaperUpdate() {
   if (debounceTimer) clearTimeout(debounceTimer);
@@ -63,6 +77,9 @@ export function initTimelineScroll() {
   container = document.querySelector('.timeline-container');
   if (!container) return;
 
+  // Reset all state
+  resetTimelineScrollState();
+
   const baseIndex = getBaseWallpaperIndex();
   lastRenderedIndex = ((baseIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
   pendingIndex = baseIndex;
@@ -98,25 +115,25 @@ export function initTimelineScroll() {
   document.getElementById('scroll-latest')?.addEventListener('click', () => {
     smoothScroll({ to: 0 })
     const index = findIndexForCurrentTime();
-    setBaseWallpaperIndex(index);
-    pendingIndex = index;
+    const list = getWallpaperList();
+    const normalizedIndex = index % list.length;
+    const normalizedLastIndex = ((lastRenderedIndex % list.length) + list.length) % list.length;
+    const currentImageName = getImageNameAtIndex(normalizedLastIndex);
+    const targetImageName = getImageNameAtIndex(normalizedIndex);
+    
+    // Only update if we're not already showing the target wallpaper and not transitioning
+    if (currentImageName !== targetImageName && !isTransitioning) {
+      setBaseWallpaperIndex(index);
+      pendingIndex = index;
 
-    const normalizedIndex = index % getWallpaperList().length;
-    if (isTransitioning) {
-      queuedIndex = normalizedIndex;
-      return;
-    }
-
-    if (normalizedIndex !== lastRenderedIndex) {
-      const imageName = getImageNameAtIndex(normalizedIndex);
-      if (imageName) {
+      if (targetImageName) {
         lastRenderedIndex = normalizedIndex;
         isTransitioning = true;
-        setWallpaperByName(imageName, { cache: false }).then(() => {
+        setWallpaperByName(targetImageName, { cache: false }).then(() => {
           isTransitioning = false;
-          if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
+          if (queuedIndex !== null) {
             const queuedImage = getImageNameAtIndex(queuedIndex);
-            if (queuedImage) {
+            if (queuedImage && queuedImage !== targetImageName) {
               lastRenderedIndex = queuedIndex;
               queuedIndex = null;
               isTransitioning = true;
@@ -129,6 +146,8 @@ export function initTimelineScroll() {
           }
         });
       }
+    } else if (isTransitioning) {
+      queuedIndex = normalizedIndex;
     }
   });
 }

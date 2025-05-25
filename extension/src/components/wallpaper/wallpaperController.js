@@ -12,6 +12,7 @@ import {
 } from './wallpaperData.js';
 
 import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers } from './wallpaperRenderer.js';
+import { initTimelineScroll } from '../timeline/timelineScroll.js';
 
 let baseWallpaperIndex = 0;
 
@@ -130,6 +131,8 @@ document.querySelectorAll('.wallpaper-set-item').forEach(item => {
         });
         
         await initWallpaperSystem();
+        // Reinitialize timeline scroll to reset its state
+        initTimelineScroll();
     
         document.getElementById('wallpaperSidebar').classList.remove('open');
         changeWallpaperBtn.style.display = 'block';
