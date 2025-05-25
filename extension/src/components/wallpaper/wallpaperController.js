@@ -98,32 +98,44 @@ export function getBaseWallpaperIndex() {
 
 
 document.getElementById('changeWallpaper').addEventListener('click', () => {
-    document.getElementById('wallpaperSetModal').style.display = 'flex';
-  });
-  
-  document.getElementById('cancelWallpaperSet').addEventListener('click', () => {
-    document.getElementById('wallpaperSetModal').style.display = 'none';
-  });
-  
-  document.querySelectorAll('#wallpaperSetModal .engine-grid-item').forEach(item => {
+    const sidebar = document.getElementById('wallpaperSidebar');
+    const changeWallpaperBtn = document.getElementById('changeWallpaper');
+    sidebar.classList.add('open');
+    changeWallpaperBtn.style.display = 'none';
+});
+
+// Add click outside handler
+document.addEventListener('click', (event) => {
+    const sidebar = document.getElementById('wallpaperSidebar');
+    const changeWallpaperBtn = document.getElementById('changeWallpaper');
+    
+    // Check if click is outside sidebar and not on the change wallpaper button
+    if (!sidebar.contains(event.target) && !changeWallpaperBtn.contains(event.target)) {
+        sidebar.classList.remove('open');
+        changeWallpaperBtn.style.display = 'block';
+    }
+});
+
+document.querySelectorAll('.wallpaper-set-item').forEach(item => {
     item.addEventListener('click', async () => {
-      const selectedSet = item.getAttribute('data-set');
+        const selectedSet = item.getAttribute('data-set');
+        const changeWallpaperBtn = document.getElementById('changeWallpaper');
     
-      // Clear relevant storage and memory
-      await chrome.storage.local.remove(['current_wallpaper']);
-      await chrome.storage.local.set({
-        wallpaper_set: selectedSet,
-        wallpaper_config: null,
-        current_wallpaper: null
-      });
-      
-      await initWallpaperSystem();
+        // Clear relevant storage and memory
+        await chrome.storage.local.remove(['current_wallpaper']);
+        await chrome.storage.local.set({
+            wallpaper_set: selectedSet,
+            wallpaper_config: null,
+            current_wallpaper: null
+        });
+        
+        await initWallpaperSystem();
     
-      document.getElementById('wallpaperSetModal').style.display = 'none';
+        document.getElementById('wallpaperSidebar').classList.remove('open');
+        changeWallpaperBtn.style.display = 'block';
     });    
-  });
-  
-  
+});
+
 
 chrome.runtime.onMessage.addListener((message) => {
     if (message.action === 'updateWallpaper') {

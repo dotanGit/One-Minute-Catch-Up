@@ -358,26 +358,22 @@
         </div>
     </div>
 
-    <!-- Wallpaper set Modal -->
-    <div id="wallpaperSetModal" class="main-modal" style="display: none;" data-theme="dark">
-        <div class="main-modal-content">
-          <h3>Select a Wallpaper Set</h3>
-          <div class="engine-grid">
-            <div class="engine-grid-item" data-set="above_clouds">
-              <img src="https://catch-up-f6fa1.web.app/above_clouds/sunrise_1.jpeg" />
-              <span>Above Clouds</span>
-            </div>
-            <div class="engine-grid-item" data-set="oregon_mthood">
-              <img src="https://catch-up-f6fa1.web.app/oregon_mthood/sunrise_1.jpeg" />
-              <span>Oregon Mt. Hood</span>
-            </div>
-          </div>
-          <div class="main-modal-buttons">
-            <button id="cancelWallpaperSet" class="btn-secondary">Cancel</button>
-          </div>
+    <!-- Wallpaper Sidebar -->
+    <div id="wallpaperSidebar" class="wallpaper-sidebar" data-theme="dark">
+        <div class="wallpaper-sidebar-header">
+            <h3>Select a Wallpaper Set</h3>
         </div>
-      </div>
-      
+        <div class="wallpaper-sets-grid">
+            <div class="wallpaper-set-item" data-set="above_clouds">
+                <img src="https://catch-up-f6fa1.web.app/above_clouds/sunrise_1.jpeg" alt="Above Clouds" />
+                <span>Above Clouds</span>
+            </div>
+            <div class="wallpaper-set-item" data-set="oregon_mthood">
+                <img src="https://catch-up-f6fa1.web.app/oregon_mthood/sunrise_1.jpeg" alt="Oregon Mt. Hood" />
+                <span>Oregon Mt. Hood</span>
+            </div>
+        </div>
+    </div>
   
     <script type="module" src="./main.js"></script>
     <script type="module" src="../components/search/search.js"></script>
