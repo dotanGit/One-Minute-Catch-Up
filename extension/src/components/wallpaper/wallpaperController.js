@@ -110,24 +110,14 @@ document.getElementById('changeWallpaper').addEventListener('click', () => {
       const selectedSet = item.getAttribute('data-set');
     
       // Clear relevant storage and memory
+      await chrome.storage.local.remove(['current_wallpaper']);
       await chrome.storage.local.set({
         wallpaper_set: selectedSet,
         wallpaper_config: null,
         current_wallpaper: null
       });
-    
-      // Re-init wallpaper system
-      await loadWallpaperData(); // reloads and sets up wallpaperList with correct set
-      const index = findIndexForCurrentTime();
-      setTimeBasedIndex(index);
-      setCurrentIndex(index);
-      setMode('time-based');
-    
-      const imageName = getImageNameAtIndex(index);
-      if (imageName) {
-        await setWallpaperByName(imageName, { immediate: true }); // prevent flicker
-        preloadAllWallpapers(); // preload after applying
-      }
+      
+      await initWallpaperSystem();
     
       document.getElementById('wallpaperSetModal').style.display = 'none';
     });    
