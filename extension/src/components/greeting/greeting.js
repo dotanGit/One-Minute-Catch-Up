@@ -23,7 +23,6 @@ export function getTimeBlock() {
   return 'evening'; // This will cover 18:00-23:59 and 00:00-03:59
 }
 
-
 export async function renderGreeting(containerSelector = '#greeting-container') {
   const container = document.querySelector(containerSelector);
   if (!container) return;
@@ -40,7 +39,7 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
       ? heading.replace(/\$\{name\}/g, name)
       : heading;
 
-  // Inject into DOM
+  // Update content
   container.querySelector('.greeting-heading').textContent = headingText;
   container.querySelector('.greeting-summary').innerHTML = summary;
   container.querySelector('.greeting-quote').innerHTML =
@@ -48,9 +47,6 @@ export async function renderGreeting(containerSelector = '#greeting-container') 
       ? `"${quote}" – <a href="#" class="quote-author" data-author="${author}">${author}</a>`
       : `"${quote}"`;
 }
-
-
-
 
 // ========================= Author Modal =========================
 document.querySelector('.author-modal-close').addEventListener('click', () => {
@@ -82,3 +78,17 @@ document.addEventListener('click', async (e) => {
 
   modal.style.display = 'flex';
 });
+
+// Modify the time block check function to pass showLoading=true
+function checkTimeBlockChange() {
+  const now = new Date();
+  const hour = now.getHours();
+  
+  // Check if we're at a time block boundary
+  if (hour === 4 || hour === 12 || hour === 18) {
+    renderGreeting('#greeting-container', true); // Pass true to show loading state
+  }
+}
+
+// Add this to your initialization code
+setInterval(checkTimeBlockChange, 60000); // Check every minute
