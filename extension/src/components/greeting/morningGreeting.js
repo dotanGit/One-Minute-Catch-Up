@@ -16,7 +16,7 @@ export async function getMorningGreeting() {
   // --- Summary from GPT ---
   const userSummary = await getUserSummary(new Date());
   const prompt = `
-You're an assistant that gives short, witty morning recaps. Based on the following user data, return one fun or impressive thing the user did yesterday — in a sentence or two. Be upbeat, motivating, and keep it under 20 words.
+You're an assistant that gives short, witty morning updates. Based on the following user data, focus on their calendar events for today. Create a motivating message about their upcoming day — in a sentence or two. Be upbeat, motivating, and keep it under 20 words.
 
 USER DATA:
 ${userSummary}
@@ -50,9 +50,9 @@ async function fetchOpenAISummary(prompt) {
     });
 
     const data = await res.json();
-    return data.choices?.[0]?.message?.content?.trim() || 'Started the day strong!';
+    return data.choices?.[0]?.message?.content?.trim() || 'New day, new opportunities!';
   } catch (err) {
     console.warn('[MorningGreeting] ChatGPT failed:', err);
-    return 'Started the day strong!';
+    return 'New day, new opportunities!';
   }
 }

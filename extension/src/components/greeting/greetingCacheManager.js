@@ -5,49 +5,6 @@ import { getMorningGreeting } from './morningGreeting.js';
 import { getAfternoonGreeting } from './afternoonGreeting.js';
 import { getEveningGreeting } from './eveningGreeting.js';
 
-async function cleanOldGreetingCache(currentDate) {
-    const allItems = await chrome.storage.local.get(null);
-    const todayPrefix = `greeting_${currentDate}`;
-  
-    const keysToRemove = Object.keys(allItems).filter(
-      (key) => key.startsWith('greeting_') && !key.startsWith(todayPrefix)
-    );
-  
-    if (keysToRemove.length > 0) {
-      await chrome.storage.local.remove(keysToRemove);
-      console.log('[🧹 GreetingCache] Removed old cache keys:', keysToRemove);
-    } else {
-      console.log('[🧹 GreetingCache] No old cache keys to clean.');
-    }
-  }
-  
-export async function preFetchNextGreeting() {
-  const now = new Date();
-  const date = now.toISOString().split('T')[0];
-  const currentTimeBlock = getTimeBlock();
-  
-  // Determine next time block
-  let nextTimeBlock;
-  const hour = now.getHours();
-  if (hour < 4) nextTimeBlock = 'morning';
-  else if (hour < 12) nextTimeBlock = 'afternoon';
-  else if (hour < 18) nextTimeBlock = 'evening';
-  else nextTimeBlock = 'morning'; // Next day's morning
-
-  const cacheKey = isWeekend()
-    ? `greeting_${date}_weekend`
-    : isFirstDayOfWeek()
-      ? `greeting_${date}_firstday_${nextTimeBlock}`
-      : `greeting_${date}_${nextTimeBlock}`;
-
-  // Only pre-fetch if it's not already cached
-  const cached = await chrome.storage.local.get([cacheKey]);
-  if (!cached[cacheKey]) {
-    console.log(`[🔄 Greeting] Pre-fetching next greeting for: ${cacheKey}`);
-    await getGreetingFromCacheOrGenerate();
-  }
-}
-
 export async function getGreetingFromCacheOrGenerate() {
     const now = new Date();
     const date = now.toISOString().split('T')[0];
@@ -64,7 +21,7 @@ export async function getGreetingFromCacheOrGenerate() {
       return cached[cacheKey];
     }
   
-    // Show loading state
+    // IF WE REACHED HERE IT MEANS NO CACHE - Show loading state
     const container = document.querySelector('#greeting-container');
     if (container) {
       container.querySelector('.greeting-heading').textContent = '🤖 AI is crafting your next update...';

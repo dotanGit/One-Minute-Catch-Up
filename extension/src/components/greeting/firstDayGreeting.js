@@ -12,5 +12,5 @@ export async function getFirstDayGreeting() {
 
   const { quote, author } = await getDailyQuote();
 
-  return { summary, quote, author }; // ✅ No heading here
+  return { summary, quote, author }; // No heading here
 }

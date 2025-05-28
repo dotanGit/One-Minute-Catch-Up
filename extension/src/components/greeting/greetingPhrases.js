@@ -17,7 +17,7 @@ export const greetingPhrases = {
       "Morning pilot, controls are yours."
     ],
     "afternoon": [
-      "Afternoon champ, still going strong?",
+      "Good Afternoon champ.",
       "Good afternoon legend, halftime check-in.",
       "Midday boss, round two begins.",
       "Hey ${name}, afternoon focus time.",

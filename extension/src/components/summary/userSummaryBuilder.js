@@ -8,7 +8,7 @@ export async function getUserSummary(date = new Date()) {
 
   const lines = ["Significant activities:\n"];
 
-  // 🗓️ Calendar
+  // ======== Calendar ========
   const calendarEvents = data.calendar?.today?.map(ev => ev.summary).filter(Boolean) || [];
   if (calendarEvents.length) {
     lines.push("Calendar:");
@@ -16,7 +16,7 @@ export async function getUserSummary(date = new Date()) {
     lines.push("");
   }
 
-  // 📤 Emails Sent
+  // ======== Emails Sent ========
   const sentEmails = (data.emails?.all || []).filter(e => e.type === 'sent');
   if (sentEmails.length) {
     lines.push("Emails Sent:");
@@ -24,7 +24,7 @@ export async function getUserSummary(date = new Date()) {
     lines.push("");
   }
 
-  // 📥 Emails Received
+  // ======== Emails Received ========
   const receivedEmails = (data.emails?.all || []).filter(e => e.type === 'received');
   if (receivedEmails.length) {
     lines.push("Emails Received:");
@@ -32,7 +32,7 @@ export async function getUserSummary(date = new Date()) {
     lines.push("");
   }
 
-  // 🌐 Browser History
+  // ======== Browser History ========
   const history = (data.history || []).filter(h => h.title && h.url && !isDistraction(h.url));
   if (history.length) {
     lines.push("Browsing:");
@@ -40,7 +40,7 @@ export async function getUserSummary(date = new Date()) {
     lines.push("");
   }
 
-  // 📁 Drive Files
+  // ======== Drive Files ========
   const driveFiles = data.drive?.files || [];
   if (driveFiles.length) {
     lines.push("Drive Files:");

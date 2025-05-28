@@ -48,9 +48,9 @@ async function fetchOpenAISummary(prompt) {
     });
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || 'Started the day strong!';
+    return data.choices?.[0]?.message?.content?.trim() || 'Midday momentum in full swing!';
   } catch (err) {
     console.warn('[AfternoonGreeting] ChatGPT failed:', err);
-    return 'Started the day strong!';
+    return 'Midday momentum in full swing!';
   }
 }
