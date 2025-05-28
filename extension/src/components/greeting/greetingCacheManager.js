@@ -25,7 +25,6 @@ export async function getGreetingFromCacheOrGenerate() {
     const container = document.querySelector('#greeting-container');
     if (container) {
       container.querySelector('.greeting-heading').textContent = '🤖 AI is crafting your next update...';
-      container.querySelector('.greeting-summary').innerHTML = '<div class="loading-dots">...</div>';
       container.querySelector('.greeting-quote').innerHTML = '';
     }
   
