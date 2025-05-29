@@ -10,7 +10,6 @@
     "storage",
     "downloads",
     "downloads.open",
-    "clipboardWrite",
     "tabs"
   ],
   "host_permissions": [
