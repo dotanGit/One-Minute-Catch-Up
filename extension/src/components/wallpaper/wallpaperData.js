@@ -1,124 +1,126 @@
-let CONFIG_URL = '';
-let wallpaperSet = 'oregon_mthood'; // default fallback
-let wallpaperList = [];
-let currentIndex = 0;
-let timeBasedIndex = 0;
-let currentMode = 'time-based'; // 'time-based' or 'temporary'
+class WallpaperDataManager {
+    constructor() {
+        this.wallpaperSet = 'oregon_mthood';
+        this.wallpaperList = [];
+        this.currentIndex = 0;
+        this.timeBasedIndex = 0;
+        this.currentMode = 'time-based';
+        this.CONFIG_URL = '';
+    }
 
-function timeToMinutes(timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    return h * 60 + m;
-}
+    timeToMinutes(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
 
-export async function loadWallpaperData() {
-    const CACHE_KEY = 'wallpaper_config';
-    const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
-    wallpaperSet = wallpaper_set || 'oregon_mthood';
-    CONFIG_URL = `https://catch-up-f6fa1.web.app/${wallpaperSet}/wallpaper-config.json`;
+    async loadData() {
+        const CACHE_KEY = 'wallpaper_config';
+        const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
+        this.wallpaperSet = wallpaper_set || 'oregon_mthood';
+        this.CONFIG_URL = `https://catch-up-f6fa1.web.app/${this.wallpaperSet}/wallpaper-config.json`;
 
-    try {
-        const result = await chrome.storage.local.get(CACHE_KEY);
-        const cachedData = result[CACHE_KEY];
+        try {
+            const result = await chrome.storage.local.get(CACHE_KEY);
+            const cachedData = result[CACHE_KEY];
 
-        if (cachedData) {
-            wallpaperList = cachedData.map((entry, index) => ({
-                ...entry,
-                image: entry.image,
-                minutes: timeToMinutes(entry.time),
-                index
-            }));
-            wallpaperList.sort((a, b) => a.minutes - b.minutes);
-            console.log('🗂️ Loaded wallpaper config from cache');
-            return;
+            if (cachedData) {
+                this.wallpaperList = this.processWallpaperData(cachedData);
+                console.log('🗂️ Loaded wallpaper config from cache');
+                return;
+            }
+
+            const response = await fetch(this.CONFIG_URL);
+            const data = await response.json();
+            this.wallpaperList = this.processWallpaperData(data);
+
+            await chrome.storage.local.set({
+                [CACHE_KEY]: data
+            });
+
+            console.log('🌐 Fetched and cached wallpaper config from network');
+        } catch (err) {
+            console.error('❌ Failed to load wallpaper config:', err);
+        }
+    }
+
+    processWallpaperData(data) {
+        return data.map((entry, index) => ({
+            ...entry,
+            minutes: this.timeToMinutes(entry.time),
+            index
+        })).sort((a, b) => a.minutes - b.minutes);
+    }
+
+    getWallpaperList() {
+        return this.wallpaperList;
+    }
+
+    getCurrentIndex() {
+        return this.currentIndex;
+    }
+
+    getCurrentMode() {
+        return this.currentMode;
+    }
+
+    setCurrentIndex(index) {
+        this.currentIndex = index;
+    }
+
+    setTimeBasedIndex(index) {
+        this.timeBasedIndex = index;
+    }
+
+    getTimeBasedIndex() {
+        return this.timeBasedIndex;
+    }
+
+    setMode(mode) {
+        this.currentMode = mode;
+    }
+
+    findIndexForCurrentTime() {
+        console.log("🕒 Current time:", new Date().toLocaleTimeString());
+        console.log("⏱ Wallpaper schedule:", this.wallpaperList.map(w => `${w.minutes} → ${w.image}`));
+
+        const now = new Date();
+        const minutesNow = now.getHours() * 60 + now.getMinutes();
+
+        let index = -1;
+        for (let i = 0; i < this.wallpaperList.length; i++) {
+            if (this.wallpaperList[i].minutes <= minutesNow) {
+                index = i;
+            } else {
+                break;
+            }
         }
 
-        // If not cached, fetch from network
-        const response = await fetch(CONFIG_URL);
-        const data = await response.json();
+        console.log("🎯 Selected index:", index, "→", this.wallpaperList[index]?.image);
 
-        wallpaperList = data.map((entry, index) => ({
-            ...entry,
-            minutes: timeToMinutes(entry.time),
-            index
-        }));
+        return index === -1 ? this.wallpaperList.length - 1 : index;
+    }
 
-        wallpaperList.sort((a, b) => a.minutes - b.minutes);
+    getImageNameAtIndex(index) {
+        return this.wallpaperList[index]?.image || null;
+    }
 
-        await chrome.storage.local.set({
-            [CACHE_KEY]: data
-        });
-
-        console.log('🌐 Fetched and cached wallpaper config from network');
-    } catch (err) {
-        console.error('❌ Failed to load wallpaper config:', err);
+    getWallpaperSet() {
+        return this.wallpaperSet;
     }
 }
 
+// Create singleton instance
+const wallpaperData = new WallpaperDataManager();
 
-export function getWallpaperList() {
-    return wallpaperList;
-}
-
-export function getCurrentIndex() {
-    return currentIndex;
-}
-
-export function getCurrentMode() {
-    return currentMode;
-}
-
-export function setCurrentIndex(index) {
-    currentIndex = index;
-}
-
-export function setTimeBasedIndex(index) {
-    timeBasedIndex = index;
-}
-
-export function getTimeBasedIndex() {
-    return timeBasedIndex;
-}
-
-export function setMode(mode) {
-    currentMode = mode;
-}
-
-export function findIndexForCurrentTime() {
-
-    console.log("🕒 Current time:", new Date().toLocaleTimeString());
-console.log("⏱ Wallpaper schedule:", wallpaperList.map(w => `${w.minutes} → ${w.image}`));
-
-
-  const now = new Date();
-  const minutesNow = now.getHours() * 60 + now.getMinutes();
-
-  let index = -1;
-
-  for (let i = 0; i < wallpaperList.length; i++) {
-    if (wallpaperList[i].minutes <= minutesNow) {
-      index = i;
-    } else {
-      break;
-    }
-  }
-
-  console.log("🎯 Selected index:", index, "→", wallpaperList[index]?.image);
-
-
-  if (index === -1) {
-    // אם אנחנו לפני התמונה הראשונה – נחזיר את האחרונה
-    index = wallpaperList.length - 1;
-  }
-
-  return index;
-}
-
-
-export function getImageNameAtIndex(index) {
-    return wallpaperList[index]?.image || null;
-}
-
-
-export function getWallpaperSet() {
-    return wallpaperSet;
-}
+// Export the instance methods
+export const loadWallpaperData = () => wallpaperData.loadData();
+export const getWallpaperList = () => wallpaperData.getWallpaperList();
+export const getCurrentIndex = () => wallpaperData.getCurrentIndex();
+export const setCurrentIndex = (index) => wallpaperData.setCurrentIndex(index);
+export const getCurrentMode = () => wallpaperData.getCurrentMode();
+export const setMode = (mode) => wallpaperData.setMode(mode);
+export const setTimeBasedIndex = (index) => wallpaperData.setTimeBasedIndex(index);
+export const getTimeBasedIndex = () => wallpaperData.getTimeBasedIndex();
+export const findIndexForCurrentTime = () => wallpaperData.findIndexForCurrentTime();
+export const getImageNameAtIndex = (index) => wallpaperData.getImageNameAtIndex(index);
+export const getWallpaperSet = () => wallpaperData.getWallpaperSet();

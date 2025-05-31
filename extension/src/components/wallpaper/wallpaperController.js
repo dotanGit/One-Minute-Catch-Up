@@ -13,135 +13,147 @@ import {
 
 import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers } from './wallpaperRenderer.js';
 import { initTimelineScroll } from '../timeline/timelineScroll.js';
-import { clearWallpapersDB, saveWallpaperToDB, getWallpaperFromDB } from './wallpaperDB.js';
+import { clearWallpapersDB } from './wallpaperDB.js';
 
-
-let baseWallpaperIndex = 0;
-
-
-export async function initWallpaperSystem() {
-    await loadWallpaperData();  // Load wallpaper config
-    const index = findIndexForCurrentTime();
-    setBaseWallpaperIndex(index);
-    setTimeBasedIndex(index);
-    setCurrentIndex(index);
-    setMode('time-based');
-
-    const imageName = getImageNameAtIndex(index);
-    if (imageName) {
-        await renderCachedWallpaperInstantly(imageName); // 👈 show correct image
-        await setWallpaperByName(imageName, { immediate: true }); // update with animation
+class WallpaperController {
+    constructor() {
+        this.baseWallpaperIndex = 0;
+        this.setupEventListeners();
     }
 
-    preloadAllWallpapers();  // Async preload in background
-}
+    setupEventListeners() {
+        // Change wallpaper button
+        document.getElementById('changeWallpaper').addEventListener('click', () => {
+            const sidebar = document.getElementById('wallpaperSidebar');
+            const changeWallpaperBtn = document.getElementById('changeWallpaper');
+            sidebar.classList.add('open');
+            changeWallpaperBtn.style.display = 'none';
+        });
 
+        // Click outside handler
+        document.addEventListener('click', (event) => {
+            const sidebar = document.getElementById('wallpaperSidebar');
+            const changeWallpaperBtn = document.getElementById('changeWallpaper');
+            
+            if (!sidebar.contains(event.target) && !changeWallpaperBtn.contains(event.target)) {
+                sidebar.classList.remove('open');
+                changeWallpaperBtn.style.display = 'block';
+            }
+        });
 
-export async function updateWallpaperToCurrentTime() {
-    if (getCurrentMode() !== 'time-based') return;
+        // Wallpaper set selection
+        document.querySelectorAll('.wallpaper-set-item').forEach(item => {
+            item.addEventListener('click', () => this.handleWallpaperSetChange(item));
+        });
 
-    const index = findIndexForCurrentTime();
-    setTimeBasedIndex(index);
-    setCurrentIndex(index);
+        // Chrome message listener
+        chrome.runtime.onMessage.addListener((message) => {
+            if (message.action === 'updateWallpaper') {
+                this.updateWallpaperToCurrentTime();
+            }
+        });
 
-    const imageName = getImageNameAtIndex(index);
-    if (imageName) {
-        await setWallpaperByName(imageName);
-        console.log(`🕒 Updated to current time-based wallpaper: ${imageName}`);
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => this.initWallpaperSystem());
     }
-}
 
-export async function switchWallpaper(direction = 'forward') {
-    setMode('temporary');
-
-    const list = getWallpaperList();
-    let index = getCurrentIndex();
-
-    index = direction === 'forward'
-        ? (index + 1) % list.length
-        : (index - 1 + list.length) % list.length;
-
-    setCurrentIndex(index);
-
-    const imageName = getImageNameAtIndex(index);
-    if (imageName) {
-        await setWallpaperByName(imageName);
-        console.log(`🔁 Switched wallpaper temporarily (${direction}): ${imageName}`);
-    }
-}
-
-export async function resetWallpaper() {
-    setMode('time-based');
-
-    const index = getTimeBasedIndex();
-    setCurrentIndex(index);
-
-    const imageName = getImageNameAtIndex(index);
-    if (imageName) {
-        await setWallpaperByName(imageName);
-        console.log(`✅ Reset to time-based wallpaper: ${imageName}`);
-    }
-}
-
-
-export function setBaseWallpaperIndex(index) {
-  baseWallpaperIndex = index;
-}
-
-export function getBaseWallpaperIndex() {
-  return baseWallpaperIndex;
-}
-
-
-document.getElementById('changeWallpaper').addEventListener('click', () => {
-    const sidebar = document.getElementById('wallpaperSidebar');
-    const changeWallpaperBtn = document.getElementById('changeWallpaper');
-    sidebar.classList.add('open');
-    changeWallpaperBtn.style.display = 'none';
-});
-
-// Add click outside handler
-document.addEventListener('click', (event) => {
-    const sidebar = document.getElementById('wallpaperSidebar');
-    const changeWallpaperBtn = document.getElementById('changeWallpaper');
-    
-    // Check if click is outside sidebar and not on the change wallpaper button
-    if (!sidebar.contains(event.target) && !changeWallpaperBtn.contains(event.target)) {
-        sidebar.classList.remove('open');
-        changeWallpaperBtn.style.display = 'block';
-    }
-});
-
-document.querySelectorAll('.wallpaper-set-item').forEach(item => {
-    item.addEventListener('click', async () => {
+    async handleWallpaperSetChange(item) {
         const selectedSet = item.getAttribute('data-set');
         const changeWallpaperBtn = document.getElementById('changeWallpaper');
     
-        // Clear relevant storage and memory
         await clearWallpapersDB();
-
         await chrome.storage.local.set({
             wallpaper_set: selectedSet,
             wallpaper_config: null,
         });
         
-        await initWallpaperSystem();
-        // Reinitialize timeline scroll to reset its state
+        await this.initWallpaperSystem();
         initTimelineScroll();
     
         document.getElementById('wallpaperSidebar').classList.remove('open');
         changeWallpaperBtn.style.display = 'block';
-    });    
-});
-
-
-chrome.runtime.onMessage.addListener((message) => {
-    if (message.action === 'updateWallpaper') {
-        updateWallpaperToCurrentTime();
     }
-});
 
-document.addEventListener('DOMContentLoaded', async () => {
-    await initWallpaperSystem();
-});
+    async initWallpaperSystem() {
+        await loadWallpaperData();
+        const index = findIndexForCurrentTime();
+        this.setBaseWallpaperIndex(index);
+        setTimeBasedIndex(index);
+        setCurrentIndex(index);
+        setMode('time-based');
+
+        const imageName = getImageNameAtIndex(index);
+        if (imageName) {
+            await renderCachedWallpaperInstantly(imageName);
+            await setWallpaperByName(imageName, { immediate: true });
+        }
+
+        preloadAllWallpapers();
+    }
+
+    async updateWallpaperToCurrentTime() {
+        if (getCurrentMode() !== 'time-based') return;
+
+        const index = findIndexForCurrentTime();
+        setTimeBasedIndex(index);
+        setCurrentIndex(index);
+
+        const imageName = getImageNameAtIndex(index);
+        if (imageName) {
+            await setWallpaperByName(imageName);
+            console.log(`🕒 Updated to current time-based wallpaper: ${imageName}`);
+        }
+    }
+
+    async switchWallpaper(direction = 'forward') {
+        setMode('temporary');
+
+        const list = getWallpaperList();
+        let index = getCurrentIndex();
+
+        index = direction === 'forward'
+            ? (index + 1) % list.length
+            : (index - 1 + list.length) % list.length;
+
+        setCurrentIndex(index);
+
+        const imageName = getImageNameAtIndex(index);
+        if (imageName) {
+            await setWallpaperByName(imageName);
+            console.log(`🔁 Switched wallpaper temporarily (${direction}): ${imageName}`);
+        }
+    }
+
+    async resetWallpaper() {
+        setMode('time-based');
+
+        const index = getTimeBasedIndex();
+        setCurrentIndex(index);
+
+        const imageName = getImageNameAtIndex(index);
+        if (imageName) {
+            await setWallpaperByName(imageName);
+            console.log(`✅ Reset to time-based wallpaper: ${imageName}`);
+        }
+    }
+
+    setBaseWallpaperIndex(index) {
+        this.baseWallpaperIndex = index;
+    }
+
+    getBaseWallpaperIndex() {
+        return this.baseWallpaperIndex;
+    }
+}
+
+// Create singleton instance
+const wallpaperController = new WallpaperController();
+
+// Export the instance methods
+export const initWallpaperSystem = () => wallpaperController.initWallpaperSystem();
+export const updateWallpaperToCurrentTime = () => wallpaperController.updateWallpaperToCurrentTime();
+export const switchWallpaper = (direction) => wallpaperController.switchWallpaper(direction);
+export const resetWallpaper = () => wallpaperController.resetWallpaper();
+export const setBaseWallpaperIndex = (index) => wallpaperController.setBaseWallpaperIndex(index);
+export const getBaseWallpaperIndex = () => wallpaperController.getBaseWallpaperIndex();
 

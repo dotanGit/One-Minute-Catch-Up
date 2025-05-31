@@ -1,190 +1,209 @@
-import { findIndexForCurrentTime, getImageNameAtIndex } from '../wallpaper/wallpaperData.js';
+import { findIndexForCurrentTime, getImageNameAtIndex, getWallpaperList } from '../wallpaper/wallpaperData.js';
 import { setWallpaperByName } from '../wallpaper/wallpaperRenderer.js';
 import { getBaseWallpaperIndex, setBaseWallpaperIndex } from '../wallpaper/wallpaperController.js';
-import { getWallpaperList } from '../wallpaper/wallpaperData.js';
 
-let container;
-let pendingIndex = 0;
-let isHovering = false;
-let debounceTimer = null;
-let isTransitioning = false;
-let queuedIndex = null;
+class TimelineScroll {
+    constructor() {
+        this.container = null;
+        this.pendingIndex = 0;
+        this.isHovering = false;
+        this.debounceTimer = null;
+        this.isTransitioning = false;
+        this.queuedIndex = null;
+        this.hoverScrollFrame = null;
+        this.hoverDirection = 0;
+        this.lastRenderedIndex = null;
 
-const SCROLL_THRESHOLD = 1000;
-const CLICK_SCROLL_STEP = 1000;
-const CHANGE_WALLPAPER_TIMEOUT = 50;
-const HOVER_SCROLL_SPEED = 1;
-let hoverScrollFrame = null;
-let hoverDirection = 0;
-let lastRenderedIndex = null;
-
-function resetTimelineScrollState() {
-  pendingIndex = 0;
-  isHovering = false;
-  if (debounceTimer) clearTimeout(debounceTimer);
-  isTransitioning = false;
-  queuedIndex = null;
-  if (hoverScrollFrame) {
-    cancelAnimationFrame(hoverScrollFrame);
-    hoverScrollFrame = null;
-  }
-  hoverDirection = 0;
-  lastRenderedIndex = null;
-}
-
-// Debounced update with transition lock + queue
-function scheduleWallpaperUpdate() {
-  if (debounceTimer) clearTimeout(debounceTimer);
-
-  debounceTimer = setTimeout(() => {
-    if (isHovering) return;
-
-    const list = getWallpaperList();
-    const normalizedIndex = ((pendingIndex % list.length) + list.length) % list.length;
-
-    if (normalizedIndex === lastRenderedIndex) return;
-
-    const imageName = getImageNameAtIndex(normalizedIndex);
-    if (!imageName) return;
-
-    if (isTransitioning) {
-      queuedIndex = normalizedIndex;
-      return;
+        // Constants
+        this.SCROLL_THRESHOLD = 1000;
+        this.CLICK_SCROLL_STEP = 1000;
+        this.CHANGE_WALLPAPER_TIMEOUT = 50;
+        this.HOVER_SCROLL_SPEED = 1;
     }
 
-    lastRenderedIndex = normalizedIndex;
-    isTransitioning = true;
-    setWallpaperByName(imageName, { cache: false }).then(() => {
-      isTransitioning = false;
-      if (queuedIndex !== null && queuedIndex !== lastRenderedIndex) {
-        const queuedImage = getImageNameAtIndex(queuedIndex);
-        if (queuedImage) {
-          lastRenderedIndex = queuedIndex;
-          queuedIndex = null;
-          isTransitioning = true;
-          setWallpaperByName(queuedImage, { cache: false }).then(() => {
-            isTransitioning = false;
-          });
+    resetState() {
+        this.pendingIndex = 0;
+        this.isHovering = false;
+        if (this.debounceTimer) clearTimeout(this.debounceTimer);
+        this.isTransitioning = false;
+        this.queuedIndex = null;
+        if (this.hoverScrollFrame) {
+            cancelAnimationFrame(this.hoverScrollFrame);
+            this.hoverScrollFrame = null;
         }
-      } else {
-        queuedIndex = null;
-      }
-    });
-  }, CHANGE_WALLPAPER_TIMEOUT);
-}
+        this.hoverDirection = 0;
+        this.lastRenderedIndex = null;
+    }
 
-export function initTimelineScroll() {
-  container = document.querySelector('.timeline-container');
-  if (!container) return;
+    scheduleWallpaperUpdate() {
+        if (this.debounceTimer) clearTimeout(this.debounceTimer);
 
-  // Reset all state
-  resetTimelineScrollState();
+        this.debounceTimer = setTimeout(() => {
+            if (this.isHovering) return;
 
-  const baseIndex = getBaseWallpaperIndex();
-  lastRenderedIndex = ((baseIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
-  pendingIndex = baseIndex;
+            const list = getWallpaperList();
+            const normalizedIndex = ((this.pendingIndex % list.length) + list.length) % list.length;
 
-  container.addEventListener('scroll', () => {
-    const offset = Math.abs(container.scrollLeft);
-    const steps = Math.floor(offset / SCROLL_THRESHOLD);
-    pendingIndex = getBaseWallpaperIndex() - steps;
-    scheduleWallpaperUpdate();
-  });
+            if (normalizedIndex === this.lastRenderedIndex) return;
 
-  document.getElementById('scroll-left')?.addEventListener('mouseenter', () => { isHovering = true; });
-  document.getElementById('scroll-left')?.addEventListener('mouseleave', () => { isHovering = false; });
-  document.getElementById('scroll-right')?.addEventListener('mouseenter', () => { isHovering = true; });
-  document.getElementById('scroll-right')?.addEventListener('mouseleave', () => { isHovering = false; });
+            const imageName = getImageNameAtIndex(normalizedIndex);
+            if (!imageName) return;
 
-  document.getElementById('scroll-left')?.addEventListener('click', () => {
-    isHovering = false;
-    smoothScroll({ by: -CLICK_SCROLL_STEP });
-  });
-  document.getElementById('scroll-right')?.addEventListener('click', () => {
-    isHovering = false;
-    smoothScroll({ by: CLICK_SCROLL_STEP });
-  });
-
-  // Hover scroll
-  document.getElementById('scroll-left')?.addEventListener('mouseenter', () => startHoverScroll(-1));
-  document.getElementById('scroll-left')?.addEventListener('mouseleave', stopHoverScroll);
-  document.getElementById('scroll-right')?.addEventListener('mouseenter', () => startHoverScroll(1));
-  document.getElementById('scroll-right')?.addEventListener('mouseleave', stopHoverScroll);
-
-  // Scroll-latest with queue
-  document.getElementById('scroll-latest')?.addEventListener('click', () => {
-    smoothScroll({ to: 0 })
-    const index = findIndexForCurrentTime();
-    const list = getWallpaperList();
-    const normalizedIndex = index % list.length;
-    const normalizedLastIndex = ((lastRenderedIndex % list.length) + list.length) % list.length;
-    const currentImageName = getImageNameAtIndex(normalizedLastIndex);
-    const targetImageName = getImageNameAtIndex(normalizedIndex);
-    
-    // Only update if we're not already showing the target wallpaper and not transitioning
-    if (currentImageName !== targetImageName && !isTransitioning) {
-      setBaseWallpaperIndex(index);
-      pendingIndex = index;
-
-      if (targetImageName) {
-        lastRenderedIndex = normalizedIndex;
-        isTransitioning = true;
-        setWallpaperByName(targetImageName, { cache: false }).then(() => {
-          isTransitioning = false;
-          if (queuedIndex !== null) {
-            const queuedImage = getImageNameAtIndex(queuedIndex);
-            if (queuedImage && queuedImage !== targetImageName) {
-              lastRenderedIndex = queuedIndex;
-              queuedIndex = null;
-              isTransitioning = true;
-              setWallpaperByName(queuedImage, { cache: false }).then(() => {
-                isTransitioning = false;
-              });
+            if (this.isTransitioning) {
+                this.queuedIndex = normalizedIndex;
+                return;
             }
-          } else {
-            queuedIndex = null;
-          }
+
+            this.lastRenderedIndex = normalizedIndex;
+            this.isTransitioning = true;
+            
+            // Use setWallpaperByName with transition
+            setWallpaperByName(imageName, { cache: false, immediate: false }).then(() => {
+                this.isTransitioning = false;
+                this.handleQueuedUpdate();
+            });
+        }, this.CHANGE_WALLPAPER_TIMEOUT);
+    }
+
+    handleQueuedUpdate() {
+        if (this.queuedIndex !== null && this.queuedIndex !== this.lastRenderedIndex) {
+            const queuedImage = getImageNameAtIndex(this.queuedIndex);
+            if (queuedImage) {
+                this.lastRenderedIndex = this.queuedIndex;
+                this.queuedIndex = null;
+                this.isTransitioning = true;
+                // Use setWallpaperByName with transition
+                setWallpaperByName(queuedImage, { cache: false, immediate: false }).then(() => {
+                    this.isTransitioning = false;
+                });
+            }
+        } else {
+            this.queuedIndex = null;
+        }
+    }
+
+    setupEventListeners() {
+        // Scroll event
+        this.container.addEventListener('scroll', () => {
+            const offset = Math.abs(this.container.scrollLeft);
+            const steps = Math.floor(offset / this.SCROLL_THRESHOLD);
+            this.pendingIndex = getBaseWallpaperIndex() - steps;
+            this.scheduleWallpaperUpdate();
         });
-      }
-    } else if (isTransitioning) {
-      queuedIndex = normalizedIndex;
+
+        // Hover events
+        const scrollLeft = document.getElementById('scroll-left');
+        const scrollRight = document.getElementById('scroll-right');
+        const scrollLatest = document.getElementById('scroll-latest');
+
+        if (scrollLeft) {
+            scrollLeft.addEventListener('mouseenter', () => { this.isHovering = true; });
+            scrollLeft.addEventListener('mouseleave', () => { this.isHovering = false; });
+            scrollLeft.addEventListener('click', () => {
+                this.isHovering = false;
+                this.smoothScroll({ by: -this.CLICK_SCROLL_STEP });
+            });
+            scrollLeft.addEventListener('mouseenter', () => this.startHoverScroll(-1));
+            scrollLeft.addEventListener('mouseleave', () => this.stopHoverScroll());
+        }
+
+        if (scrollRight) {
+            scrollRight.addEventListener('mouseenter', () => { this.isHovering = true; });
+            scrollRight.addEventListener('mouseleave', () => { this.isHovering = false; });
+            scrollRight.addEventListener('click', () => {
+                this.isHovering = false;
+                this.smoothScroll({ by: this.CLICK_SCROLL_STEP });
+            });
+            scrollRight.addEventListener('mouseenter', () => this.startHoverScroll(1));
+            scrollRight.addEventListener('mouseleave', () => this.stopHoverScroll());
+        }
+
+        if (scrollLatest) {
+            scrollLatest.addEventListener('click', () => this.handleScrollLatest());
+        }
     }
-  });
-}
 
-function startHoverScroll(direction) {
-  hoverDirection = direction;
-  if (!hoverScrollFrame) scrollStep();
-}
+    handleScrollLatest() {
+        this.smoothScroll({ to: 0 });
+        const index = findIndexForCurrentTime();
+        const list = getWallpaperList();
+        const normalizedIndex = index % list.length;
+        const normalizedLastIndex = ((this.lastRenderedIndex % list.length) + list.length) % list.length;
+        const currentImageName = getImageNameAtIndex(normalizedLastIndex);
+        const targetImageName = getImageNameAtIndex(normalizedIndex);
+        
+        if (currentImageName !== targetImageName && !this.isTransitioning) {
+            setBaseWallpaperIndex(index);
+            this.pendingIndex = index;
 
-function stopHoverScroll() {
-  cancelAnimationFrame(hoverScrollFrame);
-  hoverScrollFrame = null;
-}
-
-function scrollStep() {
-  container.scrollLeft += HOVER_SCROLL_SPEED * hoverDirection;
-  hoverScrollFrame = requestAnimationFrame(scrollStep);
-}
-
-function smoothScroll({ by = null, to = null, duration = 750 }) {
-  const start = container.scrollLeft;
-  const distance = by !== null ? by : (to - start);
-  const startTime = performance.now();
-
-  function animate(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1);
-    const ease = progress < 0.5
-      ? 4 * progress * progress * progress
-      : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-    container.scrollLeft = start + distance * ease;
-
-    if (progress < 1) {
-      requestAnimationFrame(animate);
+            if (targetImageName) {
+                this.lastRenderedIndex = normalizedIndex;
+                this.isTransitioning = true;
+                // Use setWallpaperByName with transition
+                setWallpaperByName(targetImageName, { cache: false, immediate: false }).then(() => {
+                    this.isTransitioning = false;
+                    this.handleQueuedUpdate();
+                });
+            }
+        } else if (this.isTransitioning) {
+            this.queuedIndex = normalizedIndex;
+        }
     }
-  }
 
-  requestAnimationFrame(animate);
+    startHoverScroll(direction) {
+        this.hoverDirection = direction;
+        if (!this.hoverScrollFrame) this.scrollStep();
+    }
+
+    stopHoverScroll() {
+        cancelAnimationFrame(this.hoverScrollFrame);
+        this.hoverScrollFrame = null;
+    }
+
+    scrollStep() {
+        this.container.scrollLeft += this.HOVER_SCROLL_SPEED * this.hoverDirection;
+        this.hoverScrollFrame = requestAnimationFrame(() => this.scrollStep());
+    }
+
+    smoothScroll({ by = null, to = null, duration = 750 }) {
+        const start = this.container.scrollLeft;
+        const distance = by !== null ? by : (to - start);
+        const startTime = performance.now();
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = progress < 0.5
+                ? 4 * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+            this.container.scrollLeft = start + distance * ease;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    init() {
+        this.container = document.querySelector('.timeline-container');
+        if (!this.container) return;
+
+        // Reset all state
+        this.resetState();
+
+        const baseIndex = getBaseWallpaperIndex();
+        this.lastRenderedIndex = ((baseIndex % getWallpaperList().length) + getWallpaperList().length) % getWallpaperList().length;
+        this.pendingIndex = baseIndex;
+
+        this.setupEventListeners();
+    }
 }
+
+// Create singleton instance
+const timelineScroll = new TimelineScroll();
+
+// Export initialization function
+export const initTimelineScroll = () => timelineScroll.init();

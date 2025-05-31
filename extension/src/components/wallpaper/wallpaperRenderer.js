@@ -3,121 +3,141 @@ import { saveWallpaperToDB, getWallpaperFromDB } from './wallpaperDB.js';
 
 const TRANSITION_DURATION = 1000;
 
-export async function setWallpaperByName(imageName, { cache = true, immediate = false } = {}) {
-    const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
-    const set = wallpaper_set || 'oregon_mthood';
+class WallpaperManager {
+    constructor() {
+        this.container = this.getOrCreateContainer();
+    }
 
-    let blob = await getWallpaperFromDB(set, imageName);
-
-    if (!blob) {
-        const url = await getFullImageUrl(imageName);
-        const response = await fetch(url);
-        blob = await response.blob();
-        if (cache) {
-            await saveWallpaperToDB(set, imageName, blob);
+    getOrCreateContainer() {
+        const containerId = 'wallpaper-transition-container';
+        let container = document.getElementById(containerId);
+        if (!container) {
+            container = document.createElement('div');
+            container.id = containerId;
+            document.body.appendChild(container);
         }
-    } else {
-        console.log(`[IndexedDB] Loaded blob for ${imageName}`);
+        return container;
     }
 
-    const blobUrl = URL.createObjectURL(blob);
-    const containerId = 'wallpaper-transition-container';
-    let container = document.getElementById(containerId);
-    if (!container) {
-        container = document.createElement('div');
-        container.id = containerId;
-        document.body.appendChild(container);
-    }
-
-    if (immediate) {
-        const finalDiv = document.createElement('div');
-        finalDiv.className = 'wallpaper-slide final';
-        finalDiv.style.backgroundImage = `url("${blobUrl}")`;
-        container.innerHTML = '';
-        container.appendChild(finalDiv);
-        return;
-    }
-
-    const oldSlide = container.querySelector('.wallpaper-slide');
-    const oldBg = oldSlide ? oldSlide.style.backgroundImage : 'none';
-
-    const oldDiv = document.createElement('div');
-    oldDiv.className = 'wallpaper-slide current';
-    oldDiv.style.backgroundImage = oldBg;
-
-    const newDiv = document.createElement('div');
-    newDiv.className = 'wallpaper-slide new';
-    newDiv.style.backgroundImage = `url("${blobUrl}")`;
-
-    container.innerHTML = '';
-    container.appendChild(oldDiv);
-    container.appendChild(newDiv);
-
-    oldDiv.offsetHeight;
-    newDiv.offsetHeight;
-
-    requestAnimationFrame(() => {
-        oldDiv.style.opacity = '0';
-        newDiv.style.opacity = '1';
-    });
-
-    return new Promise(resolve => {
-        setTimeout(() => {
-            const finalDiv = document.createElement('div');
-            finalDiv.className = 'wallpaper-slide final';
-            finalDiv.style.backgroundImage = `url("${blobUrl}")`;
-            container.innerHTML = '';
-            container.appendChild(finalDiv);
-            resolve();
-        }, TRANSITION_DURATION);
-    });
-}
-
-export async function renderCachedWallpaperInstantly(imageName) {
-    const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
-    const set = wallpaper_set || 'oregon_mthood';
-
-    const blob = await getWallpaperFromDB(set, imageName);
-    if (!blob) return;
-
-    const blobUrl = URL.createObjectURL(blob);
-    const containerId = 'wallpaper-transition-container';
-    let container = document.getElementById(containerId);
-    if (!container) {
-        container = document.createElement('div');
-        container.id = containerId;
-        document.body.appendChild(container);
-    }
-
-    const finalDiv = document.createElement('div');
-    finalDiv.className = 'wallpaper-slide final';
-    finalDiv.style.backgroundImage = `url("${blobUrl}")`;
-    container.innerHTML = '';
-    container.appendChild(finalDiv);
-}
-
-export async function preloadAllWallpapers() {
-    const preloadPromises = getWallpaperList().map(async (item) => {
+    async getWallpaperSet() {
         const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
-        const set = wallpaper_set || 'oregon_mthood';
+        return wallpaper_set || 'oregon_mthood';
+    }
 
-        const exists = await getWallpaperFromDB(set, item.image);
-        if (exists) return;
+    async getFullImageUrl(imageName) {
+        const set = await this.getWallpaperSet();
+        return `https://catch-up-f6fa1.web.app/${set}/${imageName}`;
+    }
 
-        const url = await getFullImageUrl(item.image);
-        const response = await fetch(url);
-        const blob = await response.blob();
-        await saveWallpaperToDB(set, item.image, blob);
-    });
+    async fetchAndCacheWallpaper(imageName, cache = true) {
+        const set = await this.getWallpaperSet();
+        let blob = await getWallpaperFromDB(set, imageName);
 
-    await Promise.all(preloadPromises);
-}
+        if (!blob) {
+            const url = await this.getFullImageUrl(imageName);
+            console.time(`[FETCH] ${imageName}`);
+            const response = await fetch(url);
+            blob = await response.blob();
+            console.timeEnd(`[FETCH] ${imageName}`);
 
-export function getFullImageUrl(imageName) {
-    return new Promise((resolve) => {
-        chrome.storage.local.get('wallpaper_set').then(({ wallpaper_set }) => {
-            const set = wallpaper_set || 'oregon_mthood';
-            resolve(`https://catch-up-f6fa1.web.app/${set}/${imageName}`);
+            if (cache) {
+                await saveWallpaperToDB(set, imageName, blob);
+            }
+        } else {
+            console.log(`[IndexedDB] Loaded blob for ${imageName}`);
+        }
+
+        return blob;
+    }
+
+    createWallpaperElement(blobUrl, className) {
+        const div = document.createElement('div');
+        div.className = `wallpaper-slide ${className}`;
+        div.style.backgroundImage = `url("${blobUrl}")`;
+        return div;
+    }
+
+    async setWallpaper(imageName, { cache = true, immediate = false } = {}) {
+        const blob = await this.fetchAndCacheWallpaper(imageName, cache);
+        const blobUrl = URL.createObjectURL(blob);
+
+        if (immediate) {
+            this.container.innerHTML = '';
+            this.container.appendChild(this.createWallpaperElement(blobUrl, 'final'));
+            return;
+        }
+
+        // Get the current wallpaper if it exists
+        const oldSlide = this.container.querySelector('.wallpaper-slide');
+        const oldBg = oldSlide ? oldSlide.style.backgroundImage : 'none';
+
+        // Create the old wallpaper element
+        const oldDiv = document.createElement('div');
+        oldDiv.className = 'wallpaper-slide current';
+        oldDiv.style.backgroundImage = oldBg;
+
+        // Create the new wallpaper element
+        const newDiv = document.createElement('div');
+        newDiv.className = 'wallpaper-slide new';
+        newDiv.style.backgroundImage = `url("${blobUrl}")`;
+
+        // Add both elements to the container
+        this.container.appendChild(oldDiv);
+        this.container.appendChild(newDiv);
+
+        // Force reflow to ensure transitions work
+        oldDiv.offsetHeight;
+        newDiv.offsetHeight;
+
+        // Start the transition
+        requestAnimationFrame(() => {
+            oldDiv.style.opacity = '0';
+            newDiv.style.opacity = '1';
         });
-    });
+
+        // Return a Promise that resolves after the transition
+        return new Promise(resolve => {
+            setTimeout(() => {
+                const finalDiv = document.createElement('div');
+                finalDiv.className = 'wallpaper-slide final';
+                finalDiv.style.backgroundImage = `url("${blobUrl}")`;
+                this.container.innerHTML = '';
+                this.container.appendChild(finalDiv);
+                resolve();
+            }, TRANSITION_DURATION);
+        });
+    }
+
+    async renderCachedWallpaperInstantly(imageName) {
+        const set = await this.getWallpaperSet();
+        const blob = await getWallpaperFromDB(set, imageName);
+        if (!blob) return;
+
+        const blobUrl = URL.createObjectURL(blob);
+        this.container.innerHTML = '';
+        this.container.appendChild(this.createWallpaperElement(blobUrl, 'final'));
+    }
+
+    async preloadAllWallpapers() {
+        const set = await this.getWallpaperSet();
+        const preloadPromises = getWallpaperList().map(async (item) => {
+            const exists = await getWallpaperFromDB(set, item.image);
+            if (exists) return;
+
+            const url = await this.getFullImageUrl(item.image);
+            const response = await fetch(url);
+            const blob = await response.blob();
+            await saveWallpaperToDB(set, item.image, blob);
+        });
+
+        await Promise.all(preloadPromises);
+    }
 }
+
+// Create a singleton instance
+const wallpaperManager = new WallpaperManager();
+
+// Export the instance methods
+export const setWallpaperByName = (imageName, options) => wallpaperManager.setWallpaper(imageName, options);
+export const renderCachedWallpaperInstantly = (imageName) => wallpaperManager.renderCachedWallpaperInstantly(imageName);
+export const preloadAllWallpapers = () => wallpaperManager.preloadAllWallpapers();
