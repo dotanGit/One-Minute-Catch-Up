@@ -22,10 +22,18 @@ class WallpaperController {
     }
 
     setupEventListeners() {
-        // Change wallpaper button
-        document.getElementById('changeWallpaper').addEventListener('click', () => {
+        const changeWallpaperBtn = document.getElementById('changeWallpaper');
+        if (!changeWallpaperBtn) {
+            console.error('Change wallpaper button not found');
+            return;
+        }
+        
+        changeWallpaperBtn.addEventListener('click', () => {
             const sidebar = document.getElementById('wallpaperSidebar');
-            const changeWallpaperBtn = document.getElementById('changeWallpaper');
+            if (!sidebar) {
+                console.error('Wallpaper sidebar not found');
+                return;
+            }
             sidebar.classList.add('open');
             changeWallpaperBtn.style.display = 'none';
         });
@@ -58,20 +66,36 @@ class WallpaperController {
     }
 
     async handleWallpaperSetChange(item) {
-        const selectedSet = item.getAttribute('data-set');
-        const changeWallpaperBtn = document.getElementById('changeWallpaper');
-    
-        await clearWallpapersDB();
-        await chrome.storage.local.set({
-            wallpaper_set: selectedSet,
-            wallpaper_config: null,
-        });
-        
-        await this.initWallpaperSystem();
-        initTimelineScroll();
-    
-        document.getElementById('wallpaperSidebar').classList.remove('open');
-        changeWallpaperBtn.style.display = 'block';
+        try {
+            const selectedSet = item.getAttribute('data-set');
+            if (!selectedSet) {
+                console.error('No wallpaper set selected');
+                return;
+            }
+
+            const changeWallpaperBtn = document.getElementById('changeWallpaper');
+            if (!changeWallpaperBtn) {
+                console.error('Change wallpaper button not found');
+                return;
+            }
+
+            await clearWallpapersDB();
+            await chrome.storage.local.set({
+                wallpaper_set: selectedSet,
+                wallpaper_config: null,
+            });
+            
+            await this.initWallpaperSystem();
+            initTimelineScroll();
+
+            const sidebar = document.getElementById('wallpaperSidebar');
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+            changeWallpaperBtn.style.display = 'block';
+        } catch (error) {
+            console.error('Failed to change wallpaper set:', error);
+        }
     }
 
     async initWallpaperSystem() {
@@ -101,7 +125,6 @@ class WallpaperController {
         const imageName = getImageNameAtIndex(index);
         if (imageName) {
             await setWallpaperByName(imageName);
-            console.log(`🕒 Updated to current time-based wallpaper: ${imageName}`);
         }
     }
 
@@ -120,7 +143,6 @@ class WallpaperController {
         const imageName = getImageNameAtIndex(index);
         if (imageName) {
             await setWallpaperByName(imageName);
-            console.log(`🔁 Switched wallpaper temporarily (${direction}): ${imageName}`);
         }
     }
 
@@ -133,7 +155,6 @@ class WallpaperController {
         const imageName = getImageNameAtIndex(index);
         if (imageName) {
             await setWallpaperByName(imageName);
-            console.log(`✅ Reset to time-based wallpaper: ${imageName}`);
         }
     }
 

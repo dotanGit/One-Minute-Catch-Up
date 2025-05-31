@@ -25,7 +25,6 @@ class WallpaperDataManager {
 
             if (cachedData) {
                 this.wallpaperList = this.processWallpaperData(cachedData);
-                console.log('🗂️ Loaded wallpaper config from cache');
                 return;
             }
 
@@ -36,19 +35,44 @@ class WallpaperDataManager {
             await chrome.storage.local.set({
                 [CACHE_KEY]: data
             });
-
-            console.log('🌐 Fetched and cached wallpaper config from network');
         } catch (err) {
-            console.error('❌ Failed to load wallpaper config:', err);
+            // Add fallback to default set
+            this.wallpaperSet = 'oregon_mthood';
+            this.CONFIG_URL = `https://catch-up-f6fa1.web.app/${this.wallpaperSet}/wallpaper-config.json`;
+            try {
+                const response = await fetch(this.CONFIG_URL);
+                const data = await response.json();
+                this.wallpaperList = this.processWallpaperData(data);
+            } catch (retryErr) {
+                this.wallpaperList = []; // Prevent errors with empty list
+            }
         }
     }
 
     processWallpaperData(data) {
+        if (!Array.isArray(data)) {
+            return [];
+        }
         return data.map((entry, index) => ({
             ...entry,
             minutes: this.timeToMinutes(entry.time),
             index
         })).sort((a, b) => a.minutes - b.minutes);
+    }
+
+    findIndexForCurrentTime() {
+        const now = new Date();
+        const minutesNow = now.getHours() * 60 + now.getMinutes();
+
+        let index = -1;
+        for (let i = 0; i < this.wallpaperList.length; i++) {
+            if (this.wallpaperList[i].minutes <= minutesNow) {
+                index = i;
+            } else {
+                break;
+            }
+        }
+        return index === -1 ? this.wallpaperList.length - 1 : index;
     }
 
     getWallpaperList() {
@@ -77,27 +101,6 @@ class WallpaperDataManager {
 
     setMode(mode) {
         this.currentMode = mode;
-    }
-
-    findIndexForCurrentTime() {
-        console.log("🕒 Current time:", new Date().toLocaleTimeString());
-        console.log("⏱ Wallpaper schedule:", this.wallpaperList.map(w => `${w.minutes} → ${w.image}`));
-
-        const now = new Date();
-        const minutesNow = now.getHours() * 60 + now.getMinutes();
-
-        let index = -1;
-        for (let i = 0; i < this.wallpaperList.length; i++) {
-            if (this.wallpaperList[i].minutes <= minutesNow) {
-                index = i;
-            } else {
-                break;
-            }
-        }
-
-        console.log("🎯 Selected index:", index, "→", this.wallpaperList[index]?.image);
-
-        return index === -1 ? this.wallpaperList.length - 1 : index;
     }
 
     getImageNameAtIndex(index) {

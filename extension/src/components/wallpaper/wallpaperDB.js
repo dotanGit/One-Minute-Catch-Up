@@ -12,7 +12,14 @@ class WallpaperDB {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
             
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                // Try to recover by closing and reopening
+                if (this.db) {
+                    this.db.close();
+                    this.db = null;
+                }
+                reject(request.error);
+            };
             
             request.onsuccess = () => {
                 this.db = request.result;
@@ -37,7 +44,6 @@ class WallpaperDB {
 
     async getWallpaper(set, name) {
         const key = `${set}/${name}`;
-        console.log(`[🗃️ IDB] Get key: ${key}`);
 
         const db = await this.ensureDB();
         return new Promise((resolve, reject) => {
@@ -47,10 +53,8 @@ class WallpaperDB {
             
             req.onsuccess = () => {
                 if (req.result?.data) {
-                    console.log(`[✅ IDB] Found blob for ${key}`);
                     resolve(req.result.data);
                 } else {
-                    console.warn(`[❌ IDB] No blob found for ${key}`);
                     resolve(null);
                 }
             };
@@ -60,7 +64,6 @@ class WallpaperDB {
 
     async saveWallpaper(set, name, blob) {
         const key = `${set}/${name}`;
-        console.log(`[💾 IDB] Saving key: ${key}, blob size: ${blob.size}`);
 
         const db = await this.ensureDB();
         return new Promise((resolve, reject) => {
@@ -69,25 +72,21 @@ class WallpaperDB {
             store.put({ name: key, data: blob });
             
             tx.oncomplete = () => {
-                console.log(`[✅ IDB] Saved blob for ${key}`);
                 resolve();
             };
             tx.onerror = () => {
-                console.error(`[❌ IDB] Failed to save blob for ${key}`, tx.error);
                 reject(tx.error);
             };
         });
     }
 
     async clearAll() {
-        console.log(`[🧹 IDB] Clearing all stored wallpapers...`);
         const db = await this.ensureDB();
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE_NAME, 'readwrite');
             tx.objectStore(STORE_NAME).clear();
             
             tx.oncomplete = () => {
-                console.log(`[✅ IDB] All wallpapers cleared`);
                 resolve();
             };
             tx.onerror = () => reject(tx.error);
