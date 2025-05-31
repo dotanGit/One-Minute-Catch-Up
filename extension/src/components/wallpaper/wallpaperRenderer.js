@@ -2,7 +2,6 @@ import { getWallpaperList } from './wallpaperData.js';
 import { saveWallpaperToDB, getWallpaperFromDB } from './wallpaperDB.js';
 
 const TRANSITION_DURATION = 1000;
-let hasPreloaded = false;
 
 export async function setWallpaperByName(imageName, { cache = true, immediate = false } = {}) {
     const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
@@ -97,11 +96,8 @@ export async function renderCachedWallpaperInstantly(imageName) {
     container.appendChild(finalDiv);
 }
 
-export function preloadAllWallpapers() {
-    if (hasPreloaded) return;
-    hasPreloaded = true;
-
-    getWallpaperList().forEach(async (item) => {
+export async function preloadAllWallpapers() {
+    const preloadPromises = getWallpaperList().map(async (item) => {
         const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
         const set = wallpaper_set || 'oregon_mthood';
 
@@ -113,6 +109,8 @@ export function preloadAllWallpapers() {
         const blob = await response.blob();
         await saveWallpaperToDB(set, item.image, blob);
     });
+
+    await Promise.all(preloadPromises);
 }
 
 export function getFullImageUrl(imageName) {
