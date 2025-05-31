@@ -117,3 +117,8 @@ console.log("⏱ Wallpaper schedule:", wallpaperList.map(w => `${w.minutes} → 
 export function getImageNameAtIndex(index) {
     return wallpaperList[index]?.image || null;
 }
+
+
+export function getWallpaperSet() {
+    return wallpaperSet;
+}

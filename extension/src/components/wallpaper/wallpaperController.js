@@ -13,32 +13,27 @@ import {
 
 import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers } from './wallpaperRenderer.js';
 import { initTimelineScroll } from '../timeline/timelineScroll.js';
+import { clearWallpapersDB, saveWallpaperToDB, getWallpaperFromDB } from './wallpaperDB.js';
+
 
 let baseWallpaperIndex = 0;
 
 
 export async function initWallpaperSystem() {
-
-    // Show instantly from cache
-    await renderCachedWallpaperInstantly();
-
-    await loadWallpaperData();
-
+    await loadWallpaperData();  // Load wallpaper config
     const index = findIndexForCurrentTime();
-    setBaseWallpaperIndex(index); // ✅ add this
+    setBaseWallpaperIndex(index);
     setTimeBasedIndex(index);
     setCurrentIndex(index);
     setMode('time-based');
 
     const imageName = getImageNameAtIndex(index);
     if (imageName) {
-        const result = await chrome.storage.local.get('current_wallpaper');
-        const cached = result.current_wallpaper?.name;
-        const useImmediate = cached === imageName;
-
-        await setWallpaperByName(imageName, { immediate: useImmediate });
+        await renderCachedWallpaperInstantly(imageName); // 👈 show correct image
+        await setWallpaperByName(imageName, { immediate: true }); // update with animation
     }
-    preloadAllWallpapers();
+
+    preloadAllWallpapers();  // Async preload in background
 }
 
 
@@ -123,11 +118,11 @@ document.querySelectorAll('.wallpaper-set-item').forEach(item => {
         const changeWallpaperBtn = document.getElementById('changeWallpaper');
     
         // Clear relevant storage and memory
-        await chrome.storage.local.remove(['current_wallpaper']);
+        await clearWallpapersDB();
+
         await chrome.storage.local.set({
             wallpaper_set: selectedSet,
             wallpaper_config: null,
-            current_wallpaper: null
         });
         
         await initWallpaperSystem();
@@ -146,8 +141,7 @@ chrome.runtime.onMessage.addListener((message) => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    initWallpaperSystem();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initWallpaperSystem();
 });
-
 

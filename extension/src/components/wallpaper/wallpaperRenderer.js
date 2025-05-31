@@ -1,57 +1,27 @@
-import { getWallpaperList } from './wallpaperData.js'; 
+import { getWallpaperList } from './wallpaperData.js';
+import { saveWallpaperToDB, getWallpaperFromDB } from './wallpaperDB.js';
 
-let GITHUB_RAW_URL = 'https://catch-up-f6fa1.web.app/oregon_mthood';
-const CURRENT_IMAGE_KEY = 'current_wallpaper';
 const TRANSITION_DURATION = 1000;
 let hasPreloaded = false;
 
-function blobToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-}
-
-async function getImageBase64(imageName, cache = true) {
-    try {
-        const result = await chrome.storage.local.get(CURRENT_IMAGE_KEY);
-        if (result[CURRENT_IMAGE_KEY]?.name === imageName) {
-            console.log(`[CACHE] Using cached image: ${imageName}`);
-            return result[CURRENT_IMAGE_KEY].data;
-        }
-
-        const url = await getFullImageUrl(imageName);
-        console.time(`[FETCH] ${imageName}`);
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const base64 = await blobToBase64(blob);
-        console.timeEnd(`[FETCH] ${imageName}`);
-
-        if (cache) {
-            await chrome.storage.local.set({
-                [CURRENT_IMAGE_KEY]: {
-                    name: imageName,
-                    data: base64
-                }
-            });
-        }
-
-        return base64;
-    } catch (err) {
-        console.error(`[ERROR] Failed to fetch image: ${imageName}`, err);
-        const response = await fetch(`${GITHUB_RAW_URL}/${imageName}`);
-        const blob = await response.blob();
-        return blobToBase64(blob);
-    }
-}
-
-
-
 export async function setWallpaperByName(imageName, { cache = true, immediate = false } = {}) {
-    const base64 = await getImageBase64(imageName, cache);
+    const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
+    const set = wallpaper_set || 'oregon_mthood';
 
+    let blob = await getWallpaperFromDB(set, imageName);
+
+    if (!blob) {
+        const url = await getFullImageUrl(imageName);
+        const response = await fetch(url);
+        blob = await response.blob();
+        if (cache) {
+            await saveWallpaperToDB(set, imageName, blob);
+        }
+    } else {
+        console.log(`[IndexedDB] Loaded blob for ${imageName}`);
+    }
+
+    const blobUrl = URL.createObjectURL(blob);
     const containerId = 'wallpaper-transition-container';
     let container = document.getElementById(containerId);
     if (!container) {
@@ -63,13 +33,12 @@ export async function setWallpaperByName(imageName, { cache = true, immediate = 
     if (immediate) {
         const finalDiv = document.createElement('div');
         finalDiv.className = 'wallpaper-slide final';
-        finalDiv.style.backgroundImage = `url("${base64}")`;
+        finalDiv.style.backgroundImage = `url("${blobUrl}")`;
         container.innerHTML = '';
         container.appendChild(finalDiv);
         return;
     }
 
-    // Normal transition continues
     const oldSlide = container.querySelector('.wallpaper-slide');
     const oldBg = oldSlide ? oldSlide.style.backgroundImage : 'none';
 
@@ -79,7 +48,7 @@ export async function setWallpaperByName(imageName, { cache = true, immediate = 
 
     const newDiv = document.createElement('div');
     newDiv.className = 'wallpaper-slide new';
-    newDiv.style.backgroundImage = `url("${base64}")`;
+    newDiv.style.backgroundImage = `url("${blobUrl}")`;
 
     container.innerHTML = '';
     container.appendChild(oldDiv);
@@ -97,7 +66,7 @@ export async function setWallpaperByName(imageName, { cache = true, immediate = 
         setTimeout(() => {
             const finalDiv = document.createElement('div');
             finalDiv.className = 'wallpaper-slide final';
-            finalDiv.style.backgroundImage = `url("${base64}")`;
+            finalDiv.style.backgroundImage = `url("${blobUrl}")`;
             container.innerHTML = '';
             container.appendChild(finalDiv);
             resolve();
@@ -105,13 +74,14 @@ export async function setWallpaperByName(imageName, { cache = true, immediate = 
     });
 }
 
+export async function renderCachedWallpaperInstantly(imageName) {
+    const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
+    const set = wallpaper_set || 'oregon_mthood';
 
+    const blob = await getWallpaperFromDB(set, imageName);
+    if (!blob) return;
 
-export async function renderCachedWallpaperInstantly() {
-    const result = await chrome.storage.local.get('current_wallpaper');
-    const cached = result.current_wallpaper;
-    if (!cached || !cached.data) return;
-
+    const blobUrl = URL.createObjectURL(blob);
     const containerId = 'wallpaper-transition-container';
     let container = document.getElementById(containerId);
     if (!container) {
@@ -122,36 +92,34 @@ export async function renderCachedWallpaperInstantly() {
 
     const finalDiv = document.createElement('div');
     finalDiv.className = 'wallpaper-slide final';
-    finalDiv.style.backgroundImage = `url("${cached.data}")`;
+    finalDiv.style.backgroundImage = `url("${blobUrl}")`;
     container.innerHTML = '';
     container.appendChild(finalDiv);
 }
 
-
-
 export function preloadAllWallpapers() {
     if (hasPreloaded) return;
     hasPreloaded = true;
-  
-    const list = getWallpaperList();
-    list.forEach(async (item) => {
-      const url = await getFullImageUrl(item.image);
-      fetch(url, { mode: 'no-cors' }).catch(() => {});
-    });    
-  }
 
-
-  function getFullImageUrl(imageName) {
-    return new Promise((resolve) => {
-      chrome.storage.local.get('wallpaper_set').then(({ wallpaper_set }) => {
+    getWallpaperList().forEach(async (item) => {
+        const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
         const set = wallpaper_set || 'oregon_mthood';
-        resolve(`https://catch-up-f6fa1.web.app/${set}/${imageName}`);
-      });
+
+        const exists = await getWallpaperFromDB(set, item.image);
+        if (exists) return;
+
+        const url = await getFullImageUrl(item.image);
+        const response = await fetch(url);
+        const blob = await response.blob();
+        await saveWallpaperToDB(set, item.image, blob);
     });
-  }
-  
-  
-  
+}
 
-
-
+export function getFullImageUrl(imageName) {
+    return new Promise((resolve) => {
+        chrome.storage.local.get('wallpaper_set').then(({ wallpaper_set }) => {
+            const set = wallpaper_set || 'oregon_mthood';
+            resolve(`https://catch-up-f6fa1.web.app/${set}/${imageName}`);
+        });
+    });
+}
