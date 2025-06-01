@@ -11,7 +11,7 @@ import {
     getImageNameAtIndex
 } from './wallpaperData.js';
 
-import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers } from './wallpaperRenderer.js';
+import { setWallpaperByName, renderCachedWallpaperInstantly, preloadAllWallpapers, revokeAllBlobUrls } from './wallpaperRenderer.js';
 import { initTimelineScroll } from '../timeline/timelineScroll.js';
 import { clearWallpapersDB } from './wallpaperDB.js';
 
@@ -80,6 +80,8 @@ class WallpaperController {
             }
 
             await clearWallpapersDB();
+            revokeAllBlobUrls();  // Clear cache only when changing sets
+
             await chrome.storage.local.set({
                 wallpaper_set: selectedSet,
                 wallpaper_config: null,

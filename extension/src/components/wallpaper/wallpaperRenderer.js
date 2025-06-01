@@ -6,6 +6,9 @@ const TRANSITION_DURATION = 1000;
 class WallpaperManager {
     constructor() {
         this.container = this.getOrCreateContainer();
+        this.currentBlobUrl = null;  // Track current blob URL
+        this.blobUrlCache = new Map();  // Cache for blob URLs
+        console.log('[CACHE] Initialized blob URL cache');
     }
 
     getOrCreateContainer() {
@@ -57,11 +60,47 @@ class WallpaperManager {
         return div;
     }
 
-    async setWallpaper(imageName, { cache = true, immediate = false } = {}) {
-        const blob = await this.fetchAndCacheWallpaper(imageName, cache);
+    revokeCurrentBlobUrl() {
+        if (this.currentBlobUrl) {
+            URL.revokeObjectURL(this.currentBlobUrl);
+            this.currentBlobUrl = null;
+        }
+    }
+
+    async getBlobUrl(imageName) {
+        // Check cache first
+        if (this.blobUrlCache.has(imageName)) {
+            console.log(`[CACHE] Hit: Using cached URL for ${imageName}`);
+            return this.blobUrlCache.get(imageName);
+        }
+
+        // If not in cache, create new URL
+        console.log(`[CACHE] Miss: Creating new URL for ${imageName}`);
+        const blob = await this.fetchAndCacheWallpaper(imageName);
         const blobUrl = URL.createObjectURL(blob);
+        this.blobUrlCache.set(imageName, blobUrl);
+        console.log(`[CACHE] Added: New URL cached for ${imageName}`);
+        return blobUrl;
+    }
+
+    revokeAllBlobUrls() {
+        console.log(`[CACHE] Clearing ${this.blobUrlCache.size} cached URLs`);
+        this.blobUrlCache.forEach((url, imageName) => {
+            console.log(`[CACHE] Revoking URL for ${imageName}`);
+            URL.revokeObjectURL(url);
+        });
+        this.blobUrlCache.clear();
+        this.revokeCurrentBlobUrl();
+        console.log('[CACHE] All URLs cleared');
+    }
+
+    async setWallpaper(imageName, { cache = true, immediate = false } = {}) {
+        console.log(`[WALLPAPER] Setting wallpaper: ${imageName}`);
+        const blobUrl = await this.getBlobUrl(imageName);
+        this.currentBlobUrl = blobUrl;
 
         if (immediate) {
+            console.log(`[WALLPAPER] Immediate set for ${imageName}`);
             this.container.innerHTML = '';
             this.container.appendChild(this.createWallpaperElement(blobUrl, 'final'));
             return;
@@ -103,6 +142,7 @@ class WallpaperManager {
                 finalDiv.style.backgroundImage = `url("${blobUrl}")`;
                 this.container.innerHTML = '';
                 this.container.appendChild(finalDiv);
+                console.log(`[WALLPAPER] Transition complete for ${imageName}`);
                 resolve();
             }, TRANSITION_DURATION);
         });
@@ -141,3 +181,4 @@ const wallpaperManager = new WallpaperManager();
 export const setWallpaperByName = (imageName, options) => wallpaperManager.setWallpaper(imageName, options);
 export const renderCachedWallpaperInstantly = (imageName) => wallpaperManager.renderCachedWallpaperInstantly(imageName);
 export const preloadAllWallpapers = () => wallpaperManager.preloadAllWallpapers();
+export const revokeAllBlobUrls = () => wallpaperManager.revokeAllBlobUrls();
