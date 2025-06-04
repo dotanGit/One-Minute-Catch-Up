@@ -130,4 +130,40 @@ export function initDeleteMarkedButton() {
 // Call this function after initTimeline is called
 export function onTimelineInitialized() {
     initDeleteMarkedButton();
+    initTimelineToggle();
+}
+
+// Add this new function to handle timeline visibility
+export function initTimelineToggle() {
+    const toggleButton = document.getElementById('toggleTimeline');
+    const timelineSection = document.querySelector('.timeline-section');
+    
+    if (!toggleButton || !timelineSection) {
+        console.error('[TimelineToggle] Required elements not found');
+        return;
+    }
+
+    // Get initial state from storage
+    chrome.storage.local.get(['timelineVisible'], (result) => {
+        const isVisible = result.timelineVisible !== false; // Default to true if not set
+        timelineSection.style.display = isVisible ? 'flex' : 'none';
+    });
+
+    // Add click handler
+    toggleButton.addEventListener('click', () => {
+        const isCurrentlyVisible = timelineSection.style.display !== 'none';
+        const newVisibility = !isCurrentlyVisible;
+        
+        // Update UI
+        timelineSection.style.display = newVisibility ? 'flex' : 'none';
+        
+        // Save state to storage
+        chrome.storage.local.set({ timelineVisible: newVisibility });
+        
+        // If showing timeline, reinitialize it
+        if (newVisibility) {
+            initTimeline();
+            initTimelineFilterUI(() => initTimeline());
+        }
+    });
 }
