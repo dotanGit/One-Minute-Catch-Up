@@ -27,9 +27,7 @@ export class SearchSuggestionManager {
         this.input.addEventListener('focus', async () => {
             this.keepFocused();
             const shortcutsList = document.querySelector('.shortcuts-list');
-            const engineOptions = document.querySelector('.engine-options');
             if (shortcutsList) shortcutsList.classList.add('hidden');
-            if (engineOptions) engineOptions.hidden = true;
             
             if (this.showTimeout) {
                 clearTimeout(this.showTimeout);

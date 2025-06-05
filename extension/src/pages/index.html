@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="../styles/css/components/top-content/top-content.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/greeting/greeting.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/search/search.css">
-    <link rel="stylesheet" href="../styles/css/components/top-content/search/search-engine.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/search/search-shortcuts.css">
     <link rel="stylesheet" href="../styles/css/components/top-content/search/search-suggestions.css">
 
@@ -68,45 +67,7 @@
 
         <!-- Search Section -->
         <div class="search-section" data-theme="light">
-            <!-- 1. Search Engine Selector -->
-            <div class="search-engine-selector">
-                <button class="engine-button" aria-label="Select search engine">
-                    <img id="current-engine-icon" src="" alt="Current search engine" />
-                </button>
-                <!-- Engine Options Dropdown -->
-                <div class="engine-options" hidden>
-                    <!-- Engine Option #1-->
-                    <div class="engine-option" data-engine="">
-                        <img src="" alt="" />
-                        <span></span>
-                        <button class="edit-engine" title="Edit engine">
-                            <span class="material-icons">more_vert</span>
-                        </button>
-                    </div>
-                    <!-- Engine Option #2-->
-                    <div class="engine-option" data-engine="">
-                        <img src="" alt="" />
-                        <span></span>
-                        <div class="engine-actions">
-                            <button class="edit-engine" title="Edit engine">
-                                <span class="material-icons">more_vert</span>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Engine Option #3-->
-                    <div class="engine-option" data-engine="">
-                        <img src="" alt="" />
-                        <span></span>
-                        <div class="engine-actions">
-                            <button class="edit-engine" title="Edit engine">
-                                <span class="material-icons">more_vert</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. Search Input Container -->
+            <!-- Only the search input and button remain -->
             <div class="search-input-container">
                 <input 
                     type="text" 
@@ -126,14 +87,14 @@
                 </div>
             </div>
 
-            <!-- 3. Search Button -->
+            <!-- Search Button -->
             <button class="search-button" aria-label="Search">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
             </button>
 
-            <!-- 4. Shortcuts Section -->
+            <!-- Shortcuts Section (if you want to keep it) -->
             <div class="shortcuts-section">
                 <button class="shortcuts-button" aria-label="Show shortcuts">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960">
@@ -288,44 +249,6 @@
             </button>
         </li>
     </template>
-
-    <!-- Engine Modal -->
-    <div id="selectEngineModal" class="main-modal" style="display: none;" data-theme="dark">
-        <div class="main-modal-content">
-            <h3>Select Search Engine</h3>
-            <!-- Custom Data For The Specific Modal , Not Generic CSS -->
-            <div class="engine-grid">
-                <div class="engine-grid-item" data-engine="google">
-                    <img src="../assets/icons/search-engines/google.png" alt="Google" />
-                    <span>Google</span>
-                </div>
-                <div class="engine-grid-item" data-engine="chatgpt">
-                    <img src="../assets/icons/search-engines/chatgpt.png" alt="ChatGPT" />
-                    <span>ChatGPT</span>
-                </div>
-                <div class="engine-grid-item" data-engine="reddit">
-                    <img src="../assets/icons/search-engines/reddit.png" alt="Reddit" />
-                    <span>Reddit</span>
-                </div>
-                <div class="engine-grid-item" data-engine="youtube">
-                    <img src="../assets/icons/search-engines/youtube.png" alt="YouTube" />
-                    <span>YouTube</span>
-                </div>
-                <div class="engine-grid-item" data-engine="yahoo">
-                    <img src="../assets/icons/search-engines/stocks.png" alt="Yahoo Finance" />
-                    <span>Yahoo Finance</span>
-                </div>
-                <div class="engine-grid-item" data-engine="quora">
-                    <img src="../assets/icons/search-engines/quora.png" alt="Quora" />
-                    <span>Quora</span>
-                </div>
-            </div>
-            <!-- End of Custom Data For The Specific Modal-->
-            <div class="main-modal-buttons">
-                <button id="cancelEngine" class="btn-secondary">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Add Shortcut Modal -->
     <div id="addShortcutModal" class="main-modal" style="display: none;" data-theme="dark">
