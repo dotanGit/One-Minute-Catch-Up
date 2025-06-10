@@ -10,7 +10,8 @@
     "storage",
     "downloads",
     "downloads.open",
-    "tabs"
+    "tabs",
+    "search"
   ],
   "host_permissions": [
     "https://www.googleapis.com/*"

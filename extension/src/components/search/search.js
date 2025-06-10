@@ -42,9 +42,11 @@ class SearchHandler {
 
         saveSearchToHistory(query);
 
-        // Always use Google search
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-        window.location.href = searchUrl;
+        // Use Chrome's Search API which respects user's default search engine
+        chrome.search.query({
+            text: query,
+            disposition: 'NEW_TAB'
+        });
     }
 }
 
