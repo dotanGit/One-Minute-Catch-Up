@@ -13,12 +13,19 @@ export const timelineCache = {
 
   async set(dateKey, data) {
     try {
+      
       const allKeys = await chrome.storage.local.get(null);
       const cacheKeys = Object.keys(allKeys).filter(key => key.startsWith('timeline_'));
+      
+      // Check if this key already exists
+      const keyExists = cacheKeys.includes(dateKey);
 
-      if (cacheKeys.length >= this.maxEntries) {
+      // Only clean up if we're adding a NEW key AND we're at the limit
+      if (!keyExists && cacheKeys.length >= this.maxEntries) {
         const oldestKeys = cacheKeys.sort().slice(0, cacheKeys.length - this.maxEntries + 1);
         await chrome.storage.local.remove(oldestKeys);
+      } else {
+        console.log('[CACHE] ✅ No cleanup needed');
       }
 
       const payload = data?.data && data?.lastFetchedAt
@@ -31,6 +38,7 @@ export const timelineCache = {
           };
 
       await chrome.storage.local.set({ [dateKey]: payload });
+      console.log('[CACHE] ✅ Cache set successfully for:', dateKey, { wasNew: !keyExists });
     } catch (error) {
       console.error('[CACHE] ❌ Write error:', error);
     }

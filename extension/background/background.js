@@ -9,12 +9,12 @@ import { timelineCache } from '../src/components/timeline/cache.js';
 
 // === CONFIG ===
 const SIXTY_MIN = 60 * 60 * 1000; // 60 minutes
-const DEBOUNCE_DELAY = 2 * 60 * 1000; // 2 minutes
-
+const DEBOUNCE_DELAY = 15 * 1000; // 15 seconds
 // === STATE ===
 let allowBackgroundSync = false;
 let deltaTimer = null;
 let listenersInitialized = false;
+let wallpaperUpdateInProgress = false;
 
 // === AUTH ===
 async function handleGoogleLogin() {
@@ -138,9 +138,12 @@ export async function runDeltaFetchForToday() {
   console.log('[BG] 🔄 runDeltaFetchForToday started');
   const today = new Date();
   const dateKey = `timeline_${getDateKey(today)}`;
+  console.log('[BG] 🔑 Using cache key:', dateKey);
   const now = Date.now();
 
   const cached = await timelineCache.get(dateKey);
+  console.log('[BG]  Existing cache for', dateKey, ':', !!cached);
+  
   const lastFetchedAt = cached?.lastFetchedAt || 0;
 
   const delta = await getIncrementalDataSince(lastFetchedAt);
@@ -164,7 +167,7 @@ export async function runDeltaFetchForToday() {
   };
 
   await timelineCache.set(dateKey, payload);
-  console.log('[BG] ✅ Delta fetch finished & cache updated');
+  console.log('[BG] ✅ Delta fetch finished & cache updated for key:', dateKey);
 }
 
 
@@ -231,6 +234,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       allowBackgroundSync = true;
       return;
     case 'startFetchListeners':
+      console.log('[BG] 📡 startFetchListeners message received');
       if (!listenersInitialized) {
         chrome.history.onVisited.addListener(() => {
           console.log('[BG] 🔍 onVisited event triggered');
@@ -248,21 +252,32 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 // === Periodic Tasks ===
-setInterval(() => {
-  if (allowBackgroundSync) {
-    console.log('[BG] ⏳ Periodic sync triggered');
-    chrome.storage.local.get('isLoggedIn', ({ isLoggedIn }) => {
-      if (isLoggedIn) syncGmailDriveCalendar();
-    });
+// More reliable alarm-based approach
+chrome.alarms.create('periodicSync', { periodInMinutes: 60 });
+chrome.alarms.create('wallpaperUpdate', { periodInMinutes: 30 });
+
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  try {
+    if (alarm.name === 'periodicSync') {
+      if (allowBackgroundSync) {
+        console.log('[BG] ⏳ Periodic sync triggered');
+        const { isLoggedIn } = await chrome.storage.local.get('isLoggedIn');
+        if (isLoggedIn) {
+          await syncGmailDriveCalendar();
+        }
+      }
+    } else if (alarm.name === 'wallpaperUpdate') {
+      if (!wallpaperUpdateInProgress) {
+        wallpaperUpdateInProgress = true;
+        console.log('[BG] 🖼️ Starting wallpaper sync check...');
+        chrome.runtime.sendMessage({ action: 'updateWallpaper' });
+        
+        setTimeout(() => {
+          wallpaperUpdateInProgress = false;
+        }, 5000);
+      }
+    }
+  } catch (error) {
+    console.error('[BG] ❌ Alarm handler failed:', error);
   }
-}, SIXTY_MIN);
-
-
-
-// === Wallpaper Updates ===
-setInterval(async () => {
-    console.log('[BG] 🖼️ Starting wallpaper sync check...');
-    // Broadcast the update message to all extension contexts
-    chrome.runtime.sendMessage({ action: 'updateWallpaper' });
-    console.log('[BG] ✅ Wallpaper sync cycle completed');
-}, 1800000); // 30 minutes
+});

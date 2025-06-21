@@ -113,9 +113,9 @@ export async function initTimeline() {
     const allFiltered = [];
 
     for (const date of days) {
-      const dateKey = `timeline_${getDateKey(date)}`;
+      const dateKey = `timeline_${getDateKey(date)}`;      
       let cached = await timelineCache.get(dateKey);
-
+      
       if (!cached) {
         const [history, drive, emails, calendar, downloads] = await Promise.all([
           getBrowserHistoryService(date),

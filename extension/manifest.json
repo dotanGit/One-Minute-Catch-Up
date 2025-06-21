@@ -11,7 +11,8 @@
     "downloads",
     "downloads.open",
     "tabs",
-    "search"
+    "search",
+    "alarms"
   ],
   "host_permissions": [
     "https://www.googleapis.com/*"
@@ -20,7 +21,7 @@
     "newtab": "src/pages/index.html"
   },
   "oauth2": {
-    "client_id": "1050975138446-gtejag799flp6n3ekte2jpt17ob0gmpu.apps.googleusercontent.com",
+    "client_id": "1050975138446-m6lo0oij8khdu7t6qq4q3no1s10qpr96.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",
