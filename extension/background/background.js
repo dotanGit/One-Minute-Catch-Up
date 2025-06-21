@@ -236,12 +236,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     case 'startFetchListeners':
       console.log('[BG] 📡 startFetchListeners message received');
       if (!listenersInitialized) {
-        chrome.history.onVisited.addListener(() => {
-          console.log('[BG] 🔍 onVisited event triggered');
+        chrome.history.onVisited.addListener((historyItem) => {
+          console.log('[BG] 🔍 onVisited event triggered for:', historyItem.url);
           scheduleDeltaFetch();
         });
-        chrome.downloads.onCreated.addListener(() => {
-          console.log('[BG] 💾 onCreated event triggered');
+        chrome.downloads.onCreated.addListener((download) => {
+          console.log('[BG] 💾 onCreated event triggered for:', download.filename);
           scheduleDeltaFetch();
         });
         listenersInitialized = true;
@@ -279,5 +279,33 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
   } catch (error) {
     console.error('[BG] ❌ Alarm handler failed:', error);
+  }
+});
+
+// === Auto-initialization on startup ===
+console.log('[BG] 🚀 Background script loaded, checking login status...');
+
+// Check login status and initialize on startup
+chrome.storage.local.get(['isLoggedIn'], function(result) {
+  console.log('[BG] 🔍 Login status on startup:', result.isLoggedIn);
+  if (result.isLoggedIn) {
+    console.log('[BG] ✅ User is logged in, initializing listeners...');
+    allowBackgroundSync = true;
+    
+    // Initialize listeners immediately if user is already logged in
+    if (!listenersInitialized) {
+      chrome.history.onVisited.addListener((historyItem) => {
+        console.log('[BG] 🔍 onVisited event triggered for:', historyItem.url);
+        scheduleDeltaFetch();
+      });
+      chrome.downloads.onCreated.addListener((download) => {
+        console.log('[BG] 💾 onCreated event triggered for:', download.filename);
+        scheduleDeltaFetch();
+      });
+      listenersInitialized = true;
+      console.log('[BG] 🟢 Fetch listeners attached on startup');
+    }
+  } else {
+    console.log('[BG] ❌ User not logged in on startup');
   }
 });
