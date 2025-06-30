@@ -91,46 +91,38 @@ async function syncGmailDriveCalendar() {
   const { isLoggedIn } = await chrome.storage.local.get('isLoggedIn');
   if (!isLoggedIn) return;
 
-  const now = Date.now();
-  const { lastGmailCheck } = await chrome.storage.local.get('lastGmailCheck');
+  const date = new Date();
+  const dateKey = `timeline_${getDateKey(date)}`;
 
-  if (!lastGmailCheck || now - lastGmailCheck > SIXTY_MIN) {
-    const date = new Date();
-    const dateKey = `timeline_${getDateKey(date)}`;
-    const startOfDay = new Date(date);
-    startOfDay.setUTCHours(0, 0, 0, 0);
+  const [emails, drive, calendar] = await Promise.all([
+    getGmailActivity(date),
+    getDriveActivity(date),
+    getCalendarEvents(date)
+  ]);
 
-    const [emails, drive, calendar] = await Promise.all([
-      getGmailActivity(startOfDay),
-      getDriveActivity(startOfDay),
-      getCalendarEvents(startOfDay)
-    ]);
+  const existing = await chrome.storage.local.get(dateKey);
+  const currentData = existing?.[dateKey]?.data || {
+    history: [],
+    drive: { files: [] },
+    emails: { all: [] },
+    calendar: { today: [], tomorrow: [] },
+    downloads: []
+  };
 
-    const existing = await chrome.storage.local.get(dateKey);
-    const currentData = existing?.[dateKey]?.data || {
-      history: [],
-      drive: { files: [] },
-      emails: { all: [] },
-      calendar: { today: [], tomorrow: [] },
-      downloads: []
-    };
+  const hiddenIds = await getHiddenIdsSet();
+  const cleaned = filterHiddenEvents({ emails, drive, calendar }, hiddenIds);
+  const filtered = filterAllByDate(cleaned, date);
 
-    const hiddenIds = await getHiddenIdsSet();
-    const cleaned = filterHiddenEvents({ emails, drive, calendar }, hiddenIds);
-    const filtered = filterAllByDate(cleaned, startOfDay);
+  mergeTimelineData(currentData, filtered);
 
-    mergeTimelineData(currentData, filtered);
-
-    await chrome.storage.local.set({
-      [dateKey]: {
-        timestamp: now,
-        lastFetchedAt: now,
-        data: currentData,
-        date: dateKey.split('_')[1]
-      },
-      lastGmailCheck: now
-    });
-  }
+  await chrome.storage.local.set({
+    [dateKey]: {
+      timestamp: Date.now(),
+      lastFetchedAt: Date.now(),
+      data: currentData,
+      date: dateKey.split('_')[1]
+    }
+  });
 }
 
 // === Delta Fetch Logic ===
