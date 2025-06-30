@@ -28,9 +28,9 @@ export async function getGmailActivity(date) {
       }
     );
 
-    // Get received emails
+    // Get received emails - ONLY PRIMARY AND UPDATES CATEGORIES
     const receivedResponse = await fetch(
-      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:inbox after:${startTimestamp} before:${endTimestamp}`,
+      `https://www.googleapis.com/gmail/v1/users/me/messages?q=in:inbox (category:primary OR category:updates) after:${startTimestamp} before:${endTimestamp}`,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
