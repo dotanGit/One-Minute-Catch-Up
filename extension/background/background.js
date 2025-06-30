@@ -231,7 +231,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       runDeltaFetchForToday();
       return true;
     case 'enableBackgroundSync':
+      console.log('[BG] 🔄 enableBackgroundSync received');
       allowBackgroundSync = true;
+      chrome.storage.local.set({ backgroundSyncEnabled: true });
+      console.log('[BG] ✅ allowBackgroundSync set to:', allowBackgroundSync);
       return;
     case 'startFetchListeners':
       console.log('[BG] 📡 startFetchListeners message received');
@@ -253,18 +256,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 // === Periodic Tasks ===
 // More reliable alarm-based approach
-chrome.alarms.create('periodicSync', { periodInMinutes: 60 });
+chrome.alarms.create('periodicSync', { periodInMinutes: 15 });
 chrome.alarms.create('wallpaperUpdate', { periodInMinutes: 30 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   try {
     if (alarm.name === 'periodicSync') {
-      if (allowBackgroundSync) {
-        console.log('[BG] ⏳ Periodic sync triggered');
+      console.log('[BG] ⏳ Periodic sync alarm triggered');
+      
+      const { backgroundSyncEnabled } = await chrome.storage.local.get('backgroundSyncEnabled');
+      console.log('[BG] 📊 backgroundSyncEnabled from storage:', backgroundSyncEnabled);
+      
+      if (backgroundSyncEnabled) {
+        console.log('[BG] ✅ Background sync enabled - running sync');
         const { isLoggedIn } = await chrome.storage.local.get('isLoggedIn');
         if (isLoggedIn) {
           await syncGmailDriveCalendar();
         }
+      } else {
+        console.log('[BG] ❌ Background sync disabled - skipping sync');
       }
     } else if (alarm.name === 'wallpaperUpdate') {
       if (!wallpaperUpdateInProgress) {
@@ -286,11 +296,13 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 console.log('[BG] 🚀 Background script loaded, checking login status...');
 
 // Check login status and initialize on startup
-chrome.storage.local.get(['isLoggedIn'], function(result) {
+chrome.storage.local.get(['isLoggedIn', 'backgroundSyncEnabled'], function(result) {
   console.log('[BG] 🔍 Login status on startup:', result.isLoggedIn);
+  console.log('[BG] 🔍 Background sync status on startup:', result.backgroundSyncEnabled);
+  
   if (result.isLoggedIn) {
     console.log('[BG] ✅ User is logged in, initializing listeners...');
-    allowBackgroundSync = true;
+    allowBackgroundSync = result.backgroundSyncEnabled || false;
     
     // Initialize listeners immediately if user is already logged in
     if (!listenersInitialized) {

@@ -1,3 +1,5 @@
+console.log('[Login] 🚀 Login.js loaded');
+
 import { showTimeline } from '../timeline/timeline.js';
 import { initTimeline } from '../timeline/timeline.js';
 import { onTimelineInitialized } from '../timeline/timelineDomUtils.js';
@@ -6,55 +8,43 @@ import { getAuthToken } from '../../utils/auth.js';
 
 export function initLogin() {
   return new Promise((resolve) => {
-
     const loginButton = document.getElementById('login-button');
     const loadingSection = document.getElementById('loading');
 
-    chrome.storage.local.get(['isLoggedIn'], function(result) {
-      if (result.isLoggedIn) {
-        loadTimeline(false).then(resolve);
-        chrome.runtime.sendMessage({ action: 'startFetchListeners' });
-        chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
-      } else {
-        showLogin();
-        // Attach to login button
-        if (loginButton) {
-          loginButton.addEventListener('click', function handler() {
-            loginButton.removeEventListener('click', handler); // prevent double
-            if (loadingSection) loadingSection.style.display = 'block';
-            loginButton.disabled = true;
+    showLogin();
+    
+    // Attach to login button
+    if (loginButton) {
+      loginButton.addEventListener('click', function handler() {
+        loginButton.removeEventListener('click', handler);
+        if (loadingSection) loadingSection.style.display = 'block';
+        loginButton.disabled = true;
 
-            chrome.runtime.sendMessage({ action: 'login' }, async function (response) {
-              if (response && response.success) {
+        chrome.runtime.sendMessage({ action: 'login' }, async function (response) {
+          if (response && response.success) {
+            chrome.storage.local.clear(async function () {
+              await chrome.storage.local.set({ isLoggedIn: true });
+              await fetchAndStoreUserName();
 
-                chrome.storage.local.clear(async function () {
+              const loginSection = document.getElementById('login-section');
+              if (loginSection) loginSection.style.display = 'none';
 
-                  await chrome.storage.local.set({ isLoggedIn: true });
+              await loadTimeline(true);
 
-                  await fetchAndStoreUserName();
-
-                  const loginSection = document.getElementById('login-section');
-                  if (loginSection) loginSection.style.display = 'none';
-
-                  await loadTimeline(true);
-
-                  chrome.runtime.sendMessage({ action: 'startFetchListeners' });
-                  chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
-                  resolve(); // resolve after login and timeline load
-                });
-
-              } else {
-                console.warn('[UI] ❌ Login failed:', response?.error);
-                if (loadingSection) loadingSection.style.display = 'none';
-                loginButton.disabled = false;
-                alert('Login failed: ' + (response?.error || 'Unknown error'));
-                resolve(); // still resolve to avoid hanging
-              }
+              chrome.runtime.sendMessage({ action: 'startFetchListeners' });
+              chrome.runtime.sendMessage({ action: 'enableBackgroundSync' });
+              resolve();
             });
-          });
-        }
-      }
-    });
+          } else {
+            console.warn('[UI] ❌ Login failed:', response?.error);
+            if (loadingSection) loadingSection.style.display = 'none';
+            loginButton.disabled = false;
+            alert('Login failed: ' + (response?.error || 'Unknown error'));
+            resolve();
+          }
+        });
+      });
+    }
   });
 }
 
