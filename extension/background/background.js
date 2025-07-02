@@ -8,7 +8,6 @@ import { timelineCache } from '../src/components/timeline/cache.js';
 
 
 // === CONFIG ===
-const SIXTY_MIN = 60 * 60 * 1000; // 60 minutes
 const DEBOUNCE_DELAY = 15 * 1000; // 15 seconds
 // === STATE ===
 let allowBackgroundSync = false;
@@ -249,7 +248,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // === Periodic Tasks ===
 // More reliable alarm-based approach
 chrome.alarms.create('periodicSync', { periodInMinutes: 15 });
-chrome.alarms.create('wallpaperUpdate', { periodInMinutes: 30 });
+chrome.alarms.create('wallpaperUpdate', { periodInMinutes: 17 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   try {
