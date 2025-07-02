@@ -23,8 +23,13 @@ class WallpaperController {
 
     setupEventListeners() {
         const changeWallpaperBtn = document.getElementById('changeWallpaper');
+        const toggleTimelineBtn = document.getElementById('toggleTimeline');
         if (!changeWallpaperBtn) {
             console.error('Change wallpaper button not found');
+            return;
+        }
+        if (!toggleTimelineBtn) {
+            console.error('Toggle timeline button not found');
             return;
         }
         
@@ -36,16 +41,19 @@ class WallpaperController {
             }
             sidebar.classList.add('open');
             changeWallpaperBtn.style.display = 'none';
+            toggleTimelineBtn.style.display = 'none';
         });
 
         // Click outside handler
         document.addEventListener('click', (event) => {
             const sidebar = document.getElementById('wallpaperSidebar');
             const changeWallpaperBtn = document.getElementById('changeWallpaper');
+            const toggleTimelineBtn = document.getElementById('toggleTimeline');
             
             if (!sidebar.contains(event.target) && !changeWallpaperBtn.contains(event.target)) {
                 sidebar.classList.remove('open');
                 changeWallpaperBtn.style.display = 'block';
+                toggleTimelineBtn.style.display = 'block';
             }
         });
 
