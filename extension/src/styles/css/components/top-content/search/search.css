@@ -1,6 +1,6 @@
 /*themes */
 [data-theme="light"] {
-    --search-bg: rgba(255, 255, 255, 0.4);
+    --search-bg: rgba(255, 255, 255, 0.7);
     --search-bg-focus: rgba(255, 255, 255, 1);
     --search-text: #000000;
     --search-icon: #6b6b6b;
@@ -73,6 +73,7 @@
     background: transparent;
     color: var(--search-text);
 }
+
 
 .search-input:focus {
     outline: none;

@@ -6,7 +6,7 @@
     --timeline-button-bg: rgba(255, 255, 255, 0.4);
     --timeline-button-bg-hover: rgba(255, 255, 255, 0.7);
     --timeline-icon-color: 90%;
-    --timeline-NOW-color: 10%;
+    --timeline-NOW-color: 90%;
 }
 
 /* Dark Theme */
@@ -15,7 +15,7 @@
     --timeline-button-bg: rgba(0, 0, 0, 0.4);
     --timeline-button-bg-hover: rgba(0, 0, 0, 0.7);
     --timeline-icon-color: 10%;
-    --timeline-NOW-color: 90%;
+    --timeline-NOW-color: 10%;
 }
 
 

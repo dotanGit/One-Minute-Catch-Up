@@ -109,13 +109,6 @@ class TimelineScroll {
             const offset = Math.abs(this.container.scrollLeft);
             const steps = Math.floor(offset / this.SCROLL_THRESHOLD);
             this.pendingIndex = getBaseWallpaperIndex() - steps;
-            console.log('[DEBUG] Scroll event:', {
-                scrollLeft: this.container.scrollLeft,
-                offset,
-                steps,
-                pendingIndex: this.pendingIndex,
-                isTransitioning: this.isTransitioning
-            });
             this.scheduleWallpaperUpdate();
         });
 

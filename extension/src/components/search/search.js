@@ -45,7 +45,7 @@ class SearchHandler {
         // Use Chrome's Search API which respects user's default search engine
         chrome.search.query({
             text: query,
-            disposition: 'NEW_TAB'
+            disposition: 'CURRENT_TAB'
         });
     }
 }
