@@ -26,7 +26,7 @@ class WallpaperManager {
 
     async getFullImageUrl(imageName) {
         const set = await this.getWallpaperSet();
-        return `https://catch-up-f6fa1.web.app/${set}/${imageName}`;
+        return `https://testing-3fc8b.web.app/${set}/${imageName}`;
     }
 
     async fetchAndCacheWallpaper(imageName, cache = true) {

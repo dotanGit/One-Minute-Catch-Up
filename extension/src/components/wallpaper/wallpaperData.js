@@ -17,7 +17,7 @@ class WallpaperDataManager {
         const CACHE_KEY = 'wallpaper_config';
         const { wallpaper_set } = await chrome.storage.local.get('wallpaper_set');
         this.wallpaperSet = wallpaper_set || 'oregon_mthood';
-        this.CONFIG_URL = `https://catch-up-f6fa1.web.app/${this.wallpaperSet}/wallpaper-config.json`;
+        this.CONFIG_URL = `https://testing-3fc8b.web.app/${this.wallpaperSet}/wallpaper-config.json`;
 
         try {
             const result = await chrome.storage.local.get(CACHE_KEY);
@@ -38,7 +38,7 @@ class WallpaperDataManager {
         } catch (err) {
             // Add fallback to default set
             this.wallpaperSet = 'oregon_mthood';
-            this.CONFIG_URL = `https://catch-up-f6fa1.web.app/${this.wallpaperSet}/wallpaper-config.json`;
+            this.CONFIG_URL = `https://testing-3fc8b.web.app/${this.wallpaperSet}/wallpaper-config.json`;
             try {
                 const response = await fetch(this.CONFIG_URL);
                 const data = await response.json();
