@@ -44,21 +44,35 @@ class TimelineScroll {
             const list = getWallpaperList();
             const normalizedIndex = ((this.pendingIndex % list.length) + list.length) % list.length;
 
-            if (normalizedIndex === this.lastRenderedIndex) return;
+            console.log('[DEBUG] scheduleWallpaperUpdate called:', {
+                pendingIndex: this.pendingIndex,
+                normalizedIndex,
+                lastRenderedIndex: this.lastRenderedIndex,
+                isTransitioning: this.isTransitioning,
+                queuedIndex: this.queuedIndex
+            });
+
+            if (normalizedIndex === this.lastRenderedIndex) {
+                console.log('[DEBUG] Skipping - same as last rendered');
+                return;
+            }
 
             const imageName = getImageNameAtIndex(normalizedIndex);
             if (!imageName) return;
 
             if (this.isTransitioning) {
+                console.log('[DEBUG] Queuing wallpaper change to:', imageName);
                 this.queuedIndex = normalizedIndex;
                 return;
             }
 
+            console.log('[DEBUG] Changing wallpaper to:', imageName);
             this.lastRenderedIndex = normalizedIndex;
             this.isTransitioning = true;
             
             // Use setWallpaperByName with transition
             setWallpaperByName(imageName, { cache: false, immediate: false }).then(() => {
+                console.log('[DEBUG] Wallpaper change completed, calling handleQueuedUpdate');
                 this.isTransitioning = false;
                 this.handleQueuedUpdate();
             });
@@ -66,9 +80,15 @@ class TimelineScroll {
     }
 
     handleQueuedUpdate() {
+        console.log('[DEBUG] handleQueuedUpdate called:', {
+            queuedIndex: this.queuedIndex,
+            lastRenderedIndex: this.lastRenderedIndex
+        });
+        
         if (this.queuedIndex !== null && this.queuedIndex !== this.lastRenderedIndex) {
             const queuedImage = getImageNameAtIndex(this.queuedIndex);
             if (queuedImage) {
+                console.log('[DEBUG] Processing queued wallpaper change to:', queuedImage);
                 this.lastRenderedIndex = this.queuedIndex;
                 this.queuedIndex = null;
                 this.isTransitioning = true;
@@ -78,6 +98,7 @@ class TimelineScroll {
                 });
             }
         } else {
+            console.log('[DEBUG] No queued update to process');
             this.queuedIndex = null;
         }
     }
@@ -88,6 +109,13 @@ class TimelineScroll {
             const offset = Math.abs(this.container.scrollLeft);
             const steps = Math.floor(offset / this.SCROLL_THRESHOLD);
             this.pendingIndex = getBaseWallpaperIndex() - steps;
+            console.log('[DEBUG] Scroll event:', {
+                scrollLeft: this.container.scrollLeft,
+                offset,
+                steps,
+                pendingIndex: this.pendingIndex,
+                isTransitioning: this.isTransitioning
+            });
             this.scheduleWallpaperUpdate();
         });
 
@@ -124,6 +152,17 @@ class TimelineScroll {
     }
 
     handleScrollLatest() {
+        console.log('[DEBUG] handleScrollLatest called');
+        
+        // Clear any queued wallpaper changes to prevent interference
+        this.queuedIndex = null;
+        
+        // Temporarily disable scroll events during smooth scroll
+        this.isHovering = true;
+        
+        // Also set transitioning to prevent any wallpaper changes during scroll
+        this.isTransitioning = true;
+        
         this.smoothScroll({ to: 0 });
         const index = findIndexForCurrentTime();
         const list = getWallpaperList();
@@ -132,22 +171,41 @@ class TimelineScroll {
         const currentImageName = getImageNameAtIndex(normalizedLastIndex);
         const targetImageName = getImageNameAtIndex(normalizedIndex);
         
-        if (currentImageName !== targetImageName && !this.isTransitioning) {
-            setBaseWallpaperIndex(index);
-            this.pendingIndex = index;
+        console.log('[DEBUG] handleScrollLatest details:', {
+            index,
+            normalizedIndex,
+            normalizedLastIndex,
+            currentImageName,
+            targetImageName,
+            isTransitioning: this.isTransitioning
+        });
+        
+        // Wait for smooth scroll to complete before changing wallpaper
+        setTimeout(() => {
+            if (currentImageName !== targetImageName) {
+                console.log('[DEBUG] Changing wallpaper via handleScrollLatest to:', targetImageName);
+                setBaseWallpaperIndex(index);
+                this.pendingIndex = index;
 
-            if (targetImageName) {
-                this.lastRenderedIndex = normalizedIndex;
-                this.isTransitioning = true;
-                // Use setWallpaperByName with transition
-                setWallpaperByName(targetImageName, { cache: false, immediate: false }).then(() => {
+                if (targetImageName) {
+                    this.lastRenderedIndex = normalizedIndex;
+                    // Use setWallpaperByName with transition
+                    setWallpaperByName(targetImageName, { cache: false, immediate: false }).then(() => {
+                        console.log('[DEBUG] handleScrollLatest wallpaper change completed');
+                        this.isTransitioning = false;
+                        this.isHovering = false;
+                        this.handleQueuedUpdate();
+                    });
+                } else {
                     this.isTransitioning = false;
-                    this.handleQueuedUpdate();
-                });
+                    this.isHovering = false;
+                }
+            } else {
+                console.log('[DEBUG] No wallpaper change needed in handleScrollLatest');
+                this.isTransitioning = false;
+                this.isHovering = false;
             }
-        } else if (this.isTransitioning) {
-            this.queuedIndex = normalizedIndex;
-        }
+        }, 800); // Wait for smooth scroll to complete (750ms + buffer)
     }
 
     startHoverScroll(direction) {
