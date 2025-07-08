@@ -1,7 +1,7 @@
 import { getGreetingFromCacheOrGenerate } from './greetingCacheManager.js';
 
 // Constants
-export const OPENAI_API_KEY = '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';
+export const OPENAI_API_KEY = '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';
 
 // Weekend configuration
 export const WEEKEND_DAYS = ['5', '6'];
