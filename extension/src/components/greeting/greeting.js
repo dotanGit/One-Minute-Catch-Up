@@ -1,7 +1,8 @@
 import { getGreetingFromCacheOrGenerate } from './greetingCacheManager.js';
+import { keys } from '../../../keys.js';
 
 // Constants
-export const OPENAI_API_KEY = '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';
+export const OPENAI_API_KEY = keys.apiKey;
 
 // Weekend configuration
 export const WEEKEND_DAYS = ['5', '6'];
