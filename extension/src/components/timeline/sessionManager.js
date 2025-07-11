@@ -63,9 +63,10 @@ export class SessionManager {
     }
   }
 
-  // Clean up old sessions (remove domains that haven't been visited in a while)
+  // Clean up old sessions (remove domains that haven't been visited in 24 hours)
   cleanupOldSessions(currentTime = Date.now()) {
-    const cutoffTime = currentTime - (this.sessionTimeoutMs * 2); // More lenient cleanup - 2x session timeout
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    const cutoffTime = currentTime - TWENTY_FOUR_HOURS;
     
     let cleanedCount = 0;
     for (const [domain, sessionData] of this.sessionMap.entries()) {
@@ -77,7 +78,7 @@ export class SessionManager {
     }
     
     if (cleanedCount > 0) {
-      console.log(`[SESSION] 🧹 Cleaned up ${cleanedCount} old sessions`);
+      console.log(`[SESSION] 🧹 Cleaned up ${cleanedCount} old sessions (24h+ old)`);
     }
   }
 
