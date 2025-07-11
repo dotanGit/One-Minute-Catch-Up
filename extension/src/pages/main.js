@@ -14,8 +14,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // If already logged in, just initialize timeline right away
     initTimelineMinimize();
     loadTimeline(false);
+
   }
 
   // Render the appropriate greeting based on time of day
   await renderGreeting();
+  shortcutsManager.renderShortcuts();
 });
