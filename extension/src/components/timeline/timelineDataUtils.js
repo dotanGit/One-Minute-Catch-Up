@@ -1,6 +1,7 @@
 import { normalizeDateToStartOfDay, normalizeTimestamp } from '../../utils/dateUtils.js';
 import { getBrowserHistoryService } from '../../services/browserHistoryService.js';
 import { getDownloadsService } from '../../services/downloadService.js';
+import { sessionManager } from './sessionManager.js';
 
 const brandSessionMap = new Map();
 
@@ -106,31 +107,40 @@ export function filterHiddenEvents(data, hiddenIds) {
   };
 }
 
-export function filterBrowserBySession(events, sessionMs = 60 * 60 * 1000) {
-  const now = Date.now();
+export function filterBrowserBySession(events, sessionMs = 30 * 60 * 1000) {
+  // Update session timeout if different
+  if (sessionMs !== sessionManager.sessionTimeoutMs) {
+    sessionManager.sessionTimeoutMs = sessionMs;
+  }
+
+  // Clean up old sessions first
+  sessionManager.cleanupOldSessions();
+  
   const result = [];
+  let filteredCount = 0;
+  let createdCount = 0;
 
   for (const event of events) {
     try {
       const eventTime = normalizeTimestamp(event.lastVisitTime);
-      const brand = extractBrandKey(event.url);
-      const lastSeen = brandSessionMap.get(brand);
-
-      if (!lastSeen || eventTime - lastSeen > sessionMs) {
-        brandSessionMap.set(brand, eventTime);
+      const processResult = sessionManager.processVisit(event.url, eventTime);
+      
+      if (processResult.shouldCreateEvent) {
         result.push(event);
+        createdCount++;
+        console.log(`[SESSION] ✅ Created event for ${sessionManager.extractDomain(event.url)} (${processResult.reason})`);
+      } else {
+        filteredCount++;
+        console.log(`[SESSION] 🚫 Filtered out ${sessionManager.extractDomain(event.url)} (${processResult.reason})`);
       }
-    } catch {
-      // skip bad URLs
+    } catch (error) {
+      console.error('[SESSION] ❌ Error processing event:', error);
+      // Include the event if we can't process it
+      result.push(event);
     }
   }
 
-  for (const [brand, timestamp] of brandSessionMap.entries()) {
-    if (now - timestamp > sessionMs) {
-      brandSessionMap.delete(brand);
-    }
-  }
-
+  console.log(`[SESSION] 📊 Session filtering complete: ${createdCount} created, ${filteredCount} filtered`);
   return result;
 }
 

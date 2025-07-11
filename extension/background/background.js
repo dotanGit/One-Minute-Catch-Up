@@ -5,6 +5,7 @@ import { generateAISummary } from '../src/services/aiService.js';
 import { getBrowserHistoryService } from '../src/services/browserHistoryService.js';
 import {getHiddenIdsSet,filterHiddenEvents,filterAllByDate,getIncrementalDataSince,mergeTimelineData,mergeUniqueById,filterBrowserBySession,getDateKey} from '../src/components/timeline/timelineDataUtils.js';
 import { timelineCache } from '../src/components/timeline/cache.js';
+import { sessionManager } from '../src/components/timeline/sessionManager.js';
 
 
 // === CONFIG ===
@@ -140,7 +141,9 @@ export async function runDeltaFetchForToday() {
   const delta = await getIncrementalDataSince(lastFetchedAt);
   const hiddenIds = await getHiddenIdsSet();
   const deltaCleaned = filterHiddenEvents(delta, hiddenIds);
-  deltaCleaned.history = filterBrowserBySession(deltaCleaned.history);
+  
+  // Apply session filtering to browser history (30 minutes)
+  deltaCleaned.history = filterBrowserBySession(deltaCleaned.history, 30 * 60 * 1000);
 
   const baseData = cached?.data || {
     history: [], drive: { files: [] }, emails: { all: [] },
@@ -158,11 +161,12 @@ export async function runDeltaFetchForToday() {
   };
 
   await timelineCache.set(dateKey, payload);
+  
+  // Save session data after processing
+  await saveSessionData();
+  
   console.log('[BG] ✅ Delta fetch finished & cache updated for key:', dateKey);
 }
-
-
-
 
 // === Debounced Fetch Scheduler ===
 
@@ -191,6 +195,38 @@ function scheduleDeltaFetch() {
     }
     deltaTimer = null;
   }, DEBOUNCE_DELAY);
+}
+
+// Add this function to save session data
+async function saveSessionData() {
+  try {
+    const sessionData = sessionManager.getSessionData();
+    await chrome.storage.local.set({ browserSessionData: sessionData });
+    console.log('[BG]  Session data saved:', sessionData.length, 'domains');
+    
+    // Debug: Log current session state
+    const state = sessionManager.getSessionState();
+    console.log('[BG] 📊 Current session state:', state);
+  } catch (error) {
+    console.error('[BG] ❌ Error saving session data:', error);
+  }
+}
+
+// Add this function to load session data
+async function loadSessionData() {
+  try {
+    const result = await chrome.storage.local.get('browserSessionData');
+    if (result.browserSessionData) {
+      sessionManager.loadSessionData(result.browserSessionData);
+      console.log('[BG] 📂 Session data loaded:', result.browserSessionData.length, 'domains');
+      
+      // Debug: Log loaded session state
+      const state = sessionManager.getSessionState();
+      console.log('[BG] 📊 Loaded session state:', state);
+    }
+  } catch (error) {
+    console.error('[BG] ❌ Error loading session data:', error);
+  }
 }
 
 
@@ -287,9 +323,12 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 console.log('[BG] 🚀 Background script loaded, checking login status...');
 
 // Check login status and initialize on startup
-chrome.storage.local.get(['isLoggedIn', 'backgroundSyncEnabled'], function(result) {
+chrome.storage.local.get(['isLoggedIn', 'backgroundSyncEnabled'], async function(result) {
   console.log('[BG] 🔍 Login status on startup:', result.isLoggedIn);
   console.log('[BG] 🔍 Background sync status on startup:', result.backgroundSyncEnabled);
+  
+  // Load session data on startup (ADD THIS)
+  await loadSessionData();
   
   if (result.isLoggedIn) {
     console.log('[BG] ✅ User is logged in, initializing listeners...');
